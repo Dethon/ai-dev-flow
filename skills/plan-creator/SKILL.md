@@ -1,4 +1,5 @@
 ---
+name: plan-creator
 allowed-tools: Task, Read
 argument-hint: <feature-description or design-file-path>
 description: Create architectural plans for new features - works with any executor (loop or swarm). Accepts a feature description or a design file from /brainstorming. For bugs use /bug-plan-creator, for code quality use /code-quality-plan-creator.

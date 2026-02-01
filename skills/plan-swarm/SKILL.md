@@ -1,4 +1,5 @@
 ---
+name: plan-swarm
 description: "Execute a plan file with parallel agent swarm (dependency-aware)"
 argument-hint: "<plan_path> [--workers N] [--model MODEL]"
 allowed-tools: ["Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Task", "Bash"]

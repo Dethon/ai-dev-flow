@@ -1,4 +1,5 @@
 ---
+name: cancel-swarm
 allowed-tools: ["TaskList", "TaskStop"]
 argument-hint: ""
 description: Cancel any active swarm

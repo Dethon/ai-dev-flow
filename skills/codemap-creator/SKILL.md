@@ -1,4 +1,5 @@
 ---
+name: codemap-creator
 allowed-tools: Task, Bash
 argument-hint: "<root_dir> [--ignore <patterns>] | --update <codemap> [--diff | --mr <id>]"
 description: Generate or update hierarchical code map from any directory as root, with nested tree structure (project)

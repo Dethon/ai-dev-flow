@@ -1,4 +1,5 @@
 ---
+name: document-creator
 allowed-tools: Task, Glob, Read
 argument-hint: "<dir1> [dir2] ... [dirN]"
 description: Generate DEVGUIDE.md architectural documentation using LSP (project)

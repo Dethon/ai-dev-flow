@@ -1,4 +1,5 @@
 ---
+name: prompt-creator
 allowed-tools: Task, Bash, Read, AskUserQuestion
 argument-hint: <description>
 description: Enhance rough prompt ideas into detailed, effective prompts (project)

@@ -1,4 +1,5 @@
 ---
+name: plan-loop
 description: "Execute a plan file with iterative loop until completion"
 argument-hint: "<plan_path> [--max-iterations N]"
 allowed-tools: ["Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit", "Write", "Glob", "Grep"]

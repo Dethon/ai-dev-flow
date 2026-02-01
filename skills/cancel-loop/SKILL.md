@@ -1,4 +1,5 @@
 ---
+name: cancel-loop
 allowed-tools: ["Bash", "TaskList"]
 argument-hint: ""
 description: Cancel any active loop

@@ -1,4 +1,5 @@
 ---
+name: mr-description-creator
 allowed-tools: Task, Bash, Read, Glob, Grep, AskUserQuestion
 argument-hint: "[--template 'markdown']"
 description: Generate and apply MR/PR description directly via gh or glab CLI (project)

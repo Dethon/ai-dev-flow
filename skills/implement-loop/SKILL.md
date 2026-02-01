@@ -1,4 +1,5 @@
 ---
+name: implement-loop
 description: "Implement from conversation context with iterative loop"
 argument-hint: "<task description>"
 allowed-tools: ["TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit", "Read", "Glob", "Grep", "Write"]
@@ -123,4 +124,3 @@ Tasks (2 done, 1 in progress, 3 open)
 # Reference specific discussion
 /implement-loop implement the caching strategy from above
 ```
-

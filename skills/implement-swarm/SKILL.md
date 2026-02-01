@@ -1,4 +1,5 @@
 ---
+name: implement-swarm
 description: "Implement from conversation context with parallel swarm"
 argument-hint: "<task description> [--workers N] [--model MODEL]"
 allowed-tools: ["TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Task", "Bash"]
