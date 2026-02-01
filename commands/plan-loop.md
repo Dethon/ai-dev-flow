@@ -4,6 +4,7 @@ argument-hint: "<plan_path> [--max-iterations N]"
 allowed-tools: ["Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit", "Write", "Glob", "Grep"]
 hide-from-slash-command-tool: "true"
 model: opus
+skills: ["test-driven-development"]
 ---
 
 # Plan Loop Command
@@ -93,16 +94,29 @@ A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a block
 - Major requirements → one task each
 - Exit criteria verification → final task, blocked by all others
 
-### Step 3: Execute Tasks Sequentially
+### Step 3: Execute Tasks with TDD (Red-Green-Refactor)
 
-For each task (in dependency order):
+Follow test-driven development for every task. The plan's dependency graph ensures test files are scheduled before their corresponding production files.
+
+**For test file tasks** (task creates/edits a test file):
 
 1. **Claim**: `TaskUpdate({ taskId: "N", status: "in_progress" })`
-2. **Read**: Get relevant section from plan
-3. **Implement**: Make changes following plan exactly
-4. **Verify**: Run any task-specific verification
+2. **Read**: Get test specifications from plan
+3. **Write tests**: Create the test file with all specified test cases
+4. **RED — Verify tests fail**: Run the test file and confirm tests fail for the expected reason (feature missing, not syntax errors). This is MANDATORY — never skip.
 5. **Complete**: `TaskUpdate({ taskId: "N", status: "completed" })`
-6. **Next**: Find next unblocked task via TaskList
+
+**For production file tasks** (task creates/edits production code):
+
+1. **Claim**: `TaskUpdate({ taskId: "N", status: "in_progress" })`
+2. **Read**: Get implementation details from plan
+3. **Implement**: Make changes following plan exactly — write the minimum code to make the corresponding tests pass
+4. **GREEN — Verify tests pass**: Run the corresponding test file and confirm all tests pass. This is MANDATORY.
+5. **Refactor** (if needed): Clean up while keeping tests green
+6. **Complete**: `TaskUpdate({ taskId: "N", status: "completed" })`
+7. **Next**: Find next unblocked task via TaskList
+
+**For non-code tasks** (config, documentation, types-only): Execute directly without the red-green cycle.
 
 ### Step 4: Run Exit Criteria
 

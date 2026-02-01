@@ -176,6 +176,10 @@ const oldCode = something()
 const newCode = somethingBetter()
 ```
 
+**Test File**: `path/to/file.test.ext` — Tests to write BEFORE implementation:
+- Test: [test name] — Asserts: [expected behavior]
+- Test: [test name] — Asserts: [expected behavior]
+
 **Dependencies**: [File paths from this plan that must exist first]
 **Provides**: [Exports other plan files depend on]
 ```
@@ -203,6 +207,7 @@ Maps files to phased execution order. Source of truth for converter dependency w
 - Same phase = parallel (no inter-dependencies)
 - Dependency = real code dependency (imports, extends, uses)
 - Every file from `## Files` must appear in this table
+- **TDD ordering**: Test files MUST appear in earlier phases than the production files they verify. This ensures executors write the failing test (RED) before implementing production code (GREEN). Types/interfaces/config with no business logic are exempt.
 
 ### Exit Criteria
 
@@ -258,6 +263,11 @@ Replace with: exact exceptions, specific line numbers, file:line references, exp
 - [ ] Phase assignments match per-file Dependencies
 - [ ] Phase 1 files have no dependencies on other plan files
 
+### TDD Compliance
+- [ ] Every production file with business logic has a corresponding test file
+- [ ] Test files appear in earlier dependency graph phases than production files they test
+- [ ] Each test file has specific test cases listed (not vague "add tests")
+
 ### Consumer Readiness
 - [ ] Each file's instructions are implementable without questions
 - [ ] All function signatures include full types
@@ -307,12 +317,14 @@ Per-file format:
   ### path/to/file [edit|create]
   Purpose, TOTAL CHANGES, Changes (numbered + line numbers),
   Reference Implementation (FULL code), Migration Pattern (for edits),
+  Test File (test cases to write BEFORE implementation),
   Dependencies, Provides
 
 Dependency Graph rules:
   Phase 1 = no deps on other plan files
   Same phase = parallel (no inter-deps)
   Dependency = real code dependency (imports/extends/uses)
+  TDD: Test files in EARLIER phases than production code they verify
 
 Created by: /plan-creator, /bug-plan-creator, /code-quality-plan-creator
 Consumed by: /plan-loop, /plan-swarm

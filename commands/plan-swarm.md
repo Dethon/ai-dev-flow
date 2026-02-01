@@ -3,6 +3,7 @@ description: "Execute a plan file with parallel agent swarm (dependency-aware)"
 argument-hint: "<plan_path> [--workers N] [--model MODEL]"
 allowed-tools: ["Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Task", "Bash"]
 model: opus
+skills: ["test-driven-development"]
 ---
 
 # Plan Swarm Command
@@ -95,7 +96,9 @@ A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a block
 
 **Worker limit N** = `--workers` value or **3** if not specified. This is a queue — spawn up to N, then wait for completions before spawning more.
 
-Mark each task `in_progress` before spawning its worker. Spawn up to N background workers in a **SINGLE message** (all Task calls in one response):
+Mark each task `in_progress` before spawning its worker. Spawn up to N background workers in a **SINGLE message** (all Task calls in one response).
+
+**TDD in worker prompts:** Workers must follow red-green-refactor. Include TDD instructions in every worker prompt:
 
 ```json
 Task({
@@ -104,7 +107,7 @@ Task({
   "model": "sonnet",
   "run_in_background": true,
   "allowed_tools": ["Read", "Edit", "Write", "Bash", "Glob", "Grep"],
-  "prompt": "Execute this ONE task then exit:\n\nTask ID: 1\nSubject: Implement auth middleware\nDescription: <full details from plan>\n\nSteps:\n1. Execute the task (read files, make changes, verify)\n2. Output ONLY a one-line summary\n3. Exit immediately"
+  "prompt": "Execute this ONE task using TDD then exit:\n\nTask ID: 1\nSubject: Implement auth middleware\nDescription: <full details from plan>\n\nTDD Protocol:\n- If this is a TEST FILE task: Write the tests, then run them and verify they FAIL (RED). Tests must fail because the feature is missing, not because of syntax errors.\n- If this is a PRODUCTION CODE task: Implement the code, then run the corresponding tests and verify they PASS (GREEN). Write only the minimum code needed to pass.\n- If this is a non-code task (config, types, docs): Execute directly.\n\nSteps:\n1. Execute the task following TDD protocol above\n2. Output ONLY a one-line summary\n3. Exit immediately"
 })
 ```
 

@@ -3,6 +3,7 @@ description: "Implement from conversation context with iterative loop"
 argument-hint: "<task description>"
 allowed-tools: ["TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit", "Read", "Glob", "Grep", "Write"]
 model: opus
+skills: ["test-driven-development"]
 ---
 
 # Implement Loop Command
@@ -57,16 +58,19 @@ TaskUpdate({
 
 A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a blocking task is marked `completed`, it's automatically removed from the blocked list. A task becomes **ready** (executable) when its blockedBy list is empty.
 
-### Step 2: Execute Tasks Sequentially
+### Step 2: Execute Tasks with TDD (Red-Green-Refactor)
 
-For each task (in dependency order):
+Follow test-driven development for every task that involves behavior changes. For each task:
 
 1. **Claim**: `TaskUpdate({ taskId: "N", status: "in_progress" })`
 2. **Read files as needed**: Use Read tool on file paths from task description
-3. **Implement**: Make changes based on context
-4. **Verify**: Run any task-specific verification
-5. **Complete**: `TaskUpdate({ taskId: "N", status: "completed" })`
-6. **Next**: Find next unblocked task via TaskList
+3. **RED — Write failing test first**: Before writing any production code, write a test that captures the desired behavior. Run the test and confirm it fails for the expected reason (feature missing, not syntax errors). This is MANDATORY.
+4. **GREEN — Implement minimal code**: Write the minimum production code needed to make the test pass. Run the test and confirm it passes.
+5. **REFACTOR**: Clean up while keeping tests green.
+6. **Complete**: `TaskUpdate({ taskId: "N", status: "completed" })`
+7. **Next**: Find next unblocked task via TaskList
+
+**Exceptions**: Tasks that only involve configuration, type definitions (no business logic), or documentation can skip the red-green cycle.
 
 ### Step 3: Run Exit Criteria
 

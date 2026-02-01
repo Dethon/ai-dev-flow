@@ -3,6 +3,7 @@ description: "Implement from conversation context with parallel swarm"
 argument-hint: "<task description> [--workers N] [--model MODEL]"
 allowed-tools: ["TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Task", "Bash"]
 model: opus
+skills: ["test-driven-development"]
 ---
 
 # Implement Swarm Command
@@ -62,7 +63,9 @@ A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a block
 
 **Worker limit N** = `--workers` value or **3** if not specified. This is a queue — spawn up to N, then wait for completions before spawning more.
 
-Mark each task `in_progress` before spawning its worker. Spawn up to N background workers in a **SINGLE message** (all Task calls in one response):
+Mark each task `in_progress` before spawning its worker. Spawn up to N background workers in a **SINGLE message** (all Task calls in one response).
+
+**TDD in worker prompts:** Workers must follow red-green-refactor. Include TDD instructions in every worker prompt:
 
 ```json
 Task({
@@ -71,7 +74,7 @@ Task({
   "model": "sonnet",
   "run_in_background": true,
   "allowed_tools": ["Read", "Edit", "Write", "Bash", "Glob", "Grep"],
-  "prompt": "Execute this ONE task then exit:\n\nTask ID: 1\nSubject: Fix auth token validation\nDescription: <full details>\n\nSteps:\n1. Execute the task (read files, make changes, verify)\n2. Output ONLY a one-line summary\n3. Exit immediately"
+  "prompt": "Execute this ONE task using TDD then exit:\n\nTask ID: 1\nSubject: Fix auth token validation\nDescription: <full details>\n\nTDD Protocol:\n- Before writing any production code, write a failing test first (RED)\n- Run the test and verify it fails for the expected reason (feature/fix missing, not syntax errors)\n- Write the minimum production code to make the test pass (GREEN)\n- Run the test and verify it passes\n- Clean up while keeping tests green (REFACTOR)\n- Exception: Config, type definitions (no logic), and docs tasks can skip the red-green cycle\n\nSteps:\n1. Execute the task following TDD protocol above\n2. Output ONLY a one-line summary\n3. Exit immediately"
 })
 ```
 
