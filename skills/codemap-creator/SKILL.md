@@ -1,7 +1,7 @@
 ---
 name: codemap-creator
 allowed-tools: Task, Bash
-argument-hint: "<root_dir> [--ignore <patterns>] | --update <codemap> [--diff | --mr <id>]"
+argument-hint: "<root_dir> [--ignore <patterns>] | --update <codemap> [--diff | --pr <id>]"
 description: Generate or update hierarchical code map from any directory as root, with nested tree structure (project)
 context: fork
 model: opus
@@ -24,7 +24,6 @@ Generate a new codemap from scratch:
 Update an existing codemap with only changed files:
 ```bash
 /codemap-creator --update .claude/maps/code-map-src-a3f9e.json --diff
-/codemap-creator --update .claude/maps/code-map-src-a3f9e.json --mr 123
 /codemap-creator --update .claude/maps/code-map-src-a3f9e.json --pr 456
 ```
 
@@ -42,7 +41,6 @@ Update an existing codemap with only changed files:
 ### Update Mode
 - **--update <codemap>** (required): Path to existing codemap to update
 - **--diff** (optional): Use `git diff` to find changed files (uncommitted + staged)
-- **--mr <id>** (optional): Use GitLab MR to find changed files (via `glab`)
 - **--pr <id>** (optional): Use GitHub PR to find changed files (via `gh`)
 
 If no diff source specified with --update, defaults to --diff.
@@ -76,7 +74,6 @@ Parse `$ARGUMENTS` to determine mode:
 1. Extract codemap path after `--update`
 2. Detect diff source:
    - `--diff` → use `git diff --name-only` + `git diff --staged --name-only`
-   - `--mr <id>` → use `glab mr diff <id> --name-only`
    - `--pr <id>` → use `gh pr diff <id> --name-only`
    - Default to `--diff` if no source specified
 3. Get list of changed files
@@ -95,9 +92,6 @@ Run the appropriate command to get changed files:
 ```bash
 # For --diff (default)
 git diff --name-only && git diff --staged --name-only
-
-# For --mr <id>
-glab mr diff <id> --name-only
 
 # For --pr <id>
 gh pr diff <id> --name-only
@@ -149,7 +143,7 @@ Next: Read the map file for hierarchical code navigation.
 ## Code Map Updated (LSP)
 
 **Map**: <codemap_path>
-**Source**: git diff | MR #X | PR #X
+**Source**: git diff | PR #X
 **Files Updated**: X
 **Files Added**: X
 **Files Removed**: X
@@ -173,8 +167,8 @@ Next: Codemap is current with latest changes.
 | Codemap not found (update) | Report error, suggest create mode |
 | No files in tree | Report empty, suggest different root |
 | No changed files (update) | Report "already up to date" |
-| glab/gh not installed | Report error, suggest install |
-| MR/PR not found | Report error, check ID |
+| gh not installed | Report error, suggest install |
+| PR not found | Report error, check ID |
 | LSP fails for file | Log error, mark file, continue |
 
 ## Example Usage
@@ -190,7 +184,6 @@ Next: Codemap is current with latest changes.
 /codemap-creator --update .claude/maps/code-map-src-a3f9e.json
 /codemap-creator --update .claude/maps/code-map-src-a3f9e.json --diff
 
-# Update mode - from MR/PR
-/codemap-creator --update .claude/maps/code-map-src-a3f9e.json --mr 123
+# Update mode - from PR
 /codemap-creator --update .claude/maps/code-map-src-a3f9e.json --pr 456
 ```
