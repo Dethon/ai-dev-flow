@@ -550,16 +550,16 @@ Re-read your improvement plan and verify:
 
 ## Plan File Location
 
-Write to: `.claude/plans/code-quality-{filename}-{hash5}-plan.md`
+Write to: `docs/plans/code-quality-{filename}-{hash5}-plan.md`
 
 **Naming convention**:
 - Use the target file's name (without path)
 - Prefix with `code-quality-`
 - Append a 5-character random hash before `-plan.md` to prevent conflicts
 - Generate hash using: first 5 chars of timestamp or random string (lowercase alphanumeric)
-- Example: Analyzing `src/services/auth_service.ts` → `.claude/plans/code-quality-auth_service-3m8k5-plan.md`
+- Example: Analyzing `src/services/auth_service.ts` → `docs/plans/code-quality-auth_service-3m8k5-plan.md`
 
-**Create the `.claude/plans/` directory if it doesn't exist.**
+**Create the `docs/plans/` directory if it doesn't exist.**
 
 ## Plan File Contents
 
@@ -715,7 +715,7 @@ Improve code quality for [filename] based on LSP-powered analysis.
 
 **Status**: COMPLETE
 **File Analyzed**: [full file path]
-**Plan File**: .claude/plans/code-quality-[filename]-[hash5]-plan.md
+**Plan File**: docs/plans/code-quality-[filename]-[hash5]-plan.md
 
 ### Quick Summary
 
@@ -759,7 +759,7 @@ Phase 1 (no dependencies — parallel):
 - `Read` - Read file contents
 - `Glob` - Find files by pattern
 - `Grep` - Search for code patterns (imports, security issues, etc.)
-- `Write` - Write the plan to `.claude/plans/`
+- `Write` - Write the plan to `docs/plans/`
 
 ---
 

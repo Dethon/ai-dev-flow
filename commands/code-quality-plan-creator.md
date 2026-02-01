@@ -54,7 +54,7 @@ prompt: "Analyze code quality: <file-path>"
 |------|---------|-----------|--------|------------------|
 | [path] | 6.8/10 | 9.2/10 | [N] | Yes |
 
-Plans: .claude/plans/code-quality-*.md
+Plans: docs/plans/code-quality-*.md
 
 Next Steps:
 1. Review plan files

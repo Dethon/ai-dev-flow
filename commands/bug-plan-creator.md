@@ -63,7 +63,7 @@ Output a status message like "Investigating bug..." and **end your turn**. The s
 ```
 ## Bug Investigation Complete
 
-**Plan**: .claude/plans/bug-{id}-{hash5}-plan.md
+**Plan**: docs/plans/bug-{id}-{hash5}-plan.md
 **Severity**: [Critical/High/Medium/Low]
 **Root Cause Confidence**: [High/Medium/Low]
 

@@ -154,7 +154,7 @@ Tasks (2 done, 2 in progress, 3 open)
 ## Example Usage
 
 ```bash
-/plan-swarm .claude/plans/add-user-auth.md              # Default: 3 workers
-/plan-swarm .claude/plans/refactor.md --workers 5       # Override: force 5 workers
-/plan-swarm .claude/plans/docs.md --model haiku         # Cheaper workers
+/plan-swarm docs/plans/add-user-auth.md              # Default: 3 workers
+/plan-swarm docs/plans/refactor.md --workers 5       # Override: force 5 workers
+/plan-swarm docs/plans/docs.md --model haiku         # Cheaper workers
 ```

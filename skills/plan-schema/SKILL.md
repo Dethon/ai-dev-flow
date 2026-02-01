@@ -1,11 +1,11 @@
 ---
 name: plan-schema
-description: Plan file (.claude/plans/*-plan.md) reference — sections, per-file format, dependency graph, and converter mappings
+description: Plan file (docs/plans/*-plan.md) reference — sections, per-file format, dependency graph, and converter mappings
 allowed-tools: Bash, Read, Write, Edit
 argument-hint: "[validate <path>]"
 ---
 
-Plan file schema reference for architectural plans created by `/plan-creator`, `/bug-plan-creator`, and `/code-quality-plan-creator`. Use this when creating, editing, or reviewing `.claude/plans/*-plan.md` files.
+Plan file schema reference for architectural plans created by `/plan-creator`, `/bug-plan-creator`, and `/code-quality-plan-creator`. Use this when creating, editing, or reviewing `docs/plans/*-plan.md` files.
 
 ## When to Use
 
@@ -13,7 +13,7 @@ Invoke `/plan-schema` before manually editing any plan file. Invoke `/plan-schem
 
 ## Core Concepts
 
-Plans are markdown files in `.claude/plans/` that specify HOW to implement a feature, fix, or improvement. They are consumed by:
+Plans are markdown files in `docs/plans/` that specify HOW to implement a feature, fix, or improvement. They are consumed by:
 - `/plan-loop` and `/plan-swarm` — execute plans directly
 
 ### Conversion Pipeline
@@ -23,7 +23,7 @@ Plans are the intermediate representation between creators and executors:
 ```
 /plan-creator (or /bug-plan-creator, /code-quality-plan-creator)
     ↓ writes
-.claude/plans/{slug}-{hash5}-plan.md
+docs/plans/{slug}-{hash5}-plan.md
     ↓ consumed by (choose one)
     └─ /plan-loop or /plan-swarm        → executes plan directly
 ```
@@ -33,7 +33,7 @@ Plans are the intermediate representation between creators and executors:
 ### File Naming
 
 ```
-.claude/plans/{slug}-{hash5}-plan.md
+docs/plans/{slug}-{hash5}-plan.md
 ```
 
 | Creator | Pattern | Example |
@@ -285,7 +285,7 @@ Parse `$ARGUMENTS` to determine mode.
 
 ### If `$ARGUMENTS` starts with `validate`:
 
-Extract the path from `$ARGUMENTS` (e.g., `/plan-schema validate .claude/plans/auth-a3f9e-plan.md`).
+Extract the path from `$ARGUMENTS` (e.g., `/plan-schema validate docs/plans/auth-a3f9e-plan.md`).
 
 Read the plan file and check against the validation checklist:
 
@@ -301,7 +301,7 @@ Read the plan file and check against the validation checklist:
 Output the quick reference:
 
 ```
-Plan File Schema (.claude/plans/*-plan.md)
+Plan File Schema (docs/plans/*-plan.md)
 
 Required sections (in order):
   ## Summary                    — 2-3 sentence executive summary

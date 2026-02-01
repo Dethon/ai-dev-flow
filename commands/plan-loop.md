@@ -166,6 +166,6 @@ If context compacts:
 ## Example Usage
 
 ```bash
-/plan-loop .claude/plans/add-user-auth.md
-/plan-loop .claude/plans/fix-memory-leak.md --max-iterations 10
+/plan-loop docs/plans/add-user-auth.md
+/plan-loop docs/plans/fix-memory-leak.md --max-iterations 10
 ```

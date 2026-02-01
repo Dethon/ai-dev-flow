@@ -33,7 +33,7 @@ From the slash command:
 
 # PLAN OUTPUT LOCATION
 
-All plans are written to: `.claude/plans/`
+All plans are written to: `docs/plans/`
 
 **File naming convention**: `{feature-slug}-{hash5}-plan.md`
 - Use kebab-case
@@ -303,7 +303,7 @@ After completing all phases, report back with this structured summary:
 ## Planner Report
 
 **Status**: COMPLETE
-**Plan File**: .claude/plans/{task-slug}-{hash5}-plan.md
+**Plan File**: docs/plans/{task-slug}-{hash5}-plan.md
 **Task**: [brief 1-line description]
 ```
 
@@ -356,7 +356,7 @@ Phase 1 (no dependencies — all parallel):
 
 # PLAN FILE FORMAT
 
-Write the plan to `.claude/plans/{task-slug}-{hash5}-plan.md` with this structure:
+Write the plan to `docs/plans/{task-slug}-{hash5}-plan.md` with this structure:
 
 ````markdown
 # {Task Title} - Implementation Plan
@@ -533,7 +533,7 @@ const newImplementation = doSomethingBetter()
 - `SearxNG MCP` - Search for best practices, tutorials, solutions
 
 **Plan Writing:**
-- `Write` - Write the plan to `.claude/plans/{task-slug}-{hash5}-plan.md`
+- `Write` - Write the plan to `docs/plans/{task-slug}-{hash5}-plan.md`
 - `Edit` - Update the plan during revision
 
 **Context gathering is NOT optional.** A plan without thorough investigation will fail.

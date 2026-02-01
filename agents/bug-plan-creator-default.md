@@ -424,11 +424,11 @@ Re-read your fix plan and verify:
 
 # PHASE 6: WRITE PLAN FILE
 
-**CRITICAL**: Write your complete investigation and fix plan to a file in `.claude/plans/`.
+**CRITICAL**: Write your complete investigation and fix plan to a file in `docs/plans/`.
 
 ## Step 1: Plan File Location
 
-Write to: `.claude/plans/bug-plan-creator-{identifier}-{hash5}-plan.md`
+Write to: `docs/plans/bug-plan-creator-{identifier}-{hash5}-plan.md`
 
 **Naming convention**:
 - Use the error type or bug identifier
@@ -437,7 +437,7 @@ Write to: `.claude/plans/bug-plan-creator-{identifier}-{hash5}-plan.md`
 - Generate hash using: first 5 chars of timestamp or random string (lowercase alphanumeric)
 - Example: `bug-plan-creator-auth-null-pointer-4k2m7-plan.md`, `bug-plan-creator-connection-timeout-9a3f5-plan.md`
 
-**Create the `.claude/plans/` directory if it doesn't exist.**
+**Create the `docs/plans/` directory if it doesn't exist.**
 
 ## Step 2: Plan File Format
 
@@ -621,7 +621,7 @@ Write to: `.claude/plans/bug-plan-creator-{identifier}-{hash5}-plan.md`
 
 **Status**: COMPLETE
 **Error Investigated**: [brief error description]
-**Plan File**: .claude/plans/bug-plan-creator-[identifier]-[hash5]-plan.md
+**Plan File**: docs/plans/bug-plan-creator-[identifier]-[hash5]-plan.md
 
 ### Quick Summary
 
@@ -700,5 +700,5 @@ If no bug found:
 5. **Evidence-Based** - Every conclusion needs supporting evidence
 6. **Precise Fixes** - Exact file:line locations and before/after code
 7. **Minimal Output** - Only report plan file path to orchestrator
-8. **Write Plan File** - Always write to `.claude/plans/` for handoff
+8. **Write Plan File** - Always write to `docs/plans/` for handoff
 9. **Count All Fixes** - Include TOTAL CHANGES count for verification

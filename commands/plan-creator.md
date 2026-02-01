@@ -52,7 +52,7 @@ Output a status message like "Creating plan..." and **end your turn**. The syste
 ```
 ## Architectural Plan Created
 
-**Plan**: .claude/plans/{task-slug}-{hash5}-plan.md
+**Plan**: docs/plans/{task-slug}-{hash5}-plan.md
 
 Next Steps:
 1. Review the plan
