@@ -15,20 +15,22 @@ Start by understanding the current project context, then ask questions one at a 
 
 **Understanding the idea:**
 - Check out the current project state first (files, docs, recent commits)
-- Ask questions one at a time to refine the idea
-- Prefer multiple choice questions when possible, but open-ended is fine too
-- Only one question per message - if a topic needs more exploration, break it into multiple questions
+- Use the `AskUserQuestion` tool for ALL questions — never ask questions via plain chat text
+- Ask questions one at a time (one `AskUserQuestion` call per message)
+- Prefer multiple choice options when possible — use the `options` field to present 2-4 concrete choices
+- For open-ended exploration, provide options that represent likely directions plus let the user pick "Other" for freeform input
+- If a topic needs more exploration, break it into multiple sequential `AskUserQuestion` calls
 - Focus on understanding: purpose, constraints, success criteria
 
 **Exploring approaches:**
-- Propose 2-3 different approaches with trade-offs
-- Present options conversationally with your recommendation and reasoning
-- Lead with your recommended option and explain why
+- Use `AskUserQuestion` to propose 2-3 different approaches with trade-offs as selectable options
+- Lead with your recommended option (list it first and append "(Recommended)" to the label)
+- Use the `description` field on each option to explain trade-offs and reasoning
 
 **Presenting the design:**
 - Once you believe you understand what you're building, present the design
 - Break it into sections of 200-300 words
-- Ask after each section whether it looks right so far
+- Use `AskUserQuestion` after each section to check whether it looks right so far (e.g., options: "Looks good", "Needs changes")
 - Cover: architecture, components, data flow, error handling, testing
 - Be ready to go back and clarify if something doesn't make sense
 
@@ -41,8 +43,9 @@ Start by understanding the current project context, then ask questions one at a 
 
 ## Key Principles
 
-- **One question at a time** - Don't overwhelm with multiple questions
-- **Multiple choice preferred** - Easier to answer than open-ended when possible
+- **Always use AskUserQuestion** - Never ask questions via plain chat; always use the tool
+- **One question at a time** - One `AskUserQuestion` call per message
+- **Multiple choice preferred** - Use options to make answering easy; open-ended via "Other"
 - **YAGNI ruthlessly** - Remove unnecessary features from all designs
 - **Explore alternatives** - Always propose 2-3 approaches before settling
 - **Incremental validation** - Present design in sections, validate each
