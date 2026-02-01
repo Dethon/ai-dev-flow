@@ -15,12 +15,35 @@ Start by understanding the current project context, then ask questions one at a 
 
 **Understanding the idea:**
 - Check out the current project state first (files, docs, recent commits)
+- Check for existing codemaps before exploring manually (see below)
 - Use the `AskUserQuestion` tool for ALL questions — never ask questions via plain chat text
 - Ask questions one at a time (one `AskUserQuestion` call per message)
 - Prefer multiple choice options when possible — use the `options` field to present 2-4 concrete choices
 - For open-ended exploration, provide options that represent likely directions plus let the user pick "Other" for freeform input
 - If a topic needs more exploration, break it into multiple sequential `AskUserQuestion` calls
 - Focus on understanding: purpose, constraints, success criteria
+
+**Check for existing codemaps:**
+
+Before exploring manually, check if codemaps exist:
+
+```
+Glob(pattern=".claude/maps/code-map-*.json")
+```
+
+**If codemaps found:**
+1. Read the most recent codemap(s) covering relevant directories
+2. Use the codemap for:
+   - **File→symbol mappings** - Know what's in each file without reading it
+   - **Signatures** - Get function/class signatures directly
+   - **Dependencies** - See file relationships from `dependencies` field
+   - **Public API** - Focus on exported symbols from `public_api`
+   - **Reference counts** - Identify heavily-used vs unused code
+3. Only read specific files when you need implementation details beyond the codemap
+
+**If no codemaps found:**
+- Proceed with manual exploration (files, docs, recent commits)
+- Consider suggesting `/codemap-creator` for future brainstorming sessions
 
 **Exploring approaches:**
 - Use `AskUserQuestion` to propose 2-3 different approaches with trade-offs as selectable options
