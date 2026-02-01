@@ -1,7 +1,7 @@
 ---
 allowed-tools: Task, Bash, Read
-argument-hint: <any-input>
-description: Deep bug investigation with architectural fix plan generation - works with any executor (loop or swarm)
+argument-hint: <any-input or design-file-path>
+description: Deep bug investigation with architectural fix plan generation - works with any executor (loop or swarm). Accepts error logs, stack traces, user reports, or a design file from /brainstorming.
 context: fork
 model: opus
 ---
@@ -25,24 +25,47 @@ Takes any input:
 - Log files: `./logs/error.log`
 - User reports: `"Login fails when user has no profile"`
 - Diagnostic instructions: `"Check docker logs for api-service"`
+- Design files: `docs/designs/2025-01-15-auth-fix-design.md`
 
-**Tip:** Use `/prompt-creator "bug: ./logs/error.log <description>"` first to analyze logs and create a structured bug description, then pass both the description and original logs here.
+**Tip:** For complex bugs, use the brainstorming skill first to explore the problem and create a design document, then pass the design file path here.
 
 ## Instructions
 
 ### Step 1: Process Input
 
-Parse `$ARGUMENTS`:
-- If file path → use Read tool to load contents
-- If inline text → extract error signals
-- If diagnostic instructions → execute commands:
-  - Docker logs: `docker logs <container> --tail 500`
-  - Process logs: `journalctl -u <service>`
+Parse `$ARGUMENTS` and determine the input type:
+
+**Design file detection** — If the argument matches a file path ending in `.md` inside `docs/designs/`:
+1. Use the Read tool to load the design file contents
+2. Proceed to Step 2 with the design file contents as context
+
+**File path** — If a non-design file path → use Read tool to load contents
+
+**Inline text** — Extract error signals
+
+**Diagnostic instructions** — Execute commands:
+- Docker logs: `docker logs <container> --tail 500`
+- Process logs: `journalctl -u <service>`
 
 ### Step 2: Launch Agent
 
-Launch background agent with gathered context:
+Launch background agent with the appropriate prompt:
 
+**If design file was provided:**
+```
+Investigate bug and create fix plan from design document:
+
+<full design file contents>
+```
+
+**REQUIRED Task tool parameters:**
+```
+subagent_type: "essentials:bug-plan-creator-default"
+run_in_background: true
+prompt: "Investigate bug and create fix plan from design document:\n\n<full design file contents>"
+```
+
+**If other input was provided:**
 ```
 Investigate bug and create fix plan:
 
@@ -91,4 +114,5 @@ Next Steps:
 /bug-plan-creator ./logs/error.log "API returns 500 on POST /users"
 /bug-plan-creator "$(cat stacktrace.txt)" "Crash on submit"
 /bug-plan-creator "ConnectionError: timeout" "Run 'docker logs db --tail 100'"
+/bug-plan-creator docs/designs/2025-01-15-auth-fix-design.md
 ```
