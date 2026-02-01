@@ -378,7 +378,7 @@ For each file, create fix specifications following the per-file format in the Pl
 
 ## Step 3: Build Dependency Graph
 
-Analyze per-file Dependencies and Provides to build an explicit execution order. This section is the source of truth that `/tasks-converter` and `/beads-converter` use to create `dependsOn` (prd.json) and `depends_on` (beads), which loop/swarm commands translate to the task primitive's `addBlockedBy` for parallel execution.
+Analyze per-file Dependencies and Provides to build an explicit execution order. This section is the source of truth that loop/swarm commands use to translate to the task primitive's `addBlockedBy` for parallel execution.
 
 **Rules for building the graph:**
 - **Phase 1**: Files with no dependencies on other files being modified in this plan
@@ -571,7 +571,6 @@ Write to: `.claude/plans/bug-plan-creator-{identifier}-{hash5}-plan.md`
 
 ## Dependency Graph
 
-> Converters use this to build `dependsOn` (prd.json) or `depends_on` (beads).
 > Files in the same phase can execute in parallel. Later phases depend on earlier ones.
 
 | Phase | File | Action | Depends On |

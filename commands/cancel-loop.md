@@ -10,7 +10,7 @@ context: fork
 
 Gracefully stop any active loop while preserving progress.
 
-Works with all loop commands: `/implement-loop`, `/plan-loop`, `/tasks-loop`, `/beads-loop`.
+Works with all loop commands: `/implement-loop`, `/plan-loop`.
 
 Note: Loop and swarm commands are interchangeable - use `/cancel-loop` for loops and `/cancel-swarm` for swarms.
 
@@ -20,8 +20,6 @@ Check for any active loop state file and cancel it:
 
 1. Check for `.claude/implement-loop.local.md`
 2. Check for `.claude/plan-loop.local.md`
-3. Check for `.claude/tasks-loop.local.md`
-4. Check for `.claude/beads-loop.local.md`
 
 For each found:
 - Read iteration info from the file

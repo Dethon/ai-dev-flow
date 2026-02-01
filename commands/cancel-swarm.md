@@ -9,7 +9,7 @@ model: opus
 
 Stop any active swarm workers.
 
-Works with all swarm commands: `/implement-swarm`, `/plan-swarm`, `/tasks-swarm`, `/beads-swarm`.
+Works with all swarm commands: `/implement-swarm`, `/plan-swarm`.
 
 Note: Loop and swarm commands are interchangeable - use `/cancel-swarm` for swarms and `/cancel-loop` for loops.
 

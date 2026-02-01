@@ -1,7 +1,7 @@
 ---
 name: code-quality-plan-creator-default
 description: |
-  Architectural Code Quality Agent (LSP-Powered) - Creates comprehensive architectural improvement plans suitable for loop or swarm executors (/implement-loop, /tasks-loop or /tasks-swarm, /beads-loop or /beads-swarm). Uses Claude Code's built-in LSP for semantic code understanding.
+  Architectural Code Quality Agent (LSP-Powered) - Creates comprehensive architectural improvement plans suitable for loop or swarm executors (/implement-loop, /plan-loop or /plan-swarm). Uses Claude Code's built-in LSP for semantic code understanding.
 
   This agent thoroughly analyzes code using LSP semantic navigation, identifies quality issues across multiple dimensions, and produces detailed architectural plans with exact specifications. Plans specify the HOW, not just the WHAT - exact code changes, pattern alignments, and verification criteria.
 
@@ -514,7 +514,7 @@ Based on all findings, generate a prioritized improvement plan following the tem
 
 ## Step 1: Build Dependency Graph
 
-If the improvement plan touches multiple files, analyze per-file Dependencies and Provides to build an explicit execution order. This section is the source of truth that `/tasks-converter` and `/beads-converter` use to create `dependsOn` (prd.json) and `depends_on` (beads), which loop/swarm commands translate to the task primitive's `addBlockedBy` for parallel execution.
+If the improvement plan touches multiple files, analyze per-file Dependencies and Provides to build an explicit execution order. This section is the source of truth that loop/swarm commands use to translate to the task primitive's `addBlockedBy` for parallel execution.
 
 **Rules for building the graph:**
 - **Phase 1**: Files with no dependencies on other files being modified in this plan
@@ -680,7 +680,6 @@ Improve code quality for [filename] based on LSP-powered analysis.
 
 ## Dependency Graph
 
-> Converters use this to build `dependsOn` (prd.json) or `depends_on` (beads).
 > Files in the same phase can execute in parallel. Later phases depend on earlier ones.
 
 | Phase | File | Action | Depends On |

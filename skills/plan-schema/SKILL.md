@@ -15,8 +15,6 @@ Invoke `/plan-schema` before manually editing any plan file. Invoke `/plan-schem
 
 Plans are markdown files in `.claude/plans/` that specify HOW to implement a feature, fix, or improvement. They are consumed by:
 - `/plan-loop` and `/plan-swarm` — execute plans directly
-- `/tasks-converter` — converts to prd.json for `/tasks-loop`, `/tasks-swarm`, or RalphTUI
-- `/beads-converter` — converts to beads for `/beads-loop`, `/beads-swarm`, or RalphTUI
 
 ### Conversion Pipeline
 
@@ -27,18 +25,10 @@ Plans are the intermediate representation between creators and executors:
     ↓ writes
 .claude/plans/{slug}-{hash5}-plan.md
     ↓ consumed by (choose one)
-    ├─ /plan-loop or /plan-swarm        → executes plan directly
-    ├─ /tasks-converter <plan-path>     → .claude/prd/<slug>.json
-    │       ↓ executed by
-    │       /tasks-loop or /tasks-swarm or ralph-tui
-    └─ /beads-converter <plan-path>     → .beads/ (bd CLI issues)
-            ↓ executed by
-            /beads-loop or /beads-swarm or ralph-tui
+    └─ /plan-loop or /plan-swarm        → executes plan directly
 ```
 
 **Direct execution** (`/plan-loop`, `/plan-swarm`) reads the plan file and implements each file entry in dependency order. No intermediate format needed.
-
-**Converted execution** (`/tasks-converter`, `/beads-converter`) transforms the plan into prd.json or beads. Each task/bead gets a **100% self-contained description** — the executor agent receives only the task description, never the source plan. All code, requirements, and verification commands are copied verbatim from the plan.
 
 ### File Naming
 
@@ -60,14 +50,14 @@ Every plan must have these sections in order:
 
 | Section | Purpose | Converter Use |
 |---------|---------|---------------|
-| `## Summary` | 2-3 sentence executive summary | `name` and `description` fields |
-| `## Files` | Canonical list of files to edit/create | Task/bead count |
-| `## Code Context` | Raw investigation findings with file:line refs | Copied into task descriptions |
-| `## External Context` | API docs, library references, best practices | Copied into task descriptions |
-| `## Architectural Narrative` | Architecture, approach, requirements, constraints | Requirements → acceptanceCriteria |
-| `## Implementation Plan` | Per-file instructions with full code | Task/bead description body |
-| `## Dependency Graph` | Phase table mapping files to execution order | `dependsOn` (prd.json) / `bd dep add` (beads) |
-| `## Exit Criteria` | Test commands and success conditions | acceptanceCriteria / bead exit criteria |
+| `## Summary` | 2-3 sentence executive summary |
+| `## Files` | Canonical list of files to edit/create |
+| `## Code Context` | Raw investigation findings with file:line refs |
+| `## External Context` | API docs, library references, best practices |
+| `## Architectural Narrative` | Architecture, approach, requirements, constraints |
+| `## Implementation Plan` | Per-file instructions with full code |
+| `## Dependency Graph` | Phase table mapping files to execution order |
+| `## Exit Criteria` | Test commands and success conditions |
 
 ### Additional Sections by Plan Type
 
@@ -197,7 +187,6 @@ Maps files to phased execution order. Source of truth for converter dependency w
 ```markdown
 ## Dependency Graph
 
-> Converters use this to build `dependsOn` (prd.json) or `depends_on` (beads).
 > Files in the same phase can execute in parallel.
 
 | Phase | File | Action | Depends On |
@@ -239,22 +228,6 @@ Maps files to phased execution order. Source of truth for converter dependency w
 [test-command] && [lint-command] && [typecheck-command]
 ```
 ```
-
-## Converter Mapping
-
-How converters translate plan sections into task/bead fields:
-
-| Plan Section | prd.json Field | Beads (`bd`) Field |
-|-------------|----------------|-------------------|
-| `## Summary` | `name`, `description` | Epic title, description |
-| `## Files` | Task count / boundaries | Bead count / boundaries |
-| `### Requirements` | `acceptanceCriteria[]` | Bead exit checklist |
-| `### Reference Implementation` | `description` (full code) | `-d` body (full code) |
-| `### Migration Pattern` | `description` (before/after) | `-d` body (before/after) |
-| `## Dependency Graph` | `dependsOn[]` (story IDs) | `bd dep add` commands |
-| `## Exit Criteria` | `acceptanceCriteria[]` | Bead exit criteria |
-| Per-file `Dependencies` | Maps to `dependsOn` via file→ID | Maps to `bd dep add` via file→bead ID |
-| Per-file `Provides` | Validates dependency consistency | Validates dependency consistency |
 
 ## Banned Anti-Patterns
 
@@ -342,5 +315,5 @@ Dependency Graph rules:
   Dependency = real code dependency (imports/extends/uses)
 
 Created by: /plan-creator, /bug-plan-creator, /code-quality-plan-creator
-Consumed by: /plan-loop, /plan-swarm, /tasks-converter, /beads-converter
+Consumed by: /plan-loop, /plan-swarm
 ```

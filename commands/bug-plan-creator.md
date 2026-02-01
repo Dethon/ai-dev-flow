@@ -71,11 +71,8 @@ Root Cause: [file:line] - [brief description]
 
 Next Steps:
 1. Review the fix plan
-2. Execute directly (loop or swarm are interchangeable):
+2. Execute (loop or swarm are interchangeable):
    - `/plan-loop <plan-path>` or `/plan-swarm <plan-path>`
-3. Or convert to prd.json/beads first:
-   - `/tasks-converter <plan-path>` → `/tasks-loop` or `/tasks-swarm`
-   - `/beads-converter <plan-path>` → `/beads-loop` or `/beads-swarm`
 ```
 
 ## Error Handling
