@@ -29,14 +29,16 @@ Takes a feature description OR a design file path:
 
 ### Step 1: Process Input
 
-Parse `$ARGUMENTS` and determine the input type:
+The user invoked this skill with arguments: `$ARGUMENTS`
+
+Determine the input type:
 
 **Design file detection** — If the argument matches a file path ending in `.md` inside `docs/designs/`:
 1. Use the Read tool to load the design file contents
 2. Proceed to Step 2 with the design file contents as context
 
 **Text description** — Otherwise:
-1. Treat `$ARGUMENTS` as a task description
+1. Treat the arguments as a task description
 2. Grammar and spell check before passing to agent
 
 ### Step 2: Launch Agent

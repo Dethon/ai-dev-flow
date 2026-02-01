@@ -32,7 +32,9 @@ This command works with plans from:
 
 ### Step 1: Read the Plan (Only)
 
-Read the plan file and extract tasks. **DO NOT read other files, grep, or explore the codebase** - just parse the plan:
+The user invoked this skill with arguments: `$ARGUMENTS`
+
+The first argument is the plan file path. Read it and extract tasks. **DO NOT read other files, grep, or explore the codebase** - just parse the plan:
 1. **Files to Edit** - existing files that need modification
 2. **Files to Create** - new files to create
 3. **Implementation Plan** - per-file implementation instructions
@@ -95,7 +97,7 @@ A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a block
 
 ### Step 3: Spawn Workers
 
-**Worker limit N** = `--workers` value or **3** if not specified. This is a queue — spawn up to N, then wait for completions before spawning more.
+**Worker limit N** = `--workers` value from arguments or **3** if not specified. This is a queue — spawn up to N, then wait for completions before spawning more.
 
 Mark each task `in_progress` before spawning its worker. Spawn up to N background workers in a **SINGLE message** (all Task calls in one response).
 

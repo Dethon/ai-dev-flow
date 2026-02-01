@@ -38,12 +38,14 @@ Path: `.claude/prompts/{slug}-{hash5}.md`
 
 ### Step 2: Launch Agent
 
+The user invoked this skill with arguments: `$ARGUMENTS`
+
 Launch `prompt-creator-default` background agent:
 
 ```
 Enhance this rough prompt idea into a detailed, effective prompt.
 
-Description: <user input>
+Description: $ARGUMENTS
 Output file: <generated path>
 
 Research the codebase for context, then write the enhanced prompt.
@@ -53,7 +55,7 @@ Research the codebase for context, then write the enhanced prompt.
 ```
 subagent_type: "essentials:prompt-creator-default"
 run_in_background: true
-prompt: "Enhance this rough prompt idea into a detailed, effective prompt.\n\nDescription: <user input>\nOutput file: <generated path>\n\nResearch the codebase for context, then write the enhanced prompt."
+prompt: "Enhance this rough prompt idea into a detailed, effective prompt.\n\nDescription: $ARGUMENTS\nOutput file: <generated path>\n\nResearch the codebase for context, then write the enhanced prompt."
 ```
 
 Output a status message like "Creating prompt..." and **end your turn**. The system wakes you when the agent finishes.

@@ -34,7 +34,9 @@ This command works with plans from:
 
 ### Step 1: Read the Plan (Only)
 
-Read the plan file and extract tasks. **DO NOT read other files, grep, or explore the codebase** - just parse the plan. **Never spawn sub-agents or delegate work — do ALL implementation directly yourself.**
+The user invoked this skill with arguments: `$ARGUMENTS`
+
+The first argument is the plan file path. Read it and extract tasks. **DO NOT read other files, grep, or explore the codebase** - just parse the plan. **Never spawn sub-agents or delegate work — do ALL implementation directly yourself.**
 1. **Files to Edit** - existing files that need modification
 2. **Files to Create** - new files to create
 3. **Implementation Plan** - per-file implementation instructions

@@ -281,11 +281,13 @@ Replace with: exact exceptions, specific line numbers, file:line references, exp
 
 ## Instructions
 
-Parse `$ARGUMENTS` to determine mode.
+The user invoked this skill with arguments: `$ARGUMENTS`
 
-### If `$ARGUMENTS` starts with `validate`:
+Determine mode from the arguments.
 
-Extract the path from `$ARGUMENTS` (e.g., `/plan-schema validate docs/plans/auth-a3f9e-plan.md`).
+### If the arguments start with `validate`:
+
+Extract the path from the arguments (e.g., `/plan-schema validate docs/plans/auth-a3f9e-plan.md`).
 
 Read the plan file and check against the validation checklist:
 
@@ -296,7 +298,7 @@ Read the plan file and check against the validation checklist:
 5. Check Dependencies/Provides consistency
 6. Report violations with the fix from the schema above
 
-### If `$ARGUMENTS` is empty:
+### If no arguments were provided:
 
 Output the quick reference:
 

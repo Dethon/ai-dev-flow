@@ -34,7 +34,9 @@ Takes any input:
 
 ### Step 1: Process Input
 
-Parse `$ARGUMENTS` and determine the input type:
+The user invoked this skill with arguments: `$ARGUMENTS`
+
+Determine the input type:
 
 **Design file detection** — If the argument matches a file path ending in `.md` inside `docs/designs/`:
 1. Use the Read tool to load the design file contents

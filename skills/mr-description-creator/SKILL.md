@@ -25,6 +25,8 @@ Generate MR/PR descriptions and apply directly using `gh` (GitHub) or `glab` (Gi
 
 ## Instructions
 
+The user invoked this skill with arguments: `$ARGUMENTS`
+
 ### Step 1: Detect Platform
 
 ```bash

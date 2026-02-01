@@ -77,9 +77,9 @@ gh auth status
 If not installed, report: "Install gh CLI: https://cli.github.com"
 If not authenticated, report: "Run: gh auth login"
 
-### Step 2: Parse and Execute
+### Step 2: Execute
 
-Parse `$ARGUMENTS` and pass directly to `gh`:
+Run the command directly:
 
 ```bash
 gh $ARGUMENTS

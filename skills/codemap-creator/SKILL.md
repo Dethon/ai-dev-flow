@@ -68,7 +68,9 @@ root_dir/
 
 ### Step 1: Parse Input and Detect Mode
 
-Parse `$ARGUMENTS` to determine mode:
+The user invoked this skill with arguments: `$ARGUMENTS`
+
+Determine mode from these arguments:
 
 **Update Mode** (if `--update` present):
 1. Extract codemap path after `--update`

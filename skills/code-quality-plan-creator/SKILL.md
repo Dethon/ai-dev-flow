@@ -30,7 +30,9 @@ File paths to analyze (one agent per file) OR a design file path:
 
 ### Step 1: Parse Input
 
-Parse `$ARGUMENTS` and determine the input type:
+The user invoked this skill with arguments: `$ARGUMENTS`
+
+Determine the input type:
 
 **Design file detection** — If the argument is a single file path ending in `.md` inside `docs/designs/`:
 1. Use the Read tool to load the design file contents
@@ -38,7 +40,7 @@ Parse `$ARGUMENTS` and determine the input type:
 3. Proceed to Step 2 with the design file contents as additional context for each agent
 
 **File paths** — Otherwise:
-1. Extract file list from `$ARGUMENTS`
+1. Extract file list from the arguments
 2. Validate each path exists
 
 ### Step 2: Launch Agents

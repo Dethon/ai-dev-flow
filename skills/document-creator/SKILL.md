@@ -28,7 +28,9 @@ Directory paths to document (one agent per directory):
 
 ### Step 1: Parse Input
 
-Parse `$ARGUMENTS` to extract directory list:
+The user invoked this skill with arguments: `$ARGUMENTS`
+
+Extract directory list:
 - Split arguments by spaces
 - If empty → use current directory (`.`)
 - Validate each path exists as a directory

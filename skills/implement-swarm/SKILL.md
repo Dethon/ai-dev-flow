@@ -27,8 +27,10 @@ Uses Claude Code's built-in Task Management System for dependency tracking and v
 
 ### Step 1: Create Task Graph Immediately
 
+The user invoked this skill with arguments: `$ARGUMENTS`
+
 **ONLY use what's already available:**
-- The user's argument input
+- The arguments above
 - Conversation history (already in context)
 
 **DO NOT:**
@@ -62,7 +64,7 @@ A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a block
 
 ### Step 2: Spawn Workers
 
-**Worker limit N** = `--workers` value or **3** if not specified. This is a queue — spawn up to N, then wait for completions before spawning more.
+**Worker limit N** = `--workers` value from arguments or **3** if not specified. This is a queue — spawn up to N, then wait for completions before spawning more.
 
 Mark each task `in_progress` before spawning its worker. Spawn up to N background workers in a **SINGLE message** (all Task calls in one response).
 

@@ -25,8 +25,10 @@ Uses Claude Code's built-in Task Management System for dependency tracking and v
 
 ### Step 1: Create Task Graph Immediately
 
+The user invoked this skill with arguments: `$ARGUMENTS`
+
 **ONLY use what's already available:**
-- The user's argument input
+- The arguments above
 - Conversation history (already in context)
 
 **DO NOT:**
