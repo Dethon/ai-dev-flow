@@ -59,7 +59,7 @@ Design document:
 
 **REQUIRED task tool parameters:**
 ```
-subagent_type: "essentials:code-quality-plan-creator-default"
+subagent_type: "code-quality-plan-creator-default"
 run_in_background: true
 prompt: "Analyze code quality from design document:\n\nTarget file: <file-path>\n\nDesign document:\n<full design file contents>"
 ```
@@ -71,7 +71,7 @@ Analyze code quality: <file-path>
 
 **REQUIRED task tool parameters:**
 ```
-subagent_type: "essentials:code-quality-plan-creator-default"
+subagent_type: "code-quality-plan-creator-default"
 run_in_background: true
 prompt: "Analyze code quality: <file-path>"
 ```

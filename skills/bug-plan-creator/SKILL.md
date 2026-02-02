@@ -63,7 +63,7 @@ Investigate bug and create fix plan from design document:
 
 **REQUIRED task tool parameters:**
 ```
-subagent_type: "essentials:bug-plan-creator-default"
+subagent_type: "bug-plan-creator-default"
 run_in_background: true
 prompt: "Investigate bug and create fix plan from design document:\n\n<full design file contents>"
 ```
@@ -77,7 +77,7 @@ Investigate bug and create fix plan:
 
 **REQUIRED task tool parameters:**
 ```
-subagent_type: "essentials:bug-plan-creator-default"
+subagent_type: "bug-plan-creator-default"
 run_in_background: true
 prompt: "Investigate bug and create fix plan:\n\n<gathered context>"
 ```

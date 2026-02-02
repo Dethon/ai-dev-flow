@@ -68,7 +68,7 @@ Rules: <exists/not found>
 
 **REQUIRED task tool parameters:**
 ```
-subagent_type: "essentials:document-creator-default"
+subagent_type: "document-creator-default"
 run_in_background: true
 prompt: "Generate DEVGUIDE: <dir>\nOutput: <path>\nRules: <status>"
 ```
