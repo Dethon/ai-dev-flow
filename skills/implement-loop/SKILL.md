@@ -2,7 +2,7 @@
 name: implement-loop
 description: "Implement from conversation context with iterative loop"
 argument-hint: "<task description>"
-allowed-tools: ["TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "powershell", "edit", "view", "glob", "grep", "create"]
+allowed-tools: TaskCreate, TaskUpdate, TaskList, TaskGet, powershell, edit, view, glob, grep, create
 model: opus
 skills: ["test-driven-development"]
 ---

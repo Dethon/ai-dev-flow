@@ -2,7 +2,7 @@
 name: plan-swarm
 description: "Execute a plan file with parallel agent swarm (dependency-aware)"
 argument-hint: "<plan_path> [--workers N] [--model MODEL]"
-allowed-tools: ["view", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "task", "powershell"]
+allowed-tools: view, TaskCreate, TaskUpdate, TaskList, TaskGet, task, powershell
 model: opus
 skills: ["test-driven-development"]
 ---

@@ -2,7 +2,7 @@
 name: plan-loop
 description: "Execute a plan file with iterative loop until completion"
 argument-hint: "<plan_path> [--max-iterations N]"
-allowed-tools: ["view", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "powershell", "edit", "create", "glob", "grep"]
+allowed-tools: view, TaskCreate, TaskUpdate, TaskList, TaskGet, powershell, edit, create, glob, grep
 hide-from-slash-command-tool: "true"
 model: opus
 skills: ["test-driven-development"]
