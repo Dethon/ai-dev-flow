@@ -12,6 +12,7 @@ context: fork
 Transform rough, vibe-y prompt ideas into detailed, effective prompts tuned to your codebase.
 
 **Supports 4 prompt types:**
+
 - **Slash Commands** — User-invoked commands
 - **Subagents** — Background worker agents
 - **Feature Requests** — Well-formatted input for `/plan-creator`
@@ -20,6 +21,7 @@ Transform rough, vibe-y prompt ideas into detailed, effective prompts tuned to y
 ## Arguments
 
 Takes any rough prompt description:
+
 - `"a prompt that reviews code for security"` → Slash command or subagent
 - `"help me debug stuff"` → Slash command or subagent
 - `"feature: add user authentication with OAuth"` → Feature request for /plan-creator
@@ -34,7 +36,7 @@ Takes any rough prompt description:
 HASH=$(cat /dev/urandom | LC_ALL=C tr -dc 'a-z0-9' | head -c 5)
 ```
 
-Path: `.claude/prompts/{slug}-{hash5}.md`
+Path: `docs/prompts/{slug}-{hash5}.md`
 
 ### Step 2: Launch Agent
 
@@ -52,6 +54,7 @@ Research the codebase for context, then write the enhanced prompt.
 ```
 
 **REQUIRED Task tool parameters:**
+
 ```
 subagent_type: "essentials:prompt-creator-default"
 run_in_background: true

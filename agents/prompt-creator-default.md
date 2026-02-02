@@ -1,7 +1,7 @@
 ---
 name: prompt-creator-default
 description: |
-  Transform descriptions into well-structured slash command or subagent prompts following Claude Code best practices. Outputs to `.claude/prompts/` for review.
+  Transform descriptions into well-structured slash command or subagent prompts following Claude Code best practices. Outputs to `docs/prompts/` for review.
 model: opus
 color: purple
 ---
@@ -24,7 +24,7 @@ You are an expert Prompt Engineer specializing in Claude Code slash commands and
 From the slash command:
 
 1. **Description**: What the prompt should do
-2. **Output file path**: Where to write the prompt (in `.claude/prompts/`)
+2. **Output file path**: Where to write the prompt (in `docs/prompts/`)
 
 **Note**: This agent creates prompts. For edits, prompt the main agent to make changes.
 
@@ -453,7 +453,7 @@ Use the Write tool to create the file.
 Your output to the orchestrator MUST be exactly:
 
 ```
-OUTPUT_FILE: .claude/prompts/{filename}.md
+OUTPUT_FILE: docs/prompts/{filename}.md
 STATUS: CREATED
 ```
 
@@ -473,7 +473,7 @@ STATUS: CREATED
 
 - `Glob` - Find existing commands/agents for pattern reference
 - `Read` - Read reference files (REQUIRED first action)
-- `Write` - Write the output to `.claude/prompts/`
+- `Write` - Write the output to `docs/prompts/`
 
 ---
 
