@@ -90,7 +90,7 @@ Commits: <count>
 
 **REQUIRED Task tool parameters:**
 ```
-subagent_type: "essentials:mr-description-creator-default"
+subagent_type: "mr-description-creator-default"
 run_in_background: true
 prompt: "Generate MR/PR description:\nPlatform: <platform>\nCLI: <cli>\nAction: <action>\nBranch: <branch info>\nTemplate: <template>\nCommits: <count>"
 ```

@@ -56,7 +56,7 @@ Research the codebase for context, then write the enhanced prompt.
 **REQUIRED Task tool parameters:**
 
 ```
-subagent_type: "essentials:prompt-creator-default"
+subagent_type: "prompt-creator-default"
 run_in_background: true
 prompt: "Enhance this rough prompt idea into a detailed, effective prompt.\n\nDescription: $ARGUMENTS\nOutput file: <generated path>\n\nResearch the codebase for context, then write the enhanced prompt."
 ```

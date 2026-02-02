@@ -54,7 +54,7 @@ Create architectural plan from design document:
 
 **REQUIRED Task tool parameters:**
 ```
-subagent_type: "essentials:plan-creator-default"
+subagent_type: "plan-creator-default"
 run_in_background: true
 prompt: "Create architectural plan from design document:\n\n<full design file contents>"
 ```
@@ -66,7 +66,7 @@ Create architectural plan: <corrected task description>
 
 **REQUIRED Task tool parameters:**
 ```
-subagent_type: "essentials:plan-creator-default"
+subagent_type: "plan-creator-default"
 run_in_background: true
 prompt: "Create architectural plan: <corrected task description>"
 ```
