@@ -2,7 +2,7 @@
 name: implement-loop
 description: "Implement from conversation context with iterative loop"
 argument-hint: "<task description>"
-allowed-tools: ["TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit", "Read", "Glob", "Grep", "Write"]
+allowed-tools: ["TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "powershell", "edit", "view", "glob", "grep", "create"]
 model: opus
 skills: ["test-driven-development"]
 ---
@@ -32,9 +32,9 @@ The user invoked this skill with arguments: `$ARGUMENTS`
 - Conversation history (already in context)
 
 **DO NOT:**
-- Read files unless the user explicitly asks you to
-- Grep or explore the codebase
-- Use Glob to find files
+- view files unless the user explicitly asks you to
+- grep or explore the codebase
+- Use glob to find files
 - Spawn sub-agents or delegate work — do ALL implementation directly yourself
 
 Create tasks immediately from context. Include file paths in task descriptions so they can be read during execution.
@@ -66,9 +66,9 @@ A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a block
 Follow test-driven development for every task that involves behavior changes. For each task:
 
 1. **Claim**: `TaskUpdate({ taskId: "N", status: "in_progress" })`
-2. **Read files as needed**: Use Read tool on file paths from task description
-3. **RED — Write failing test first**: Before writing any production code, write a test that captures the desired behavior. Run the test and confirm it fails for the expected reason (feature missing, not syntax errors). This is MANDATORY.
-4. **GREEN — Implement minimal code**: Write the minimum production code needed to make the test pass. Run the test and confirm it passes.
+2. **view files as needed**: Use view tool on file paths from task description
+3. **RED — create failing test first**: Before writing any production code, write a test that captures the desired behavior. Run the test and confirm it fails for the expected reason (feature missing, not syntax errors). This is MANDATORY.
+4. **GREEN — Implement minimal code**: create the minimum production code needed to make the test pass. Run the test and confirm it passes.
 5. **REFACTOR**: Clean up while keeping tests green.
 6. **Complete**: `TaskUpdate({ taskId: "N", status: "completed" })`
 7. **Next**: Find next unblocked task via TaskList

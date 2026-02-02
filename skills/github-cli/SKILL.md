@@ -1,7 +1,7 @@
 ---
 name: github-cli
 description: GitHub CLI (gh) wrapper for PR status, issues, and repository operations
-allowed-tools: Bash, Read, Glob
+allowed-tools: powershell, view, glob
 argument-hint: <action> [args]
 ---
 

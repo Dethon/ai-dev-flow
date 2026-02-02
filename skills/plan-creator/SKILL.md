@@ -1,6 +1,6 @@
 ---
 name: plan-creator
-allowed-tools: Task, Read
+allowed-tools: task, view
 argument-hint: <feature-description or design-file-path>
 description: Create architectural plans for new features - works with any executor (loop or swarm). Accepts a feature description or a design file from /brainstorming. For bugs use /bug-plan-creator, for code quality use /code-quality-plan-creator.
 context: fork
@@ -34,7 +34,7 @@ The user invoked this skill with arguments: `$ARGUMENTS`
 Determine the input type:
 
 **Design file detection** — If the argument matches a file path ending in `.md` inside `docs/designs/`:
-1. Use the Read tool to load the design file contents
+1. Use the view tool to load the design file contents
 2. Proceed to Step 2 with the design file contents as context
 
 **Text description** — Otherwise:
@@ -52,7 +52,7 @@ Create architectural plan from design document:
 <full design file contents>
 ```
 
-**REQUIRED Task tool parameters:**
+**REQUIRED task tool parameters:**
 ```
 subagent_type: "essentials:plan-creator-default"
 run_in_background: true
@@ -64,7 +64,7 @@ prompt: "Create architectural plan from design document:\n\n<full design file co
 Create architectural plan: <corrected task description>
 ```
 
-**REQUIRED Task tool parameters:**
+**REQUIRED task tool parameters:**
 ```
 subagent_type: "essentials:plan-creator-default"
 run_in_background: true

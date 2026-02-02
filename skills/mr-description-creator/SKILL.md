@@ -1,6 +1,6 @@
 ---
 name: mr-description-creator
-allowed-tools: Task, Bash, Read, Glob, Grep, AskUserQuestion
+allowed-tools: task, powershell, view, glob, grep, ask_user
 argument-hint: "[--template 'markdown']"
 description: Generate and apply MR/PR description directly via gh or glab CLI (project)
 skills: ["github-cli", "gitlab-cli"]
@@ -88,7 +88,7 @@ Template: <custom or "default">
 Commits: <count>
 ```
 
-**REQUIRED Task tool parameters:**
+**REQUIRED task tool parameters:**
 ```
 subagent_type: "essentials:mr-description-creator-default"
 run_in_background: true

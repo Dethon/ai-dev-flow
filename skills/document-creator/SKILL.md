@@ -1,6 +1,6 @@
 ---
 name: document-creator
-allowed-tools: Task, Glob, Read
+allowed-tools: task, glob, view
 argument-hint: "<dir1> [dir2] ... [dirN]"
 description: Generate DEVGUIDE.md architectural documentation using LSP (project)
 context: fork
@@ -40,10 +40,10 @@ Extract directory list:
 Check if `.github/rules` directory exists at project root:
 
 ```
-Use Glob(".github/rules/*.md") to find rules files.
+Use glob(".github/rules/*.md") to find rules files.
 
 If rules exist:
-- Read each rules file to understand frontmatter paths
+- view each rules file to understand frontmatter paths
 - Pass relevant rules info to agents
 
 If no rules exist:
@@ -66,7 +66,7 @@ Output: <determined path>
 Rules: <exists/not found>
 ```
 
-**REQUIRED Task tool parameters:**
+**REQUIRED task tool parameters:**
 ```
 subagent_type: "essentials:document-creator-default"
 run_in_background: true

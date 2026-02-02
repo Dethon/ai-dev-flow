@@ -51,10 +51,10 @@ You MUST complete each phase before proceeding to the next.
 
 **BEFORE attempting ANY fix:**
 
-1. **Read Error Messages Carefully**
+1. **view Error Messages Carefully**
    - Don't skip past errors or warnings
    - They often contain the exact solution
-   - Read stack traces completely
+   - view stack traces completely
    - Note line numbers, file paths, error codes
 
 2. **Reproduce Consistently**
@@ -148,7 +148,7 @@ You MUST complete each phase before proceeding to the next.
 
 1. **Form Single Hypothesis**
    - State clearly: "I think X is the root cause because Y"
-   - Write it down
+   - create it down
    - Be specific, not vague
 
 2. **Test Minimally**
@@ -251,7 +251,7 @@ If you catch yourself thinking:
 | "Just try this first, then investigate" | First fix sets the pattern. Do it right from the start. |
 | "I'll write test after confirming fix works" | Untested fixes don't stick. Test first proves it. |
 | "Multiple fixes at once saves time" | Can't isolate what worked. Causes new bugs. |
-| "Reference too long, I'll adapt the pattern" | Partial understanding guarantees bugs. Read it completely. |
+| "Reference too long, I'll adapt the pattern" | Partial understanding guarantees bugs. view it completely. |
 | "I see the problem, let me fix it" | Seeing symptoms ≠ understanding root cause. |
 | "One more fix attempt" (after 2+ failures) | 3+ failures = architectural problem. Question pattern, don't fix again. |
 
@@ -259,7 +259,7 @@ If you catch yourself thinking:
 
 | Phase | Key Activities | Success Criteria |
 |-------|---------------|------------------|
-| **1. Root Cause** | Read errors, reproduce, check changes, gather evidence | Understand WHAT and WHY |
+| **1. Root Cause** | view errors, reproduce, check changes, gather evidence | Understand WHAT and WHY |
 | **2. Pattern** | Find working examples, compare | Identify differences |
 | **3. Hypothesis** | Form theory, test minimally | Confirmed or new hypothesis |
 | **4. Implementation** | Create test, fix, verify | Bug resolved, tests pass |

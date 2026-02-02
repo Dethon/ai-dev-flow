@@ -1,6 +1,6 @@
 ---
 name: codemap-creator
-allowed-tools: Task, Bash
+allowed-tools: task, powershell
 argument-hint: "<root_dir> [--ignore <patterns>] | --update <codemap> [--diff | --pr <id>]"
 description: Generate or update hierarchical code map from any directory as root, with nested tree structure (project)
 context: fork
@@ -148,7 +148,7 @@ Output a status message like "Creating code map..." and **end your turn**. The s
 | Symbols | X |
 | Exported | X |
 
-Next: Read the map file for hierarchical code navigation.
+Next: view the map file for hierarchical code navigation.
 ```
 
 **Update Mode:**

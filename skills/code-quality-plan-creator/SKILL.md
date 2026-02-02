@@ -1,6 +1,6 @@
 ---
 name: code-quality-plan-creator
-allowed-tools: Task, Read
+allowed-tools: task, view
 argument-hint: "<file1> [file2] ... [fileN] or design-file-path"
 description: LSP-powered architectural code quality analysis - works with any executor (loop or swarm). Accepts file paths to analyze or a design file from /brainstorming.
 context: fork
@@ -35,7 +35,7 @@ The user invoked this skill with arguments: `$ARGUMENTS`
 Determine the input type:
 
 **Design file detection** — If the argument is a single file path ending in `.md` inside `docs/designs/`:
-1. Use the Read tool to load the design file contents
+1. Use the view tool to load the design file contents
 2. Extract the list of target files from the design document
 3. Proceed to Step 2 with the design file contents as additional context for each agent
 
@@ -57,7 +57,7 @@ Design document:
 <full design file contents>
 ```
 
-**REQUIRED Task tool parameters:**
+**REQUIRED task tool parameters:**
 ```
 subagent_type: "essentials:code-quality-plan-creator-default"
 run_in_background: true
@@ -69,7 +69,7 @@ prompt: "Analyze code quality from design document:\n\nTarget file: <file-path>\
 Analyze code quality: <file-path>
 ```
 
-**REQUIRED Task tool parameters:**
+**REQUIRED task tool parameters:**
 ```
 subagent_type: "essentials:code-quality-plan-creator-default"
 run_in_background: true

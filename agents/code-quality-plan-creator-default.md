@@ -49,7 +49,7 @@ From the slash command, ONE of:
 
 ## First Action Requirement
 
-**Your first actions MUST be to gather project context (Glob, Read), then read the assigned file completely.** Do not begin analysis without understanding the project conventions and reading the complete file contents.
+**Your first actions MUST be to gather project context (glob, view), then read the assigned file completely.** Do not begin analysis without understanding the project conventions and reading the complete file contents.
 
 ---
 
@@ -62,7 +62,7 @@ Before analyzing the target file, you MUST gather project context to understand 
 Before exploring manually, check if codemaps exist:
 
 ```bash
-Glob(pattern="docs/maps/code-map-*.json")
+glob(pattern="docs/maps/code-map-*.json")
 ```
 
 **If codemaps found:**
@@ -111,23 +111,23 @@ Glob(pattern="docs/maps/code-map-*.json")
 
 ## Step 2: Project Documentation Discovery
 
-Search for and read project documentation files using Glob and Read tools:
+Search for and read project documentation files using glob and view tools:
 
 ```
 PROJECT DOCUMENTATION:
-Use Glob to locate these files (search from project root):
+Use glob to locate these files (search from project root):
 
 Priority 1 - Must Read:
-- Glob pattern: "**/copilot-instructions.md"
-- Glob pattern: "**/README.md"
-- Glob pattern: "**/CONTRIBUTING.md"
+- glob pattern: "**/copilot-instructions.md"
+- glob pattern: "**/README.md"
+- glob pattern: "**/CONTRIBUTING.md"
 
 Priority 2 - Should Read if Present:
-- Glob pattern: ".github/skills/**/*.md"
-- Glob pattern: "**/DEVGUIDE.md"
-- Glob pattern: "**/*GUIDE*.md"
+- glob pattern: ".github/skills/**/*.md"
+- glob pattern: "**/DEVGUIDE.md"
+- glob pattern: "**/*GUIDE*.md"
 
-Read files with: Read tool (file_path="path/to/file.md")
+Read files with: view tool (file_path="path/to/file.md")
 ```
 
 Extract from documentation:
@@ -147,19 +147,19 @@ Find and read files related to the target file to understand its usage (skip if 
 RELATED FILES ANALYSIS:
 
 Step 1: Find files that IMPORT the target file
-- Use Grep to search for import statements referencing the module
+- Use grep to search for import statements referencing the module
 - These are CONSUMERS of the target file's public API
 
 Step 2: Find sibling files in the same directory
-- Use Glob pattern: "target_directory/*"
+- Use glob pattern: "target_directory/*"
 - These likely follow similar patterns - check for consistency
 
 Step 3: Find test files for the target
-- Use Glob pattern: "tests/**/*test*.{js,ts,py}"
+- Use glob pattern: "tests/**/*test*.{js,ts,py}"
 - Tests reveal intended usage and expected behavior
 
 Step 4: Find files with similar names/purposes
-- If analyzing auth_service, use Glob: "**/*_service*"
+- If analyzing auth_service, use glob: "**/*_service*"
 - Check for consistent patterns across similar files
 ```
 
@@ -237,7 +237,7 @@ Based on LSP data, catalog:
 CODE ELEMENTS CATALOG:
 
 Imports:
-- [Extract from file content using Read tool]
+- [Extract from file content using view tool]
 
 Classes (from LSP documentSymbol):
 - [ClassName] (lines X-Y):
@@ -387,7 +387,7 @@ Redundant Logic (from file content):
 Magic Numbers/Strings (from file content):
 - [ ] Magic numbers that should be constants: [locations with values]
   Example: `timeout = 7 * 24 * 60 * 60` should use `TIME_CONSTANTS.SECONDS_PER_WEEK`
-- [ ] Hardcoded strings repeated multiple times: [use Grep to find duplicates]
+- [ ] Hardcoded strings repeated multiple times: [use grep to find duplicates]
 - [ ] Numeric literals without clear meaning: [locations]
 
 Dead Code (from LSP):
@@ -409,13 +409,13 @@ Type Inconsistencies:
 - [ ] Return type doesn't match implementation: [analyze code]
 
 Best Practices (from file content):
-- [ ] parseInt/parseFloat without radix parameter: [use Grep("parseInt\\(") to find]
+- [ ] parseInt/parseFloat without radix parameter: [use grep("parseInt\\(") to find]
   Example: `parseInt(value)` should be `parseInt(value, 10)`
 - [ ] Number parsing with redundant null coalescing: [locations]
   Example: `parseInt(x ?? '0') ?? 0` - second `?? 0` is redundant since parseInt('0') returns 0
 
 Resource Management (from file content):
-- [ ] File handles not closed properly: [use Grep to find file operations without cleanup]
+- [ ] File handles not closed properly: [use grep to find file operations without cleanup]
 - [ ] Database connections not closed: [check for missing connection cleanup]
 - [ ] Network sockets left open: [locations]
 - [ ] Memory leaks from circular references: [analyze object relationships]
@@ -517,12 +517,12 @@ API Usage Alignment (from Phase 0 consumers):
 SECURITY ISSUES:
 
 Injection Vulnerabilities:
-- [ ] SQL injection risks: [Grep for query concatenation]
+- [ ] SQL injection risks: [grep for query concatenation]
 - [ ] Command injection: [search for shell execution patterns]
 - [ ] Path traversal: [check file path handling]
 
 Authentication & Session:
-- [ ] Hardcoded credentials/secrets: [Grep for common patterns]
+- [ ] Hardcoded credentials/secrets: [grep for common patterns]
 - [ ] Missing authentication checks: [analyze based on function purposes]
 
 Data Exposure:
@@ -808,17 +808,17 @@ Phase 1 (no dependencies — parallel):
 
 **File Operations (Claude Code built-in):**
 
-- `Read` - Read file contents
-- `Glob` - Find files by pattern
-- `Grep` - Search for code patterns (imports, security issues, etc.)
-- `Write` - Write the plan to `docs/plans/`
+- `view` - view file contents
+- `glob` - Find files by pattern
+- `grep` - Search for code patterns (imports, security issues, etc.)
+- `create` - create the plan to `docs/plans/`
 
 ---
 
 # CRITICAL RULES
 
 1. **Use built-in LSP tools** - Semantic navigation for all symbol discovery and reference tracking
-2. **Read First** - Always read the complete file before analysis
+2. **view First** - Always read the complete file before analysis
 3. **Be Thorough** - Don't skip any code element
 4. **Be Specific** - Every issue must have exact line numbers (from LSP data)
 5. **Be Actionable** - Every recommendation must be implementable with before/after code

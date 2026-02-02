@@ -2,7 +2,7 @@
 name: plan-loop
 description: "Execute a plan file with iterative loop until completion"
 argument-hint: "<plan_path> [--max-iterations N]"
-allowed-tools: ["Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Bash", "Edit", "Write", "Glob", "Grep"]
+allowed-tools: ["view", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "powershell", "edit", "create", "glob", "grep"]
 hide-from-slash-command-tool: "true"
 model: opus
 skills: ["test-driven-development"]
@@ -32,11 +32,11 @@ This command works with plans from:
 
 ## Instructions
 
-### Step 1: Read the Plan (Only)
+### Step 1: view the Plan (Only)
 
 The user invoked this skill with arguments: `$ARGUMENTS`
 
-The first argument is the plan file path. Read it and extract tasks. **DO NOT read other files, grep, or explore the codebase** - just parse the plan. **Never spawn sub-agents or delegate work — do ALL implementation directly yourself.**
+The first argument is the plan file path. view it and extract tasks. **DO NOT read other files, grep, or explore the codebase** - just parse the plan. **Never spawn sub-agents or delegate work — do ALL implementation directly yourself.**
 1. **Files to Edit** - existing files that need modification
 2. **Files to Create** - new files to create
 3. **Implementation Plan** - per-file implementation instructions
@@ -104,8 +104,8 @@ Follow test-driven development for every task. The plan's dependency graph ensur
 **For test file tasks** (task creates/edits a test file):
 
 1. **Claim**: `TaskUpdate({ taskId: "N", status: "in_progress" })`
-2. **Read**: Get test specifications from plan
-3. **Write tests**: Create the test file with all specified test cases
+2. **view**: Get test specifications from plan
+3. **create tests**: Create the test file with all specified test cases
 4. **RED — Verify tests fail**: Run the test file and confirm tests fail for the expected reason (feature missing, not syntax errors). This is MANDATORY — never skip.
 5. **Commit**: Stage and commit the test file: `git add <test-file> && git commit -m "Add failing tests: <brief description>"`
 6. **Complete**: `TaskUpdate({ taskId: "N", status: "completed" })`
@@ -113,7 +113,7 @@ Follow test-driven development for every task. The plan's dependency graph ensur
 **For production file tasks** (task creates/edits production code):
 
 1. **Claim**: `TaskUpdate({ taskId: "N", status: "in_progress" })`
-2. **Read**: Get implementation details from plan
+2. **view**: Get implementation details from plan
 3. **Implement**: Make changes following plan exactly — write the minimum code to make the corresponding tests pass
 4. **GREEN — Verify tests pass**: Run the corresponding test file and confirm all tests pass. This is MANDATORY.
 5. **Refactor** (if needed): Clean up while keeping tests green
@@ -156,7 +156,7 @@ Tasks (2 done, 1 in progress, 3 open)
 
 If context compacts:
 1. Call TaskList to see all tasks and their status
-2. Read the plan file again
+2. view the plan file again
 3. Find next pending unblocked task
 4. Continue implementation
 

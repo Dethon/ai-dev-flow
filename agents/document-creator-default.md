@@ -26,7 +26,7 @@ From the slash command:
 
 ## First Action Requirement
 
-**Start with checking .github/rules folder, then Glob to discover files in target directory.** This is mandatory before any analysis.
+**Start with checking .github/rules folder, then glob to discover files in target directory.** This is mandatory before any analysis.
 
 ---
 
@@ -40,7 +40,7 @@ Check if `.github/rules` directory exists at project root:
 RULES DISCOVERY:
 
 Step 1: Check for rules folder
-- Glob(".github/rules/*.md")
+- glob(".github/rules/*.md")
 - If no results → rules folder doesn't exist
 
 Step 2: If rules exist, read each file
@@ -96,12 +96,12 @@ Use built-in tools to discover the directory structure:
 DIRECTORY DISCOVERY:
 
 Step 1: List target directory
-- Glob(relative_path="target_directory", recursive=false)
+- glob(relative_path="target_directory", recursive=false)
 - Get immediate files and sub-directories
 - Default to "." if no directory specified
 
 Step 2: Find all source files recursively
-- Glob(relative_path="target_directory", recursive=true)
+- glob(relative_path="target_directory", recursive=true)
 - Build complete file manifest
 - Group by package/directory
 ```
@@ -113,7 +113,7 @@ Analyze files to detect language:
 ```
 LANGUAGE DETECTION:
 
-From Glob results, identify file extensions:
+From glob results, identify file extensions:
 - .ts/.tsx → TypeScript
 - .js/.jsx → JavaScript
 - .py → Python
@@ -212,7 +212,7 @@ Read representative files to understand organization:
 ```
 STRUCTURAL TEMPLATES:
 
-Use Read(relative_path="path/to/file") for 2-3 representative files.
+Use view(relative_path="path/to/file") for 2-3 representative files.
 
 Extract patterns:
 - File organization: [How are files typically organized?]
@@ -235,9 +235,9 @@ Use LSP goToDefinition to search for pattern indicators:
 - LSP goToDefinition(name_path_pattern="*Service*", substring_matching=true) → Service Pattern
 - LSP goToDefinition(name_path_pattern="*Repository*", substring_matching=true) → Repository Pattern
 
-Use Grep for code patterns:
-- Grep(substring_pattern="useEffect|useState") → React Hooks
-- Grep(substring_pattern="EventSource") → SSE Pattern
+Use grep for code patterns:
+- grep(substring_pattern="useEffect|useState") → React Hooks
+- grep(substring_pattern="EventSource") → SSE Pattern
 ```
 
 ## Step 3: Map Dependencies with References
@@ -287,9 +287,9 @@ Identify best practices from patterns:
 
 ```
 BEST PRACTICES (LSP-verified):
-1. **File Organization**: [How files are organized - from Glob structure]
+1. **File Organization**: [How files are organized - from glob structure]
 2. **Naming Conventions**: [Patterns from symbol names via LSP]
-3. **Error Handling**: [Patterns found via Grep]
+3. **Error Handling**: [Patterns found via grep]
 4. **Type Safety**: [Types/interfaces from LSP documentSymbol]
 5. **Testing**: [Test patterns if test files exist]
 ```
@@ -345,7 +345,7 @@ These rules are automatically loaded by Claude Code when working in this directo
 
 ## Step 3: Generate Sub-folder Guides Section
 
-From Glob results, list sub-directories:
+From glob results, list sub-directories:
 
 ```markdown
 ## Sub-folder Guides
@@ -400,7 +400,7 @@ Document patterns found via LSP:
 **Found via LSP**: [Which symbols/files use this pattern]
 
 \`\`\`language
-[Code snippet from Read showing pattern usage]
+[Code snippet from view showing pattern usage]
 \`\`\`
 ```
 
@@ -416,7 +416,7 @@ Document patterns found via LSP:
 
 ## Step 7: Generate Directory Structure Section
 
-From Glob results:
+From glob results:
 
 ```markdown
 ## Directory Structure
@@ -433,7 +433,7 @@ directory-name/
 
 ## Step 8: Create Rules File (if NEEDS_RULE_CREATION = Yes)
 
-**If no matching rule exists for this directory, create one using the Write tool.**
+**If no matching rule exists for this directory, create one using the create tool.**
 
 **Rule file naming**: Convert directory path to kebab-case. Examples:
 - `backend/src/services` → `.github/rules/backend-services.md`
@@ -452,7 +452,7 @@ paths: <target-directory>/**
 
 **Example**: For target directory `backend/src/services` with DEVGUIDE at `backend/src/services/DEVGUIDE.md`:
 
-Write file `.github/rules/backend-services.md`:
+create file `.github/rules/backend-services.md`:
 ```markdown
 ---
 paths: backend/src/services/**
@@ -475,7 +475,7 @@ This creates an automatic feedback loop: Claude Code loads the rule when working
 
 ## Step 10: Write DEVGUIDE File
 
-Write all sections generated in Steps 1-9 to the output file using the Write tool.
+create all sections generated in Steps 1-9 to the output file using the create tool.
 
 ---
 
@@ -500,10 +500,10 @@ RULES_CREATED: [Yes/No - whether a .github/rules/ file was created]
 - `LSP(operation="workspaceSymbol", filePath, line, character)` - Search symbols across workspace
 
 **File Operations (Claude Code built-in):**
-- `Read(file_path)` - Read file contents
-- `Glob(pattern)` - Find files by pattern
-- `Grep(pattern)` - Search file contents
-- `Write(file_path, content)` - Write DEVGUIDE and rule files
+- `view(file_path)` - view file contents
+- `glob(pattern)` - Find files by pattern
+- `grep(pattern)` - Search file contents
+- `create(file_path, content)` - create DEVGUIDE and rule files
 
 **Note:** LSP requires line/character positions (1-based). Use documentSymbol first to get symbol positions.
 
@@ -512,7 +512,7 @@ RULES_CREATED: [Yes/No - whether a .github/rules/ file was created]
 # CRITICAL RULES
 
 1. **Use built-in LSP tools** - For all symbol discovery (documentSymbol for every file) - never guess or parse manually
-2. **Glob first** - Always discover files before analysis
+2. **glob first** - Always discover files before analysis
 3. **Check rules first** - Always check .github/rules before analysis
 4. **Evidence-based** - Every pattern must be backed by LSP data
 5. **No placeholders** - Replace all TODOs with actual content

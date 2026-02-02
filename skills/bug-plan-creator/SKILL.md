@@ -1,6 +1,6 @@
 ---
 name: bug-plan-creator
-allowed-tools: Task, Bash, Read
+allowed-tools: task, powershell, view
 argument-hint: <any-input or design-file-path>
 description: Deep bug investigation with architectural fix plan generation - works with any executor (loop or swarm). Accepts error logs, stack traces, user reports, or a design file from /brainstorming.
 context: fork
@@ -39,10 +39,10 @@ The user invoked this skill with arguments: `$ARGUMENTS`
 Determine the input type:
 
 **Design file detection** — If the argument matches a file path ending in `.md` inside `docs/designs/`:
-1. Use the Read tool to load the design file contents
+1. Use the view tool to load the design file contents
 2. Proceed to Step 2 with the design file contents as context
 
-**File path** — If a non-design file path → use Read tool to load contents
+**File path** — If a non-design file path → use view tool to load contents
 
 **Inline text** — Extract error signals
 
@@ -61,7 +61,7 @@ Investigate bug and create fix plan from design document:
 <full design file contents>
 ```
 
-**REQUIRED Task tool parameters:**
+**REQUIRED task tool parameters:**
 ```
 subagent_type: "essentials:bug-plan-creator-default"
 run_in_background: true
@@ -75,7 +75,7 @@ Investigate bug and create fix plan:
 <all gathered logs, errors, context>
 ```
 
-**REQUIRED Task tool parameters:**
+**REQUIRED task tool parameters:**
 ```
 subagent_type: "essentials:bug-plan-creator-default"
 run_in_background: true

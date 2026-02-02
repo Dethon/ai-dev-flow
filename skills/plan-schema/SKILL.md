@@ -1,7 +1,7 @@
 ---
 name: plan-schema
 description: Plan file (docs/plans/*-plan.md) reference — sections, per-file format, dependency graph, and converter mappings
-allowed-tools: Bash, Read, Write, Edit
+allowed-tools: powershell, view, create, edit
 argument-hint: "[validate <path>]"
 ---
 
@@ -289,7 +289,7 @@ Determine mode from the arguments.
 
 Extract the path from the arguments (e.g., `/plan-schema validate docs/plans/auth-a3f9e-plan.md`).
 
-Read the plan file and check against the validation checklist:
+view the plan file and check against the validation checklist:
 
 1. Check all required sections exist
 2. Check each per-file entry has required subsections

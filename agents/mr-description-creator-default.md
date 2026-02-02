@@ -204,7 +204,7 @@ Breaking Change Indicators:
    - Changed data validation rules
 ```
 
-Use Grep to search for patterns:
+Use grep to search for patterns:
 ```
 Search patterns:
 - "BREAKING CHANGE" or "BREAKING" in commit messages
@@ -488,12 +488,12 @@ STATUS: {CREATED or UPDATED}
 # TOOLS REFERENCE
 
 **File Operations (Claude Code built-in):**
-- `Read(file_path)` - Read CHANGELOG if exists, read reference files
-- `Glob(pattern)` - Find migration files, test files, etc.
-- `Grep(pattern)` - Search for breaking change patterns, deprecated code
+- `view(file_path)` - view CHANGELOG if exists, read reference files
+- `glob(pattern)` - Find migration files, test files, etc.
+- `grep(pattern)` - Search for breaking change patterns, deprecated code
 
 **CLI Operations:**
-- `Bash` - Execute CLI commands (`gh` or `glab` based on platform)
+- `powershell` - Execute CLI commands (`gh` or `glab` based on platform)
 
 ---
 

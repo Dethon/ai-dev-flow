@@ -2,7 +2,7 @@
 name: plan-swarm
 description: "Execute a plan file with parallel agent swarm (dependency-aware)"
 argument-hint: "<plan_path> [--workers N] [--model MODEL]"
-allowed-tools: ["Read", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Task", "Bash"]
+allowed-tools: ["view", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "task", "powershell"]
 model: opus
 skills: ["test-driven-development"]
 ---
@@ -30,11 +30,11 @@ This command works with plans from:
 
 ## Instructions
 
-### Step 1: Read the Plan (Only)
+### Step 1: view the Plan (Only)
 
 The user invoked this skill with arguments: `$ARGUMENTS`
 
-The first argument is the plan file path. Read it and extract tasks. **DO NOT read other files, grep, or explore the codebase** - just parse the plan:
+The first argument is the plan file path. view it and extract tasks. **DO NOT read other files, grep, or explore the codebase** - just parse the plan:
 1. **Files to Edit** - existing files that need modification
 2. **Files to Create** - new files to create
 3. **Implementation Plan** - per-file implementation instructions
@@ -99,22 +99,22 @@ A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a block
 
 **Worker limit N** = `--workers` value from arguments or **3** if not specified. This is a queue — spawn up to N, then wait for completions before spawning more.
 
-Mark each task `in_progress` before spawning its worker. Spawn up to N background workers in a **SINGLE message** (all Task calls in one response).
+Mark each task `in_progress` before spawning its worker. Spawn up to N background workers in a **SINGLE message** (all task calls in one response).
 
 **TDD in worker prompts:** Workers must follow red-green-refactor. Include TDD instructions in every worker prompt:
 
 ```json
-Task({
-  "description": "Task-1: Implement auth middleware",
+task({
+  "description": "task-1: Implement auth middleware",
   "subagent_type": "general-purpose",
   "model": "sonnet",
   "run_in_background": true,
-  "allowed_tools": ["Read", "Edit", "Write", "Bash", "Glob", "Grep"],
-  "prompt": "Execute this ONE task using TDD then exit:\n\nTask ID: 1\nSubject: Implement auth middleware\nDescription: <full details from plan>\n\nTDD Protocol:\n- If this is a TEST FILE task: Write the tests, then run them and verify they FAIL (RED). Tests must fail because the feature is missing, not because of syntax errors.\n- If this is a PRODUCTION CODE task: Implement the code, then run the corresponding tests and verify they PASS (GREEN). Write only the minimum code needed to pass.\n- If this is a non-code task (config, types, docs): Execute directly.\n\nSteps:\n1. Execute the task following TDD protocol above\n2. Commit the changed files: git add <changed-files> && git commit -m \"<brief description of what was done>\"\n3. Output ONLY a one-line summary\n4. Exit immediately"
+  "allowed_tools": ["view", "edit", "create", "powershell", "glob", "grep"],
+  "prompt": "Execute this ONE task using TDD then exit:\n\nTask ID: 1\nSubject: Implement auth middleware\nDescription: <full details from plan>\n\nTDD Protocol:\n- If this is a TEST FILE task: create the tests, then run them and verify they FAIL (RED). Tests must fail because the feature is missing, not because of syntax errors.\n- If this is a PRODUCTION CODE task: Implement the code, then run the corresponding tests and verify they PASS (GREEN). create only the minimum code needed to pass.\n- If this is a non-code task (config, types, docs): Execute directly.\n\nSteps:\n1. Execute the task following TDD protocol above\n2. Commit the changed files: git add <changed-files> && git commit -m \"<brief description of what was done>\"\n3. Output ONLY a one-line summary\n4. Exit immediately"
 })
 ```
 
-After all Task() calls return, output a status message like "3 workers launched. Waiting for completions." and **end your turn**. The system wakes you when a worker finishes.
+After all task() calls return, output a status message like "3 workers launched. Waiting for completions." and **end your turn**. The system wakes you when a worker finishes.
 
 ### Step 4: Process Completions
 

@@ -83,7 +83,7 @@ Skip any step = lying, not verifying
 
 **Regression tests (TDD Red-Green):**
 ```
-✅ Write → Run (pass) → Revert fix → Run (MUST FAIL) → Restore → Run (pass)
+✅ create → Run (pass) → Revert fix → Run (MUST FAIL) → Restore → Run (pass)
 ❌ "I've written a regression test" (without red-green verification)
 ```
 
@@ -134,6 +134,6 @@ From 24 failure memories:
 
 **No shortcuts for verification.**
 
-Run the command. Read the output. THEN claim the result.
+Run the command. view the output. THEN claim the result.
 
 This is non-negotiable.

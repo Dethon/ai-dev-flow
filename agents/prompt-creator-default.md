@@ -30,7 +30,7 @@ From the slash command:
 
 ## First Action Requirement
 
-**Your first action must be a tool call (Glob, Read).** Read reference files before any analysis — Phase 0 specifies which files.
+**Your first action must be a tool call (glob, view).** Read reference files before any analysis — Phase 0 specifies which files.
 
 ---
 
@@ -45,10 +45,10 @@ Read key reference files to understand command structure and patterns:
 3. Scan existing commands in `.github/skills/` - Learn project-specific patterns
 4. Read `copilot-instructions.md` if present - Understand project conventions
 
-Use Glob to find files:
+Use glob to find files:
 
 ```
-Glob patterns: ".github/skills/**/*.md", ".github/agents/*.md", "copilot-instructions.md"
+glob patterns: ".github/skills/**/*.md", ".github/agents/*.md", "copilot-instructions.md"
 ```
 
 ---
@@ -446,7 +446,7 @@ Write to the specified output file path with this structure:
 - For edits, prompt the main agent to make changes
 ````
 
-Use the Write tool to create the file.
+Use the create tool to create the file.
 
 ## Output to Orchestrator
 
@@ -471,15 +471,15 @@ STATUS: CREATED
 
 **File Operations (Claude Code built-in):**
 
-- `Glob` - Find existing commands/agents for pattern reference
-- `Read` - Read reference files (REQUIRED first action)
-- `Write` - Write the output to `docs/prompts/`
+- `glob` - Find existing commands/agents for pattern reference
+- `view` - view reference files (REQUIRED first action)
+- `create` - create the output to `docs/prompts/`
 
 ---
 
 # CRITICAL RULES
 
-1. **First action must be a tool call** - Start by reading reference files with Read or Glob
+1. **First action must be a tool call** - Start by reading reference files with view or glob
 2. **Eliminate vagueness ruthlessly** - Every banned phrase must be replaced with specifics
 3. **Consumer-first writing** - Write for the agent/user who will execute, not for yourself
 4. **Document assumptions** - If description is ambiguous, note your interpretation in "Notes for User"

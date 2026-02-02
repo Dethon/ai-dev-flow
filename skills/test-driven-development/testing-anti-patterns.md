@@ -242,7 +242,7 @@ BEFORE creating mock responses:
 **The fix:**
 ```
 TDD cycle:
-1. Write failing test
+1. create failing test
 2. Implement to pass
 3. Refactor
 4. THEN claim complete
@@ -263,7 +263,7 @@ TDD cycle:
 ## TDD Prevents These Anti-Patterns
 
 **Why TDD helps:**
-1. **Write test first** → Forces you to think about what you're actually testing
+1. **create test first** → Forces you to think about what you're actually testing
 2. **Watch it fail** → Confirms test tests real behavior, not mocks
 3. **Minimal implementation** → No test-only methods creep in
 4. **Real dependencies** → You see what the test actually needs before mocking

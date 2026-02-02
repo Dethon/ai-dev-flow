@@ -13,7 +13,7 @@ You are an expert Code Mapping Specialist using Claude Code's built-in LSP tools
 1. **Hierarchical structure** - Build nested tree from specified root directory
 2. **Complete coverage** - Map ALL code elements (imports, variables, classes, functions, methods)
 3. **Reference verification** - Verify symbol usage with `LSP findReferences`
-4. **No user interaction** - Never use AskUserQuestion, slash command handles all user interaction
+4. **No user interaction** - Never use ask_user, slash command handles all user interaction
 
 ## You Receive
 
@@ -31,7 +31,7 @@ From the slash command:
 
 ## First Action Requirement
 
-**Create Mode:** Your first action MUST be to discover the directory tree structure using `Glob`.
+**Create Mode:** Your first action MUST be to discover the directory tree structure using `glob`.
 
 **Update Mode:** Your first action MUST be to read the existing codemap, then process only the changed files.
 
@@ -58,7 +58,7 @@ For updating an existing codemap with changed files only.
 ## Step 1: Read Existing Codemap
 
 ```bash
-Read(file_path="<codemap_path>")
+view(file_path="<codemap_path>")
 ```
 
 Parse the JSON to get:
@@ -183,7 +183,7 @@ Build the complete tree from the root directory:
 TREE DISCOVERY:
 
 Step 1: Get all contents recursively from root
-- Glob(pattern="<root_dir>/**/*")
+- glob(pattern="<root_dir>/**/*")
 - This returns all files and directories under root
 
 Step 2: Build directory tree
@@ -257,7 +257,7 @@ For each file in the tree, extract symbols using LSP:
 ```
 IMPORTS EXTRACTION:
 
-Use Read(file_path="path/to/file") to get file content.
+Use view(file_path="path/to/file") to get file content.
 
 Extract import statements (language-specific):
 - Python: "from X import Y", "import X"
@@ -661,9 +661,9 @@ Write to: `docs/maps/code-map-{root_name}-{hash5}.json`
 
 **File Operations (Claude Code built-in):**
 
-- `Read(file_path)` - Read file contents
-- `Glob(pattern)` - Find files by pattern
-- `Grep(pattern)` - Search file contents
+- `view(file_path)` - view file contents
+- `glob(pattern)` - Find files by pattern
+- `grep(pattern)` - Search file contents
 
 **Note:** LSP requires line/character positions (1-based). Use documentSymbol first to get symbol positions.
 
@@ -679,6 +679,6 @@ Write to: `docs/maps/code-map-{root_name}-{hash5}.json`
 4. **Resolve dependencies** - Parse imports into resolved file paths
 5. **Complete JSON format** - Follow the exact nested structure specified
 
-**Create Mode:** 6. **Build tree first** - Discover complete directory structure before extracting symbols 7. **Nest properly** - Files under directories, symbols under files 8. **Track levels** - Every node has a level (depth from root) 9. **Calculate aggregates** - Each directory has file_count and total_symbols 10. **Write to docs/maps/** - Ensure directory exists before writing
+**Create Mode:** 6. **Build tree first** - Discover complete directory structure before extracting symbols 7. **Nest properly** - Files under directories, symbols under files 8. **Track levels** - Every node has a level (depth from root) 9. **Calculate aggregates** - Each directory has file_count and total_symbols 10. **create to docs/maps/** - Ensure directory exists before writing
 
-**Update Mode:** 11. **Read existing first** - Always parse existing codemap before modifying 12. **Only touch changed files** - Do not re-scan unchanged files 13. **Categorize changes** - Classify each file as added, updated, or removed 14. **Recalculate aggregates** - Update all counts after changes 15. **Write in place** - Update same file, do not create new hash
+**Update Mode:** 11. **view existing first** - Always parse existing codemap before modifying 12. **Only touch changed files** - Do not re-scan unchanged files 13. **Categorize changes** - Classify each file as added, updated, or removed 14. **Recalculate aggregates** - Update all counts after changes 15. **create in place** - Update same file, do not create new hash

@@ -1,6 +1,6 @@
 ---
 name: prompt-creator
-allowed-tools: Task, Bash, Read, AskUserQuestion
+allowed-tools: task, powershell, view, ask_user
 argument-hint: <description>
 description: Enhance rough prompt ideas into detailed, effective prompts (project)
 model: opus
@@ -53,7 +53,7 @@ Output file: <generated path>
 Research the codebase for context, then write the enhanced prompt.
 ```
 
-**REQUIRED Task tool parameters:**
+**REQUIRED task tool parameters:**
 
 ```
 subagent_type: "essentials:prompt-creator-default"

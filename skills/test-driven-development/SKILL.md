@@ -7,7 +7,7 @@ description: Use when implementing any feature or bugfix, before writing impleme
 
 ## Overview
 
-Write the test first. Watch it fail. Write minimal code to pass.
+create the test first. Watch it fail. create minimal code to pass.
 
 **Core principle:** If you didn't watch the test fail, you don't know if it tests the right thing.
 
@@ -34,7 +34,7 @@ Thinking "skip TDD just this once"? Stop. That's rationalization.
 NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 ```
 
-Write code before the test? Delete it. Start over.
+create code before the test? Delete it. Start over.
 
 **No exceptions:**
 - Don't keep it as "reference"
@@ -68,9 +68,9 @@ digraph tdd_cycle {
 }
 ```
 
-### RED - Write Failing Test
+### RED - create Failing Test
 
-Write one minimal test showing what should happen.
+create one minimal test showing what should happen.
 
 <Good>
 ```typescript
@@ -129,7 +129,7 @@ Confirm:
 
 ### GREEN - Minimal Code
 
-Write simplest code to pass the test.
+create simplest code to pass the test.
 
 <Good>
 ```typescript
@@ -343,14 +343,14 @@ Can't check all boxes? You skipped TDD. Start over.
 
 | Problem | Solution |
 |---------|----------|
-| Don't know how to test | Write wished-for API. Write assertion first. Ask your human partner. |
+| Don't know how to test | create wished-for API. create assertion first. Ask your human partner. |
 | Test too complicated | Design too complicated. Simplify interface. |
 | Must mock everything | Code too coupled. Use dependency injection. |
 | Test setup huge | Extract helpers. Still complex? Simplify design. |
 
 ## Debugging Integration
 
-Bug found? Write failing test reproducing it. Follow TDD cycle. Test proves fix and prevents regression.
+Bug found? create failing test reproducing it. Follow TDD cycle. Test proves fix and prevents regression.
 
 Never fix bugs without a test.
 

@@ -2,7 +2,7 @@
 name: implement-swarm
 description: "Implement from conversation context with parallel swarm"
 argument-hint: "<task description> [--workers N] [--model MODEL]"
-allowed-tools: ["TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Task", "Bash"]
+allowed-tools: ["TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "task", "powershell"]
 model: opus
 skills: ["test-driven-development"]
 ---
@@ -34,9 +34,9 @@ The user invoked this skill with arguments: `$ARGUMENTS`
 - Conversation history (already in context)
 
 **DO NOT:**
-- Read files unless the user explicitly asks you to
-- Grep or explore the codebase
-- Use Glob to find files
+- view files unless the user explicitly asks you to
+- grep or explore the codebase
+- Use glob to find files
 
 Create tasks immediately from context. Include file paths in task descriptions so workers can read them during execution.
 
@@ -66,22 +66,22 @@ A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a block
 
 **Worker limit N** = `--workers` value from arguments or **3** if not specified. This is a queue — spawn up to N, then wait for completions before spawning more.
 
-Mark each task `in_progress` before spawning its worker. Spawn up to N background workers in a **SINGLE message** (all Task calls in one response).
+Mark each task `in_progress` before spawning its worker. Spawn up to N background workers in a **SINGLE message** (all task calls in one response).
 
 **TDD in worker prompts:** Workers must follow red-green-refactor. Include TDD instructions in every worker prompt:
 
 ```json
-Task({
-  "description": "Task-1: Fix auth validation",
+task({
+  "description": "task-1: Fix auth validation",
   "subagent_type": "general-purpose",
   "model": "sonnet",
   "run_in_background": true,
-  "allowed_tools": ["Read", "Edit", "Write", "Bash", "Glob", "Grep"],
-  "prompt": "Execute this ONE task using TDD then exit:\n\nTask ID: 1\nSubject: Fix auth token validation\nDescription: <full details>\n\nTDD Protocol:\n- Before writing any production code, write a failing test first (RED)\n- Run the test and verify it fails for the expected reason (feature/fix missing, not syntax errors)\n- Write the minimum production code to make the test pass (GREEN)\n- Run the test and verify it passes\n- Clean up while keeping tests green (REFACTOR)\n- Exception: Config, type definitions (no logic), and docs tasks can skip the red-green cycle\n\nSteps:\n1. Execute the task following TDD protocol above\n2. Output ONLY a one-line summary\n3. Exit immediately"
+  "allowed_tools": ["view", "edit", "create", "powershell", "glob", "grep"],
+  "prompt": "Execute this ONE task using TDD then exit:\n\nTask ID: 1\nSubject: Fix auth token validation\nDescription: <full details>\n\nTDD Protocol:\n- Before writing any production code, write a failing test first (RED)\n- Run the test and verify it fails for the expected reason (feature/fix missing, not syntax errors)\n- create the minimum production code to make the test pass (GREEN)\n- Run the test and verify it passes\n- Clean up while keeping tests green (REFACTOR)\n- Exception: Config, type definitions (no logic), and docs tasks can skip the red-green cycle\n\nSteps:\n1. Execute the task following TDD protocol above\n2. Output ONLY a one-line summary\n3. Exit immediately"
 })
 ```
 
-After all Task() calls return, output a status message like "3 workers launched. Waiting for completions." and **end your turn**. The system wakes you when a worker finishes.
+After all task() calls return, output a status message like "3 workers launched. Waiting for completions." and **end your turn**. The system wakes you when a worker finishes.
 
 ### Step 3: Process Completions
 
