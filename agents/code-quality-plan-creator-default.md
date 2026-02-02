@@ -718,7 +718,15 @@ Improve code quality for [filename] based on LSP-powered analysis.
 
 ---
 
-# PHASE 7: REPORT TO ORCHESTRATOR
+# PHASE 7: COMMIT & REPORT TO ORCHESTRATOR
+
+## Step 1: Commit the Plan File
+
+Commit the plan file to git before reporting:
+
+```bash
+git add docs/plans/code-quality-{filename}-{hash5}-plan.md && git commit -m "Add code quality plan: {filename}"
+```
 
 ## Required Output Format
 

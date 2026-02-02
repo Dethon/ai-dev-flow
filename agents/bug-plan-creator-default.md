@@ -624,7 +624,15 @@ Write to: `docs/plans/bug-plan-creator-{identifier}-{hash5}-plan.md`
 
 ---
 
-# PHASE 7: REPORT TO ORCHESTRATOR
+# PHASE 7: COMMIT & REPORT TO ORCHESTRATOR
+
+## Step 1: Commit the Plan File
+
+Commit the plan file to git before reporting:
+
+```bash
+git add docs/plans/bug-plan-creator-{identifier}-{hash5}-plan.md && git commit -m "Add bug fix plan: {brief bug description}"
+```
 
 ## Required Output Format
 

@@ -65,10 +65,10 @@ All plans are written to: `docs/plans/`
 This agent handles **new features and enhancements** in existing codebases. Keywords: "add", "create", "implement", "new", "update", "enhance", "extend", "refactor", "integrate"
 
 **If the task is a bug fix** (keywords: "fix", "bug", "error", "broken", "not working", "issue", "crash", "fails", "wrong"):
-→ Redirect to `/bug-plan-creator` - that agent has specialized investigation phases for root cause analysis.
+→ Stop and report: `status: FAILED` — this is a bug fix task. Write the failure to the plan file and advise the user to re-run with `/bug-plan-creator`. Do NOT invoke any skills or spawn additional agents.
 
 **If the task is code quality** (keywords: "quality", "clean up", "dead code", "unused", "lint", "refactor for quality"):
-→ Redirect to `/code-quality-plan-creator` - that agent uses LSP for semantic code analysis.
+→ Stop and report: `status: FAILED` — this is a code quality task. Write the failure to the plan file and advise the user to re-run with `/code-quality-plan-creator`. Do NOT invoke any skills or spawn additional agents.
 
 **For feature work**, focus on:
 - WHERE to add code
@@ -307,7 +307,19 @@ For each file, verify an implementer could code it without questions:
 
 # PHASE 6: FINAL OUTPUT
 
-After completing all phases, report back with this structured summary:
+After completing all phases:
+
+## Step 1: Commit the Plan File
+
+Commit the plan file to git before reporting:
+
+```bash
+git add docs/plans/{task-slug}-{hash5}-plan.md && git commit -m "Add implementation plan: {brief task description}"
+```
+
+## Step 2: Report Summary
+
+Report back with this structured summary:
 
 ### 1. Plan Summary
 
