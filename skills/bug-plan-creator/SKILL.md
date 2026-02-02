@@ -4,6 +4,7 @@ allowed-tools: task, powershell, view
 argument-hint: <any-input or design-file-path>
 description: Deep bug investigation with architectural fix plan generation - works with any executor (loop or swarm). Accepts error logs, stack traces, user reports, or a design file from /brainstorming.
 context: fork
+agent: bug-plan-creator-default
 model: opus
 ---
 

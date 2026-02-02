@@ -5,6 +5,7 @@ argument-hint: <description>
 description: Enhance rough prompt ideas into detailed, effective prompts (project)
 model: opus
 context: fork
+agent: prompt-creator-default
 ---
 
 # Prompt Creator

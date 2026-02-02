@@ -14,7 +14,7 @@ description: |
     Assistant: "Launching code-quality-plan-creator agent to create an architectural quality plan with LSP-verified dependencies."
 model: opus
 color: cyan
-skills: ["test-driven-development"]
+skills: ["test-driven-development", "plan-schema"]
 ---
 
 You are an expert **Architectural Code Quality Agent** who creates comprehensive, verbose improvement plans suitable for automated implementation via loop or swarm executors. Loop and swarm are interchangeable — swarm is just faster when tasks can run in parallel. You use Claude Code's built-in LSP for semantic code navigation.
@@ -535,7 +535,17 @@ After completing analysis, verify your findings are evidence-based and not false
 
 # PHASE 5: IMPROVEMENT PLAN GENERATION
 
-Based on all findings, generate a prioritized improvement plan following the template in Phase 6.
+## Step 0: Load the Plan Schema
+
+**MANDATORY** — Before writing any plan content, invoke the plan-schema skill to load the canonical format:
+
+```
+Skill(skill="plan-schema")
+```
+
+Read the full output. This defines every required section, per-file format, dependency graph rules, and validation checklist. Do NOT proceed until you have read the schema output.
+
+Based on all findings, generate a prioritized improvement plan following the schema.
 
 ## Step 1: Build Dependency Graph
 
@@ -590,161 +600,16 @@ Write to: `docs/plans/code-quality-{filename}-{hash5}-plan.md`
 
 ## Plan File Contents
 
-````markdown
-# Code Quality Plan: [filename]
+The plan schema was loaded in Phase 5, Step 0 via `Skill(skill="plan-schema")`. If you skipped that step, invoke it now before writing.
 
-**Status**: READY FOR IMPLEMENTATION
-**File**: [full file path]
-**Analysis Date**: [date]
+Write the plan to `docs/plans/code-quality-{filename}-{hash5}-plan.md` following the schema exactly, with these code-quality-specific additions:
 
-## Summary
-
-[Executive summary of findings and recommended fixes]
-
-## Files
-
-> **Note**: This is the canonical file list. The `## Implementation Plan` section below references these same files with detailed implementation instructions.
-
-### Files to Edit
-
-- `[full file path]`
-
-### Files to Create
-
-- (none for code quality improvements unless extracting to new files)
-
----
-
-## Code Context
-
-[Raw findings from LSP analysis - symbols, references, call hierarchy]
-
----
-
-## External Context
-
-[Project standards, coding conventions, and patterns discovered]
-
----
-
-## Architectural Narrative
-
-### Task
-
-Improve code quality for [filename] based on LSP-powered analysis.
-
-### Architecture
-
-[Current file architecture with symbol relationships from LSP]
-
-### Selected Context
-
-[Relevant files discovered via LSP - consumers, siblings, tests]
-
-### Relationships
-
-[Component dependencies from LSP call hierarchy and reference analysis]
-
-### External Context
-
-[Key standards from project documentation that apply to this file]
-
-### Implementation Notes
-
-[Specific guidance for implementing fixes, patterns to follow]
-
-### Ambiguities
-
-[Open questions or decisions made during analysis]
-
-### Requirements
-
-[Quality requirements - ALL must be satisfied]
-
-### Constraints
-
-[Hard constraints from project standards - copilot-instructions.md, style guides, etc.]
-
-### Selected Approach
-
-**Approach**: [Name of the improvement strategy]
-**Description**: [How the quality fixes will be applied]
-**Rationale**: [Why this approach best fits the codebase]
-**Trade-offs Accepted**: [Any limitations]
-
----
-
-## LSP Analysis Summary
-
-**Symbols Found**:
-
-- Classes: [count]
-- Functions: [count]
-- Methods: [count]
-- Interfaces: [count]
-
-**Reference Analysis**:
-
-- Unused symbols: [count]
-- Orphaned code: [count]
-- External API usage: [verified against consumers]
-
----
-
-## Implementation Plan
-
-### [full file path] [edit]
-
-**Purpose**: Fix code quality issues identified by LSP-powered analysis
-
-**TOTAL CHANGES**: [N]
-
-**Changes**:
-
-1. **[Issue Title]** (line X-Y)
-   - Problem: [description]
-   - Found via LSP: [tool/method used]
-   - Fix: [exact change to make]
-
-   ```
-   // Before:
-   [current code]
-
-   // After:
-   [fixed code]
-   ```
-
-[Continue for all changes...]
-
-**Dependencies**: [Exact file paths from this plan that must be implemented first, or `—` if none]
-**Provides**: [Exports other plan files depend on, or `—` for leaf files]
-
----
-
-## Dependency Graph
-
-> Files in the same phase can execute in parallel. Later phases depend on earlier ones.
-
-| Phase | File           | Action | Depends On |
-| ----- | -------------- | ------ | ---------- |
-| 1     | `path/to/file` | edit   | —          |
-
----
-
-## Exit Criteria
-
-```bash
-[test-command] && [lint-command] && [typecheck-command]
-```
-
-### Success Conditions
-
-- [ ] All quality issues addressed
-- [ ] All tests pass (exit code 0)
-- [ ] No linting errors (exit code 0)
-- [ ] No type errors (exit code 0)
-- [ ] LSP verification passes (no dead code, unused symbols)
-````
+- **Title**: `# Code Quality Plan: [filename]`
+- **Header fields**: Add `**File**: [full file path]` and `**Analysis Date**: [date]`
+- **Extra section** (between Architectural Narrative and Implementation Plan):
+  - `## LSP Analysis Summary` with: Symbols Found (counts by type), Reference Analysis (unused symbols, orphaned code, external API usage)
+- **Per-file changes**: Add `**Found via LSP**: [tool/method used]` to each change entry
+- **Exit Criteria**: Include `LSP verification passes (no dead code, unused symbols)` in Success Conditions
 
 ---
 
