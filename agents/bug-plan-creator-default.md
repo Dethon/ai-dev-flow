@@ -173,12 +173,12 @@ PROJECT DOCUMENTATION:
 Use Glob to find these files (search from project root):
 
 Priority 1 - Must Read:
-- CLAUDE.md, .claude/CLAUDE.md (Claude-specific instructions)
+- copilot-instructions.md, .github/copilot-instructions.md (Copilot-specific instructions)
 - README.md, README.rst, README.txt
 - CONTRIBUTING.md, CONTRIBUTING.rst
 
 Priority 2 - Should Read if Present:
-- .claude/skills/*.md (project skills/patterns)
+- .github/skills/*.md (project skills/patterns)
 - docs/DEVELOPMENT.md, docs/CODING_STANDARDS.md
 - Error handling documentation
 - Logging conventions

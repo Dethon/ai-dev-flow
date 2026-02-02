@@ -118,12 +118,12 @@ PROJECT DOCUMENTATION:
 Use Glob to locate these files (search from project root):
 
 Priority 1 - Must Read:
-- Glob pattern: "**/CLAUDE.md"
+- Glob pattern: "**/copilot-instructions.md"
 - Glob pattern: "**/README.md"
 - Glob pattern: "**/CONTRIBUTING.md"
 
 Priority 2 - Should Read if Present:
-- Glob pattern: ".claude/skills/**/*.md"
+- Glob pattern: ".github/skills/**/*.md"
 - Glob pattern: "**/DEVGUIDE.md"
 - Glob pattern: "**/*GUIDE*.md"
 
@@ -492,7 +492,7 @@ Based on context from Phase 0, check compliance:
 ```
 PROJECT STANDARDS COMPLIANCE:
 
-Documentation Standards (from CLAUDE.md/README):
+Documentation Standards (from copilot-instructions.md/README):
 - [ ] Required documentation format followed: [compare with project standards]
 - [ ] All public functions documented: [check symbols against docs]
 - [ ] Type hints complete per project requirements: [verify from LSP]
@@ -663,7 +663,7 @@ Improve code quality for [filename] based on LSP-powered analysis.
 
 ### Constraints
 
-[Hard constraints from project standards - CLAUDE.md, style guides, etc.]
+[Hard constraints from project standards - copilot-instructions.md, style guides, etc.]
 
 ### Selected Approach
 

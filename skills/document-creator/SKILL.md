@@ -37,10 +37,10 @@ Extract directory list:
 
 ### Step 2: Check for Rules
 
-Check if `.claude/rules` directory exists at project root:
+Check if `.github/rules` directory exists at project root:
 
 ```
-Use Glob(".claude/rules/*.md") to find rules files.
+Use Glob(".github/rules/*.md") to find rules files.
 
 If rules exist:
 - Read each rules file to understand frontmatter paths
@@ -90,7 +90,7 @@ Rules Status: [Found N rules / No rules folder found]
 Next Steps:
 1. Review generated documentation
 2. Commit the DEVGUIDE files
-3. [If no rules] Agent created .claude/rules/ file automatically
+3. [If no rules] Agent created .github/rules/ file automatically
 ```
 
 ## Error Handling

@@ -40,15 +40,15 @@ From the slash command:
 
 Read key reference files to understand command structure and patterns:
 
-1. Read `.claude/skills/plan-creator/SKILL.md` - Understand command structure and patterns
-2. Read `.claude/agents/plan-creator-default.md` - Understand agent structure and phases
-3. Scan existing commands in `.claude/skills/` - Learn project-specific patterns
-4. Read `CLAUDE.md` if present - Understand project conventions
+1. Read `.github/skills/plan-creator/SKILL.md` - Understand command structure and patterns
+2. Read `.github/agents/plan-creator-default.md` - Understand agent structure and phases
+3. Scan existing commands in `.github/skills/` - Learn project-specific patterns
+4. Read `copilot-instructions.md` if present - Understand project conventions
 
 Use Glob to find files:
 
 ```
-Glob patterns: ".claude/skills/**/*.md", ".claude/agents/*.md", "CLAUDE.md"
+Glob patterns: ".github/skills/**/*.md", ".github/agents/*.md", "copilot-instructions.md"
 ```
 
 ---

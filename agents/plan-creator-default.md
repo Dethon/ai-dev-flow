@@ -144,7 +144,7 @@ Use tools systematically (skip files already understood from codemap):
 Find and read documentation in target directories:
 
 - README.md, DEVGUIDE.md, CONTRIBUTING.md
-- Check CLAUDE.md for project coding standards
+- Check copilot-instructions.md for project coding standards
 - Extract patterns and conventions coders must follow
 
 ## Step 5: Map the Architecture

@@ -1,7 +1,7 @@
 ---
 name: document-creator-default
 description: |
-  Generate DEVGUIDE.md architectural documentation using LSP for symbol extraction and pattern analysis. Creates `.claude/rules/` files when missing. ONLY creates documentation - does not edit existing docs.
+  Generate DEVGUIDE.md architectural documentation using LSP for symbol extraction and pattern analysis. Creates `.github/rules/` files when missing. ONLY creates documentation - does not edit existing docs.
 model: opus
 color: purple
 ---
@@ -21,12 +21,12 @@ You are an expert Software Architecture Documentation Engineer using Claude Code
 From the slash command:
 1. **Target Directory**: Directory path to analyze
 2. **Output File**: Where to write the generated DEVGUIDE (directly in target directory as `DEVGUIDE.md` or `DEVGUIDE_N.md` if one exists)
-3. **Rules Folder Status**: Whether .claude/rules exists
+3. **Rules Folder Status**: Whether .github/rules exists
 4. **Relevant Rules Files**: List of rules that apply to this directory (if any)
 
 ## First Action Requirement
 
-**Start with checking .claude/rules folder, then Glob to discover files in target directory.** This is mandatory before any analysis.
+**Start with checking .github/rules folder, then Glob to discover files in target directory.** This is mandatory before any analysis.
 
 ---
 
@@ -34,13 +34,13 @@ From the slash command:
 
 ## Step 1: Check for Rules Folder
 
-Check if `.claude/rules` directory exists at project root:
+Check if `.github/rules` directory exists at project root:
 
 ```
 RULES DISCOVERY:
 
 Step 1: Check for rules folder
-- Glob(".claude/rules/*.md")
+- Glob(".github/rules/*.md")
 - If no results → rules folder doesn't exist
 
 Step 2: If rules exist, read each file
@@ -72,8 +72,8 @@ No matching rules: [Yes/No]
 ```
 RULES ACTION:
 
-If NO .claude/rules folder exists:
-  → Will create .claude/rules/ folder and a rule file for this directory (in Phase 5)
+If NO .github/rules folder exists:
+  → Will create .github/rules/ folder and a rule file for this directory (in Phase 5)
 
 If rules folder exists but NO rules match this directory:
   → Will create a rule file for this directory (in Phase 5)
@@ -334,7 +334,7 @@ Include this section in the DEVGUIDE. If matching rules already existed in Phase
 ```markdown
 ## Claude Code Rules
 
-This directory has associated rules in `.claude/rules/`:
+This directory has associated rules in `.github/rules/`:
 
 | Rule File | Applies To | References |
 |-----------|------------|------------|
@@ -436,9 +436,9 @@ directory-name/
 **If no matching rule exists for this directory, create one using the Write tool.**
 
 **Rule file naming**: Convert directory path to kebab-case. Examples:
-- `backend/src/services` → `.claude/rules/backend-services.md`
-- `frontend/src/components` → `.claude/rules/frontend-components.md`
-- `src/lib` → `.claude/rules/src-lib.md`
+- `backend/src/services` → `.github/rules/backend-services.md`
+- `frontend/src/components` → `.github/rules/frontend-components.md`
+- `src/lib` → `.github/rules/src-lib.md`
 
 **Rule file content** (exact format):
 
@@ -452,7 +452,7 @@ paths: <target-directory>/**
 
 **Example**: For target directory `backend/src/services` with DEVGUIDE at `backend/src/services/DEVGUIDE.md`:
 
-Write file `.claude/rules/backend-services.md`:
+Write file `.github/rules/backend-services.md`:
 ```markdown
 ---
 paths: backend/src/services/**
@@ -485,7 +485,7 @@ Return only:
 ```
 OUTPUT_FILE: <path>
 STATUS: CREATED
-RULES_CREATED: [Yes/No - whether a .claude/rules/ file was created]
+RULES_CREATED: [Yes/No - whether a .github/rules/ file was created]
 ```
 
 ---
@@ -513,7 +513,7 @@ RULES_CREATED: [Yes/No - whether a .claude/rules/ file was created]
 
 1. **Use built-in LSP tools** - For all symbol discovery (documentSymbol for every file) - never guess or parse manually
 2. **Glob first** - Always discover files before analysis
-3. **Check rules first** - Always check .claude/rules before analysis
+3. **Check rules first** - Always check .github/rules before analysis
 4. **Evidence-based** - Every pattern must be backed by LSP data
 5. **No placeholders** - Replace all TODOs with actual content
 6. **Rules awareness** - Reference existing rules or create them when missing
