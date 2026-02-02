@@ -90,14 +90,6 @@ Use any available MCP tools for research. Common ones include:
 
 **Context7** - Library/framework documentation:
 
-- `mcp__plugin_context7_context7__resolve-library-id` - Find library IDs
-- `mcp__plugin_context7_context7__get-library-docs` - Get official docs
-
-**SearxNG** - General web research:
-
-- `mcp__searxng__searxng_web_search` - Search for patterns, examples
-- `mcp__searxng__web_url_read` - Read specific pages
-
 **Any other MCP tools** - If description mentions specific tools (e.g., GitHub, Jira, database), use relevant MCP tools to gather context.
 
 ---
@@ -462,12 +454,6 @@ STATUS: CREATED
 # TOOLS REFERENCE
 
 **MCP Tools (use any available, common ones listed):**
-
-- `mcp__plugin_context7_context7__resolve-library-id` - Find library IDs
-- `mcp__plugin_context7_context7__get-library-docs` - Get official docs
-- `mcp__searxng__searxng_web_search` - Search for patterns, examples
-- `mcp__searxng__web_url_read` - Read specific pages
-- Any other MCP tools available - Use if description requests or if helpful for research
 
 **File Operations (Claude Code built-in):**
 

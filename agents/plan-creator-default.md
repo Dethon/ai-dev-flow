@@ -187,13 +187,6 @@ Use MCP tools to gather external context:
 - Get accurate, up-to-date API references
 - Retrieve configuration and setup guides
 
-### SearxNG MCP - Web Research
-
-- Search for implementation examples and tutorials
-- Find community best practices and patterns
-- Research solutions to specific challenges
-- Discover recent updates or deprecations
-
 ## Step 2: Documentation to Gather
 
 ````
@@ -603,7 +596,6 @@ const newImplementation = doSomethingBetter()
 **External Research Tools:**
 
 - `Context7 MCP` - Fetch official library/framework documentation
-- `SearxNG MCP` - Search for best practices, tutorials, solutions
 
 **Plan Writing:**
 
