@@ -28,10 +28,12 @@ Uses Claude Code's built-in Task Management System for dependency tracking and v
 The user invoked this skill with arguments: `$ARGUMENTS`
 
 **ONLY use what's already available:**
+
 - The arguments above
 - Conversation history (already in context)
 
 **DO NOT:**
+
 - view files unless the user explicitly asks you to
 - grep or explore the codebase
 - Use glob to find files
@@ -78,6 +80,7 @@ Follow test-driven development for every task that involves behavior changes. Fo
 ### Step 3: Run Exit Criteria
 
 Before declaring completion:
+
 1. Run the verification (tests, commands, etc.)
 2. If pass → "Exit criteria passed"
 3. If fail → fix issues and retry
@@ -85,6 +88,7 @@ Before declaring completion:
 ### Step 4: Loop Until Done
 
 Continue until:
+
 - All tasks completed AND
 - Exit criteria pass
 
@@ -93,6 +97,7 @@ Say **"Exit criteria passed"** when complete.
 ## Visual Progress
 
 Press `ctrl+t` to see task progress:
+
 ```
 Tasks (2 done, 1 in progress, 3 open)
 ✓ #1 Fix token validation
@@ -108,11 +113,11 @@ Tasks (2 done, 1 in progress, 3 open)
 
 ## Error Handling
 
-| Scenario | Action |
-|----------|--------|
-| Context unclear | Ask for clarification |
-| Exit criteria fail | Fix issues and retry |
-| Context compacted | TaskList → continue |
+| Scenario           | Action                |
+| ------------------ | --------------------- |
+| Context unclear    | Ask for clarification |
+| Exit criteria fail | Fix issues and retry  |
+| Context compacted  | TaskList → continue   |
 
 ## Example Usage
 

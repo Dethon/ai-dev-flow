@@ -18,6 +18,7 @@ Uses Claude Code's built-in Task Management System for dependency tracking and v
 ## Supported Plan Types
 
 This command works with plans from:
+
 - `/plan-creator` - Implementation plans
 - `/bug-plan-creator` - Bug fix plans
 - `/code-quality-plan-creator` - LSP-powered quality plans
@@ -35,6 +36,7 @@ This command works with plans from:
 The user invoked this skill with arguments: `$ARGUMENTS`
 
 The first argument is the plan file path. view it and extract tasks. **DO NOT read other files, grep, or explore the codebase** - just parse the plan:
+
 1. **Files to Edit** - existing files that need modification
 2. **Files to Create** - new files to create
 3. **Implementation Plan** - per-file implementation instructions
@@ -91,6 +93,7 @@ If the plan has no `## Dependency Graph` section (older plans), infer dependenci
 A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a blocking task is marked `completed`, it's automatically removed from the blocked list. A task becomes **ready** when its blockedBy list is empty.
 
 **Task types:**
+
 - File edits/creates → one task per file
 - Major requirements → one task each
 - Exit criteria verification → final task, blocked by all others
@@ -133,6 +136,7 @@ Repeat until all tasks completed → say **"Swarm complete"**
 ## Visual Progress
 
 Press `ctrl+t` to see task progress:
+
 ```
 Tasks (2 done, 2 in progress, 3 open)
 ■ #3 Implement auth (Worker-1)
@@ -142,12 +146,12 @@ Tasks (2 done, 2 in progress, 3 open)
 
 ## Error Handling
 
-| Scenario | Action |
-|----------|--------|
-| Plan file not found | Report error and exit |
+| Scenario              | Action                                         |
+| --------------------- | ---------------------------------------------- |
+| Plan file not found   | Report error and exit                          |
 | Worker fails mid-task | Other workers continue; task stays in_progress |
-| All tasks blocked | Circular dependency - review task graph |
-| Context compacted | TaskList → spawn ready tasks → end turn |
+| All tasks blocked     | Circular dependency - review task graph        |
+| Context compacted     | TaskList → spawn ready tasks → end turn        |
 
 ## Stopping
 

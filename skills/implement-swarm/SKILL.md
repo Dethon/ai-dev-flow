@@ -30,10 +30,12 @@ Uses Claude Code's built-in Task Management System for dependency tracking and v
 The user invoked this skill with arguments: `$ARGUMENTS`
 
 **ONLY use what's already available:**
+
 - The arguments above
 - Conversation history (already in context)
 
 **DO NOT:**
+
 - view files unless the user explicitly asks you to
 - grep or explore the codebase
 - Use glob to find files
@@ -100,6 +102,7 @@ Repeat until all tasks completed → say **"Swarm complete"**
 ## Visual Progress
 
 Press `ctrl+t` to see task progress:
+
 ```
 Tasks (2 done, 2 in progress, 3 open)
 ■ #3 Fix validation (Worker-1)
@@ -115,12 +118,12 @@ Tasks (2 done, 2 in progress, 3 open)
 
 ## Error Handling
 
-| Scenario | Action |
-|----------|--------|
-| Context unclear | Ask for clarification |
-| Worker fails mid-task | Other workers continue |
-| All tasks blocked | Circular dependency |
-| Context compacted | TaskList → spawn ready tasks → end turn |
+| Scenario              | Action                                  |
+| --------------------- | --------------------------------------- |
+| Context unclear       | Ask for clarification                   |
+| Worker fails mid-task | Other workers continue                  |
+| All tasks blocked     | Circular dependency                     |
+| Context compacted     | TaskList → spawn ready tasks → end turn |
 
 ## Stopping
 

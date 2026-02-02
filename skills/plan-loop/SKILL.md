@@ -21,6 +21,7 @@ Uses Claude Code's built-in Task Management System for dependency tracking and v
 ## Supported Plan Types
 
 This command works with plans from:
+
 - `/plan-creator` - Implementation plans
 - `/bug-plan-creator` - Bug fix plans
 - `/code-quality-plan-creator` - LSP-powered quality plans
@@ -37,6 +38,7 @@ This command works with plans from:
 The user invoked this skill with arguments: `$ARGUMENTS`
 
 The first argument is the plan file path. view it and extract tasks. **DO NOT read other files, grep, or explore the codebase** - just parse the plan. **Never spawn sub-agents or delegate work — do ALL implementation directly yourself.**
+
 1. **Files to Edit** - existing files that need modification
 2. **Files to Create** - new files to create
 3. **Implementation Plan** - per-file implementation instructions
@@ -93,6 +95,7 @@ If the plan has no `## Dependency Graph` section (older plans), infer dependenci
 A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a blocking task is marked `completed`, it's automatically removed from the blocked list. A task becomes **ready** (executable) when its blockedBy list is empty.
 
 **Task types:**
+
 - File edits/creates → one task per file
 - Major requirements → one task each
 - Exit criteria verification → final task, blocked by all others
@@ -126,6 +129,7 @@ Follow test-driven development for every task. The plan's dependency graph ensur
 ### Step 4: Run Exit Criteria
 
 Before declaring completion:
+
 1. Find the `## Exit Criteria` section in the plan
 2. Run the verification command
 3. If it passes, say "Exit criteria passed - implementation complete"
@@ -134,6 +138,7 @@ Before declaring completion:
 ### Step 5: Loop Until Done
 
 Use TaskList to check progress:
+
 - If all tasks completed AND exit criteria PASS → say "Exit criteria passed" and stop
 - If exit criteria FAIL → fix issues and retry
 - If tasks remain incomplete → continue with next unblocked task
@@ -143,6 +148,7 @@ Use TaskList to check progress:
 ## Visual Progress
 
 Press `ctrl+t` to see task progress:
+
 ```
 Tasks (2 done, 1 in progress, 3 open)
 ✓ #1 Setup database schema
@@ -155,6 +161,7 @@ Tasks (2 done, 1 in progress, 3 open)
 ## Context Recovery
 
 If context compacts:
+
 1. Call TaskList to see all tasks and their status
 2. view the plan file again
 3. Find next pending unblocked task
@@ -162,11 +169,11 @@ If context compacts:
 
 ## Error Handling
 
-| Scenario | Action |
-|----------|--------|
-| Plan file not found | Report error and exit |
-| Exit criteria fail | Fix issues and retry |
-| Context compacted | TaskList → re-read plan → continue |
+| Scenario            | Action                             |
+| ------------------- | ---------------------------------- |
+| Plan file not found | Report error and exit              |
+| Exit criteria fail  | Fix issues and retry               |
+| Context compacted   | TaskList → re-read plan → continue |
 
 ## Example Usage
 

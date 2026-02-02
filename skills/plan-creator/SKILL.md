@@ -73,7 +73,16 @@ prompt: "Create architectural plan: <corrected task description>"
 
 Output a status message like "Creating plan..." and **end your turn**. The system wakes you when the agent finishes.
 
-### Step 3: Report Result
+### Step 3: Commit the Plan
+
+After the plan file is created, commit it to the repository:
+
+```bash
+git add docs/plans/{plan-file}.md
+git commit -m "docs(plan): add {task-slug} implementation plan"
+```
+
+### Step 4: Report Result
 
 ```
 ## Architectural Plan Created
