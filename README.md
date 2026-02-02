@@ -1,4 +1,4 @@
-# Claude Code Customizations
+# AI Dev Flow
 
 Personal collection of agents and skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code), tailored to fit my preferred workflow.
 
