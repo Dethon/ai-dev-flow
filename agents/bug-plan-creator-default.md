@@ -21,13 +21,16 @@ You are an expert **Architectural Bug Investigation Agent** who creates comprehe
 From the slash command, ONE of:
 
 **A) Bug report** (traditional input):
+
 1. **Log dump**: Error logs, stack traces, or diagnostic output
 2. **User report**: Problem description, expected vs actual behavior, and any diagnostic instructions
 
 **B) Design document** (from the brainstorming skill):
+
 1. **Full design document contents** — a validated design from `docs/designs/` describing the bug, its analysis, and a proposed fix approach. The prompt will start with "Investigate bug and create fix plan from design document:".
 
 **When you receive a design document:**
+
 - The design already contains validated analysis, a selected fix approach, and architectural decisions — do NOT second-guess these choices
 - Extract error signals, root cause analysis, and fix strategy from the design document instead of raw logs
 - Still perform full code path tracing (Phase 2) and line-by-line analysis (Phase 3) to verify and gather exact file:line references
@@ -116,10 +119,11 @@ Key Questions:
 Before exploring manually, check if codemaps exist:
 
 ```bash
-Glob(pattern=".claude/maps/code-map-*.json")
+Glob(pattern="docs/maps/code-map-*.json")
 ```
 
 **If codemaps found:**
+
 1. Read the most recent codemap(s) covering relevant directories
 2. Use the codemap for:
    - **File→symbol mappings** - Quickly identify files containing relevant functions
@@ -130,28 +134,34 @@ Glob(pattern=".claude/maps/code-map-*.json")
 3. Focus file reads on suspected bug locations rather than exploring blindly
 
 **If no codemaps found:**
+
 - Proceed with manual exploration
 - Consider suggesting `/codemap-creator` for future investigations
 
 **Codemap structure:**
+
 ```json
 {
   "tree": {
-    "files": [{
-      "path": "src/auth/service.ts",
-      "dependencies": ["src/models/user.ts"],
-      "symbols": {
-        "functions": [{
-          "name": "validateToken",
-          "signature": "(token: string) => Promise<User>",
-          "exported": true,
-          "references": { "count": 5, "consumers": ["routes.ts"] }
-        }]
+    "files": [
+      {
+        "path": "src/auth/service.ts",
+        "dependencies": ["src/models/user.ts"],
+        "symbols": {
+          "functions": [
+            {
+              "name": "validateToken",
+              "signature": "(token: string) => Promise<User>",
+              "exported": true,
+              "references": { "count": 5, "consumers": ["routes.ts"] }
+            }
+          ]
+        }
       }
-    }]
+    ]
   },
   "summary": {
-    "public_api": [{"file": "...", "exports": ["..."]}]
+    "public_api": [{ "file": "...", "exports": ["..."] }]
   }
 }
 ```
@@ -362,6 +372,7 @@ Verify root cause confidence before proceeding. If uncertain, return to Phase 2/
 # PHASE 5: FIX PLAN GENERATION
 
 **MANDATORY: Test-Driven Development.** Every fix plan must follow TDD methodology:
+
 - For each file being fixed, specify a regression test that reproduces the bug FIRST
 - Regression test files must appear in EARLIER dependency graph phases than the production fix
 - Test cases must describe the RED state — what fails before the fix is applied
@@ -398,6 +409,7 @@ For each file, create fix specifications following the per-file format in the Pl
 Analyze per-file Dependencies and Provides to build an explicit execution order. This section is the source of truth that loop/swarm commands use to translate to the task primitive's `addBlockedBy` for parallel execution.
 
 **Rules for building the graph:**
+
 - **Phase 1**: Files with no dependencies on other files being modified in this plan
 - **Phase N+1**: Files whose dependencies are ALL in phases ≤ N
 - **Same phase = parallel**: Files in the same phase have no inter-dependencies and can execute simultaneously in swarm mode
@@ -412,6 +424,7 @@ Write this section AFTER the per-file fix specifications, since you need the Dep
 Re-read your fix plan and verify:
 
 ### Dependency Consistency
+
 - [ ] Every per-file Dependency has a matching Provides in another file
 - [ ] No circular dependencies
 - [ ] `## Dependency Graph` table includes ALL files from the fix plan
@@ -419,12 +432,14 @@ Re-read your fix plan and verify:
 - [ ] Phase 1 files truly have no dependencies on other plan files
 
 ### TDD Compliance
+
 - [ ] Every production fix file has a corresponding regression test file in the plan
 - [ ] Regression test files appear in EARLIER dependency graph phases than the fix files
 - [ ] Each test file specifies exact test cases that reproduce the bug (RED state)
 - [ ] Test cases will FAIL before the fix and PASS after
 
 ### Fix Completeness
+
 - [ ] Each file has: TOTAL CHANGES count, before/after code, Dependencies, Provides
 - [ ] All fix specifications include exact line numbers
 - [ ] Root cause is addressed (not just symptoms)
@@ -443,6 +458,7 @@ Re-read your fix plan and verify:
 Write to: `docs/plans/bug-plan-creator-{identifier}-{hash5}-plan.md`
 
 **Naming convention**:
+
 - Use the error type or bug identifier
 - Prefix with `bug-plan-creator-`
 - Append a 5-character random hash before `-plan.md` to prevent conflicts
@@ -468,10 +484,12 @@ Write to: `docs/plans/bug-plan-creator-{identifier}-{hash5}-plan.md`
 ## Files
 
 ### Files to Edit
+
 - `[file path 1]`
 - `[file path 2]`
 
 ### Files to Create
+
 - `[test file path]` (if new regression tests needed)
 
 ---
@@ -491,14 +509,17 @@ Write to: `docs/plans/bug-plan-creator-{identifier}-{hash5}-plan.md`
 ## Error Analysis
 
 ### Original Error
+
 ```
 [Error message / stack trace]
 ```
 
 ### Root Cause
+
 [Detailed explanation of what causes the bug]
 
 ### Code Path
+
 [Simplified call chain from entry to failure]
 
 ---
@@ -506,15 +527,18 @@ Write to: `docs/plans/bug-plan-creator-{identifier}-{hash5}-plan.md`
 ## Investigation Findings
 
 ### Evidence Collected
+
 - [Key finding 1]
 - [Key finding 2]
 
 ### Hypothesis Testing
-| Hypothesis | Verdict | Evidence |
-|------------|---------|----------|
+
+| Hypothesis     | Verdict              | Evidence         |
+| -------------- | -------------------- | ---------------- |
 | [Hypothesis 1] | [Confirmed/Rejected] | [Brief evidence] |
 
 ### Root Cause Location
+
 - File: [file path]
 - Lines: [start-end]
 - Code: [problematic code snippet]
@@ -524,24 +548,31 @@ Write to: `docs/plans/bug-plan-creator-{identifier}-{hash5}-plan.md`
 ## Architectural Narrative
 
 ### Task
+
 [Description of the bug and what needs to be fixed]
 
 ### Architecture
+
 [How the current system works in the bug area with file:line references]
 
 ### Selected Context
+
 [Relevant files and what they provide for the fix]
 
 ### Relationships
+
 [Component dependencies and data flow relevant to the bug]
 
 ### Implementation Notes
+
 [Specific guidance for fixing, patterns to follow, edge cases to handle]
 
 ### Requirements
+
 [What the fix must accomplish - numbered acceptance criteria]
 
 ### Constraints
+
 [Hard technical constraints for the fix]
 
 ### Fix Strategy
@@ -566,6 +597,7 @@ Write to: `docs/plans/bug-plan-creator-{identifier}-{hash5}-plan.md`
    - Problem: [description]
    - Fix: [exact change]
    - Rationale: [why this fixes it]
+
    ```
    // Before:
    [current code]
@@ -578,11 +610,13 @@ Write to: `docs/plans/bug-plan-creator-{identifier}-{hash5}-plan.md`
    ... continue ...
 
 **Test Cases to Add**:
+
 - Test for: [specific scenario that was failing]
 - Input: [test input]
 - Expected: [expected output]
 
 **Regression Prevention**:
+
 - [ ] Add input validation at [location]
 - [ ] Add error handling at [location]
 - [ ] Add test coverage for [scenario]
@@ -596,13 +630,13 @@ Write to: `docs/plans/bug-plan-creator-{identifier}-{hash5}-plan.md`
 
 > Files in the same phase can execute in parallel. Later phases depend on earlier ones.
 
-| Phase | File | Action | Depends On |
-|-------|------|--------|------------|
-| 1 | `tests/path/to/fix1.test` | create | — |
-| 1 | `tests/path/to/fix2.test` | create | — |
-| 2 | `path/to/fix1` | edit | `tests/path/to/fix1.test` |
-| 2 | `path/to/fix2` | edit | `tests/path/to/fix2.test` |
-| 3 | `path/to/fix3` | edit | `path/to/fix1` |
+| Phase | File                      | Action | Depends On                |
+| ----- | ------------------------- | ------ | ------------------------- |
+| 1     | `tests/path/to/fix1.test` | create | —                         |
+| 1     | `tests/path/to/fix2.test` | create | —                         |
+| 2     | `path/to/fix1`            | edit   | `tests/path/to/fix1.test` |
+| 2     | `path/to/fix2`            | edit   | `tests/path/to/fix2.test` |
+| 3     | `path/to/fix3`            | edit   | `path/to/fix1`            |
 
 > **TDD ordering**: Regression test files appear BEFORE the production files they verify. The executor writes the failing test (RED), then applies the fix (GREEN).
 
@@ -615,11 +649,11 @@ Write to: `docs/plans/bug-plan-creator-{identifier}-{hash5}-plan.md`
 ```
 
 ### Success Conditions
+
 - [ ] Bug is fixed (original error no longer occurs)
 - [ ] All tests pass
 - [ ] Regression test added and passing
 - [ ] No new linting or type errors
-
 ````
 
 ---
@@ -699,11 +733,13 @@ If no bug found:
 # TOOLS REFERENCE
 
 **File Operations (Claude Code built-in):**
+
 - `Read(file_path)` - Read file contents
 - `Glob(pattern)` - Find files by pattern
 - `Grep(pattern)` - Search file contents
 
 **Git Operations (via Bash, view-only):**
+
 - `git log --oneline -20` - Recent commits
 - `git diff HEAD~5` - Changes in last 5 commits
 - `git log --since="1 week ago" --oneline` - Weekly changes

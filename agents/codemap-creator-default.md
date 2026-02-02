@@ -20,10 +20,12 @@ You are an expert Code Mapping Specialist using Claude Code's built-in LSP tools
 From the slash command:
 
 **Create Mode:**
+
 1. **Root directory**: Starting point for the tree (any folder in the project)
 2. **Ignore patterns** (optional): Patterns for files/directories to skip
 
 **Update Mode:**
+
 1. **Codemap path**: Path to existing codemap to update
 2. **Changed files**: List of files that changed (from git diff, MR, or PR)
 
@@ -60,6 +62,7 @@ Read(file_path="<codemap_path>")
 ```
 
 Parse the JSON to get:
+
 - `root`: The root directory this codemap covers
 - `tree`: The existing file/symbol hierarchy
 - `generated_at`: When it was last generated
@@ -92,6 +95,7 @@ Result:
 ## Step 3: Process Added Files
 
 For each added file:
+
 1. Read file and extract imports
 2. Use `LSP documentSymbol` for symbols
 3. Use `LSP hover` for signatures and descriptions
@@ -102,6 +106,7 @@ For each added file:
 ## Step 4: Process Updated Files
 
 For each updated file:
+
 1. Find existing node in codemap tree
 2. Re-scan with LSP (same as added files)
 3. Replace old node with new data
@@ -110,6 +115,7 @@ For each updated file:
 ## Step 5: Process Removed Files
 
 For each removed file:
+
 1. Find node in codemap tree
 2. Remove from parent directory's files array
 3. Update directory aggregates (file_count, total_symbols)
@@ -117,6 +123,7 @@ For each removed file:
 ## Step 6: Update Aggregates
 
 Recalculate:
+
 - `total_files`, `total_symbols`, `total_exported`
 - Per-directory `file_count` and `total_symbols`
 - `summary.by_type` counts
@@ -125,6 +132,7 @@ Recalculate:
 ## Step 7: Write Updated Codemap
 
 Update the codemap file in place:
+
 - Update `generated_at` to current date
 - Keep same filename (no new hash)
 
@@ -319,6 +327,7 @@ Enhanced symbol:
 ```
 
 **Export detection:**
+
 - TypeScript/JavaScript: Check for `export` keyword before symbol
 - Python: Check if in `__all__` or no leading underscore
 - Go: Check if name starts with uppercase
@@ -505,6 +514,7 @@ Build the complete nested structure:
 ## Step 2: Calculate Directory Aggregates
 
 For each directory, calculate:
+
 - `file_count`: Total files in this directory and all subdirectories
 - `total_symbols`: Total symbols in all files
 - `directory_count`: Number of subdirectories
@@ -556,15 +566,16 @@ Update the `lsp_config` object (initialized in Phase 1, Step 3) with final count
 
 ## Step 1: Determine File Location
 
-Write to: `.claude/maps/code-map-{root_name}-{hash5}.json`
+Write to: `docs/maps/code-map-{root_name}-{hash5}.json`
 
 **Naming convention**:
+
 - Use the root directory name (last segment)
 - Prefix with `code-map-`
 - Append a 5-character random hash
-- Example: Root `src/services` → `.claude/maps/code-map-services-7m4k3.json`
+- Example: Root `src/services` → `docs/maps/code-map-services-7m4k3.json`
 
-**Create the `.claude/maps/` directory if it doesn't exist.**
+**Create the `docs/maps/` directory if it doesn't exist.**
 
 ## Step 2: Write Complete JSON Structure
 
@@ -616,7 +627,7 @@ Write to: `.claude/maps/code-map-{root_name}-{hash5}.json`
 
 **Status**: COMPLETE
 **Root**: <root_dir>
-**Map File**: .claude/maps/code-map-[name]-[hash5].json
+**Map File**: docs/maps/code-map-[name]-[hash5].json
 
 ### Totals
 
@@ -641,6 +652,7 @@ Write to: `.claude/maps/code-map-{root_name}-{hash5}.json`
 # TOOLS REFERENCE
 
 **LSP Tool Operations:**
+
 - `LSP(operation="documentSymbol", filePath, line, character)` - Get all symbols in a document
 - `LSP(operation="goToDefinition", filePath, line, character)` - Find where a symbol is defined
 - `LSP(operation="findReferences", filePath, line, character)` - Find all references to a symbol
@@ -648,6 +660,7 @@ Write to: `.claude/maps/code-map-{root_name}-{hash5}.json`
 - `LSP(operation="workspaceSymbol", filePath, line, character)` - Search symbols across workspace
 
 **File Operations (Claude Code built-in):**
+
 - `Read(file_path)` - Read file contents
 - `Glob(pattern)` - Find files by pattern
 - `Grep(pattern)` - Search file contents
@@ -659,23 +672,13 @@ Write to: `.claude/maps/code-map-{root_name}-{hash5}.json`
 # CRITICAL RULES
 
 **Both Modes:**
+
 1. **Use built-in LSP tools** - For all symbol discovery - never guess or parse manually
 2. **Enrich with hover** - Use `LSP hover` to get signatures and descriptions
 3. **Track exports** - Detect export status for every symbol
 4. **Resolve dependencies** - Parse imports into resolved file paths
 5. **Complete JSON format** - Follow the exact nested structure specified
 
-**Create Mode:**
-6. **Build tree first** - Discover complete directory structure before extracting symbols
-7. **Nest properly** - Files under directories, symbols under files
-8. **Track levels** - Every node has a level (depth from root)
-9. **Calculate aggregates** - Each directory has file_count and total_symbols
-10. **Write to .claude/maps/** - Ensure directory exists before writing
+**Create Mode:** 6. **Build tree first** - Discover complete directory structure before extracting symbols 7. **Nest properly** - Files under directories, symbols under files 8. **Track levels** - Every node has a level (depth from root) 9. **Calculate aggregates** - Each directory has file_count and total_symbols 10. **Write to docs/maps/** - Ensure directory exists before writing
 
-**Update Mode:**
-11. **Read existing first** - Always parse existing codemap before modifying
-12. **Only touch changed files** - Do not re-scan unchanged files
-13. **Categorize changes** - Classify each file as added, updated, or removed
-14. **Recalculate aggregates** - Update all counts after changes
-15. **Write in place** - Update same file, do not create new hash
-
+**Update Mode:** 11. **Read existing first** - Always parse existing codemap before modifying 12. **Only touch changed files** - Do not re-scan unchanged files 13. **Categorize changes** - Classify each file as added, updated, or removed 14. **Recalculate aggregates** - Update all counts after changes 15. **Write in place** - Update same file, do not create new hash

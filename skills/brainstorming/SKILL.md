@@ -14,6 +14,7 @@ Start by understanding the current project context, then ask questions one at a 
 ## The Process
 
 **Understanding the idea:**
+
 - Check out the current project state first (files, docs, recent commits)
 - Check for existing codemaps before exploring manually (see below)
 - Use the `AskUserQuestion` tool for ALL questions — never ask questions via plain chat text
@@ -28,10 +29,11 @@ Start by understanding the current project context, then ask questions one at a 
 Before exploring manually, check if codemaps exist:
 
 ```
-Glob(pattern=".claude/maps/code-map-*.json")
+Glob(pattern="docs/maps/code-map-*.json")
 ```
 
 **If codemaps found:**
+
 1. Read the most recent codemap(s) covering relevant directories
 2. Use the codemap for:
    - **File→symbol mappings** - Know what's in each file without reading it
@@ -42,15 +44,18 @@ Glob(pattern=".claude/maps/code-map-*.json")
 3. Only read specific files when you need implementation details beyond the codemap
 
 **If no codemaps found:**
+
 - Proceed with manual exploration (files, docs, recent commits)
 - Consider suggesting `/codemap-creator` for future brainstorming sessions
 
 **Exploring approaches:**
+
 - Use `AskUserQuestion` to propose 2-3 different approaches with trade-offs as selectable options
 - Lead with your recommended option (list it first and append "(Recommended)" to the label)
 - Use the `description` field on each option to explain trade-offs and reasoning
 
 **Presenting the design:**
+
 - Once you believe you understand what you're building, present the design
 - Break it into sections of 200-300 words
 - Use `AskUserQuestion` after each section to check whether it looks right so far (e.g., options: "Looks good", "Needs changes")
@@ -60,6 +65,7 @@ Glob(pattern=".claude/maps/code-map-*.json")
 ## After the Design
 
 **Documentation:**
+
 - Write the validated design to `docs/designs/YYYY-MM-DD-<topic>-design.md`
 - Use elements-of-style:writing-clearly-and-concisely skill if available
 - Commit the design document to git

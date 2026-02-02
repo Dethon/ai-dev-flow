@@ -14,22 +14,27 @@ Generate or update a hierarchical code map using Claude Code's built-in LSP tool
 ## Modes
 
 ### Create Mode (default)
+
 Generate a new codemap from scratch:
+
 ```bash
 /codemap-creator src/
 /codemap-creator . --ignore "node_modules,dist"
 ```
 
 ### Update Mode
+
 Update an existing codemap with only changed files:
+
 ```bash
-/codemap-creator --update .claude/maps/code-map-src-a3f9e.json --diff
-/codemap-creator --update .claude/maps/code-map-src-a3f9e.json --pr 456
+/codemap-creator --update docs/maps/code-map-src-a3f9e.json --diff
+/codemap-creator --update docs/maps/code-map-src-a3f9e.json --pr 456
 ```
 
 ## Arguments
 
 ### Create Mode
+
 - **Root directory** (required): Starting point for the tree
   - `/codemap-creator src/` → maps from `src/` as root
   - `/codemap-creator backend/services` → maps from `services/` as root
@@ -39,6 +44,7 @@ Update an existing codemap with only changed files:
   - `/codemap-creator src/ --ignore "*.test.ts,node_modules"`
 
 ### Update Mode
+
 - **--update <codemap>** (required): Path to existing codemap to update
 - **--diff** (optional): Use `git diff` to find changed files (uncommitted + staged)
 - **--pr <id>** (optional): Use GitHub PR to find changed files (via `gh`)
@@ -73,6 +79,7 @@ The user invoked this skill with arguments: `$ARGUMENTS`
 Determine mode from these arguments:
 
 **Update Mode** (if `--update` present):
+
 1. Extract codemap path after `--update`
 2. Detect diff source:
    - `--diff` → use `git diff --name-only` + `git diff --staged --name-only`
@@ -81,6 +88,7 @@ Determine mode from these arguments:
 3. Get list of changed files
 
 **Create Mode** (default):
+
 1. **Root directory** (required, first argument)
    - If not provided, default to `.` (current directory)
    - Validate directory exists
@@ -104,6 +112,7 @@ Filter to only files within the codemap's root directory.
 ### Step 3: Launch Agent
 
 **Create Mode:**
+
 ```
 subagent_type: "essentials:codemap-creator-default"
 run_in_background: true
@@ -111,6 +120,7 @@ prompt: "MODE: create\nRoot: <root_dir>\nIgnore: <patterns or none>"
 ```
 
 **Update Mode:**
+
 ```
 subagent_type: "essentials:codemap-creator-default"
 run_in_background: true
@@ -122,11 +132,12 @@ Output a status message like "Creating code map..." and **end your turn**. The s
 ### Step 4: Report Result
 
 **Create Mode:**
+
 ```
 ## Hierarchical Code Map Created (LSP)
 
 **Root**: <root_dir>
-**Map**: .claude/maps/code-map-{name}-{hash5}.json
+**Map**: docs/maps/code-map-{name}-{hash5}.json
 
 ### Totals
 
@@ -141,6 +152,7 @@ Next: Read the map file for hierarchical code navigation.
 ```
 
 **Update Mode:**
+
 ```
 ## Code Map Updated (LSP)
 
@@ -163,15 +175,15 @@ Next: Codemap is current with latest changes.
 
 ## Error Handling
 
-| Scenario | Action |
-|----------|--------|
-| Root directory not found | Report error, suggest valid paths |
-| Codemap not found (update) | Report error, suggest create mode |
-| No files in tree | Report empty, suggest different root |
-| No changed files (update) | Report "already up to date" |
-| gh not installed | Report error, suggest install |
-| PR not found | Report error, check ID |
-| LSP fails for file | Log error, mark file, continue |
+| Scenario                   | Action                               |
+| -------------------------- | ------------------------------------ |
+| Root directory not found   | Report error, suggest valid paths    |
+| Codemap not found (update) | Report error, suggest create mode    |
+| No files in tree           | Report empty, suggest different root |
+| No changed files (update)  | Report "already up to date"          |
+| gh not installed           | Report error, suggest install        |
+| PR not found               | Report error, check ID               |
+| LSP fails for file         | Log error, mark file, continue       |
 
 ## Example Usage
 
@@ -183,9 +195,9 @@ Next: Codemap is current with latest changes.
 /codemap-creator .
 
 # Update mode - git diff (uncommitted changes)
-/codemap-creator --update .claude/maps/code-map-src-a3f9e.json
-/codemap-creator --update .claude/maps/code-map-src-a3f9e.json --diff
+/codemap-creator --update docs/maps/code-map-src-a3f9e.json
+/codemap-creator --update docs/maps/code-map-src-a3f9e.json --diff
 
 # Update mode - from PR
-/codemap-creator --update .claude/maps/code-map-src-a3f9e.json --pr 456
+/codemap-creator --update docs/maps/code-map-src-a3f9e.json --pr 456
 ```
