@@ -6,6 +6,7 @@ description: Generate and apply MR/PR description directly via gh or glab CLI (p
 skills: ["github-cli", "gitlab-cli"]
 model: opus
 context: fork
+agent: mr-description-creator-default
 ---
 
 # MR/PR Description Creator

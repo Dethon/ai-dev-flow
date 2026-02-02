@@ -4,6 +4,7 @@ allowed-tools: Task, Bash
 argument-hint: "<root_dir> [--ignore <patterns>] | --update <codemap> [--diff | --pr <id>]"
 description: Generate or update hierarchical code map from any directory as root, with nested tree structure (project)
 context: fork
+agent: codemap-creator-default
 model: opus
 ---
 

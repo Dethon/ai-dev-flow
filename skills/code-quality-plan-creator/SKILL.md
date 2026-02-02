@@ -4,6 +4,7 @@ allowed-tools: Task, Read
 argument-hint: "<file1> [file2] ... [fileN] or design-file-path"
 description: LSP-powered architectural code quality analysis - works with any executor (loop or swarm). Accepts file paths to analyze or a design file from /brainstorming.
 context: fork
+agent: code-quality-plan-creator-default
 model: opus
 ---
 
