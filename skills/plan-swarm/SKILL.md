@@ -27,6 +27,7 @@ This command works with plans from:
 - `<plan_path>` (required): Path to the plan file
 - `--workers N` (optional): Max concurrent workers (default: 3)
 - `--model MODEL` (optional): Model for workers: haiku, sonnet, opus (default: sonnet)
+- `--max-retries N` (optional): Max retry attempts per task (default: 5)
 
 ## Instructions
 
@@ -101,7 +102,7 @@ A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a block
 
 Mark each task `in_progress` before spawning its worker. Spawn up to N background workers in a **SINGLE message** (all Task calls in one response).
 
-**TDD in worker prompts:** Workers must follow red-green-refactor. Include TDD instructions in every worker prompt:
+**TDD in worker prompts:** Workers must follow red-green-refactor and report success/failure explicitly. Include TDD instructions in every worker prompt:
 
 ```json
 Task({
@@ -109,26 +110,49 @@ Task({
   "subagent_type": "general-purpose",
   "model": "sonnet",
   "run_in_background": true,
-  "allowed_tools": ["Read", "Edit", "Write", "Bash", "Glob", "Grep"],
-  "prompt": "Execute this ONE task using TDD then exit:\n\nTask ID: 1\nSubject: Implement auth middleware\nDescription: <full details from plan>\n\nTDD Protocol:\n- If this is a TEST FILE task: Write the tests, then run them and verify they FAIL (RED). Tests must fail because the feature is missing, not because of syntax errors.\n- If this is a PRODUCTION CODE task: Implement the code, then run the corresponding tests and verify they PASS (GREEN). Write only the minimum code needed to pass.\n- If this is a non-code task (config, types, docs): Execute directly.\n\nSteps:\n1. Execute the task following TDD protocol above\n2. Commit the changed files: git add <changed-files> && git commit -m \"<brief description of what was done>\"\n3. Output ONLY a one-line summary\n4. Exit immediately"
+  "prompt": "Execute this ONE task using TDD then exit:\n\nTask ID: 1\nSubject: Implement auth middleware\nDescription: <full details from plan>\n\nTDD Protocol:\n- If this is a TEST FILE task: Write the tests, then run them and verify they FAIL (RED). Tests must fail because the feature is missing, not because of syntax errors.\n- If this is a PRODUCTION CODE task: Implement the code, then run the corresponding tests and verify they PASS (GREEN). Write only the minimum code needed to pass.\n- If this is a non-code task (config, types, docs): Execute directly.\n\nSteps:\n1. Execute the task following TDD protocol above\n2. If successful: commit the changed files with git add <changed-files> && git commit -m \"<brief description>\"\n3. Output your final status in EXACTLY this format (no other text after):\n\n   SUCCESS Task-1: <one-line summary of what was done>\n   \n   OR if you could not complete the task:\n   \n   FAILURE Task-1: <reason for failure>\n   \n4. Exit immediately after outputting SUCCESS or FAILURE"
 })
 ```
+
+**CRITICAL**: The worker MUST output `SUCCESS Task-N:` or `FAILURE Task-N:` as its final line. The orchestrator parses this to determine next action.
 
 After all Task() calls return, output a status message like "3 workers launched. Waiting for completions." and **end your turn**. The system wakes you when a worker finishes.
 
 ### Step 4: Process Completions
 
-When a worker finishes, you are automatically woken. Then:
+When a worker finishes, you are automatically woken. **Parse the worker output** to determine success or failure:
 
-1. **TaskUpdate** — mark the finished worker's task as `completed`
+**If worker output contains `SUCCESS Task-N:`**
+1. **TaskUpdate** — mark task N as `completed`
 2. **TaskList()** — see overall progress and find newly unblocked tasks
-3. **Find ready tasks**: A task is ready when its status is `pending` AND its `blockedBy` list is empty. Completing a task automatically removes it from other tasks' `blockedBy` lists, potentially unblocking them.
+3. **Find ready tasks**: A task is ready when its status is `pending` AND its `blockedBy` list is empty
 4. Mark ready tasks `in_progress` and spawn new workers if slots available (respect worker limit N)
-5. Output status and **end your turn** — you will be woken on the next completion
+5. Output status and **end your turn**
 
-**Task lifecycle**: `pending` → (blocked until deps complete) → `in_progress` → `completed`
+**If worker output contains `FAILURE Task-N:`**
+1. Extract the failure reason from the output
+2. Check retry count for this task (track in memory: `retries[taskId]`)
+3. **If retries < max-retries** (default 5):
+   - Increment retry count: `retries[taskId]++`
+   - Keep task as `in_progress`
+   - Spawn a NEW worker with enhanced prompt including the failure context:
+   ```json
+   Task({
+     "description": "Task-N RETRY: ...",
+     "subagent_type": "general-purpose",
+     "run_in_background": true,
+     "prompt": "RETRY ATTEMPT (previous failure: <failure reason>)\n\n<original task prompt>\n\nThe previous attempt failed. Analyze what went wrong and try a different approach."
+   })
+   ```
+   - Output "Task N failed, retrying (attempt M of max-retries)..." and **end your turn**
+4. **If retries >= max-retries**:
+   - Mark task as `completed` with failure note in metadata: `TaskUpdate({ taskId: "N", status: "completed", metadata: { "failed": true, "reason": "<failure reason>" } })`
+   - Output "Task N failed after max-retries attempts: <reason>. Marking as failed."
+   - Continue with other tasks (dependents will be blocked by design flaw, not transient failure)
 
-Repeat until all tasks completed → say **"Swarm complete"**
+**Task lifecycle**: `pending` → `in_progress` → (`FAILURE` → retry) → `completed`
+
+Repeat until all tasks completed → check for any failed tasks → report summary → say **"Swarm complete"**
 
 ## Visual Progress
 
@@ -145,9 +169,40 @@ Tasks (2 done, 2 in progress, 3 open)
 | Scenario | Action |
 |----------|--------|
 | Plan file not found | Report error and exit |
-| Worker fails mid-task | Other workers continue; task stays in_progress |
+| Worker reports `FAILURE` | Retry with new worker (up to max-retries), include failure context in retry prompt |
+| Worker exits without SUCCESS/FAILURE | Treat as failure, retry with new worker |
+| Task exceeds max-retries | Mark task completed with `failed: true` metadata, continue with other tasks |
 | All tasks blocked | Circular dependency - review task graph |
-| Context compacted | TaskList → spawn ready tasks → end turn |
+| Context compacted | TaskList → check retry counts → spawn ready tasks → end turn |
+
+### Retry State Tracking
+
+Track retry counts in memory during orchestration:
+```
+retries = { "1": 0, "2": 1, "3": 0, ... }  // taskId → attempt count
+```
+
+On context compaction, retry counts are lost. If a task is `in_progress` after compaction, treat it as attempt 0 and respawn a worker.
+
+## Final Summary
+
+When all tasks are completed, output a summary:
+
+```
+## Swarm Complete
+
+**Succeeded**: X tasks
+**Failed**: Y tasks (after max retries)
+
+### Failed Tasks (if any)
+- Task N: <failure reason>
+- Task M: <failure reason>
+
+### Exit Criteria
+[Run exit criteria verification script and report result]
+```
+
+If any tasks failed, the exit criteria will likely fail. Report this clearly so the user knows which tasks need manual intervention.
 
 ## Stopping
 
