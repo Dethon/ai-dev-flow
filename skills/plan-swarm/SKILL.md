@@ -245,7 +245,7 @@ If the exit criteria verification task reports `FAILURE`, the orchestrator can s
      "description": "Fix verification failures",
      "subagent_type": "general-purpose",
      "run_in_background": true,
-     "prompt": "The exit criteria verification failed:\n\n<failure output from verification worker>\n\nDiagnose the root cause and fix the issues. After fixing:\n1. Re-run the verification command\n2. If passing, commit the fixes\n3. Output SUCCESS or FAILURE as usual"
+     "prompt": "The exit criteria verification failed:\n\n<failure output from verification worker>\n\nDiagnose the root cause and fix the issues. After fixing:\n1. Re-run the verification command\n2. If passing, commit the fixes\n3. Output SUCCESS or FAILURE"
    })
    ```
 
