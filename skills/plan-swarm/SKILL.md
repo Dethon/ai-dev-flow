@@ -38,7 +38,7 @@ The user invoked this skill with arguments: `$ARGUMENTS`
 The first argument is the plan file path. Read it and extract tasks. **DO NOT read other files, grep, or explore the codebase** - just parse the plan:
 1. **Files to Edit** - existing files that need modification
 2. **Files to Create** - new files to create
-3. **Implementation Plan** - per-file implementation instructions
+3. **Implementation Plan** - per-file implementation instructions (including **Success Criteria** for each file)
 4. **Requirements** - acceptance criteria
 5. **Exit Criteria** - verification script and success conditions
 6. **Dependency Graph** - file dependency phases for execution ordering
@@ -102,7 +102,7 @@ A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a block
 
 Mark each task `in_progress` before spawning its worker. Spawn up to N background workers in a **SINGLE message** (all Task calls in one response).
 
-**TDD in worker prompts:** Workers must follow red-green-refactor and report success/failure explicitly. Include TDD instructions in every worker prompt:
+**TDD in worker prompts:** Workers must follow red-green-refactor, verify via Success Criteria, and report success/failure explicitly. Include TDD instructions and the task's Success Criteria in every worker prompt:
 
 ```json
 Task({
@@ -110,7 +110,7 @@ Task({
   "subagent_type": "general-purpose",
   "model": "sonnet",
   "run_in_background": true,
-  "prompt": "Execute this ONE task using TDD then exit:\n\nTask ID: 1\nSubject: Implement auth middleware\nDescription: <full details from plan>\n\nTDD Protocol:\n- If this is a TEST FILE task: Write the tests, then run them and verify they FAIL (RED). Tests must fail because the feature is missing, not because of syntax errors.\n- If this is a PRODUCTION CODE task: Implement the code, then run the corresponding tests and verify they PASS (GREEN). Write only the minimum code needed to pass.\n- If this is a non-code task (config, types, docs): Execute directly.\n\nSteps:\n1. Execute the task following TDD protocol above\n2. If successful: commit the changed files with git add <changed-files> && git commit -m \"<brief description>\"\n3. Output your final status in EXACTLY this format (no other text after):\n\n   SUCCESS Task-1: <one-line summary of what was done>\n   \n   OR if you could not complete the task:\n   \n   FAILURE Task-1: <reason for failure>\n   \n4. Exit immediately after outputting SUCCESS or FAILURE"
+  "prompt": "Execute this ONE task using TDD then exit:\n\nTask ID: 1\nSubject: Implement auth middleware\nDescription: <full details from plan>\n\nSuccess Criteria (from plan - MUST ALL PASS):\n- [ ] <criteria 1 from plan>\n- [ ] <criteria 2 from plan>\n- [ ] Verification command: <exact command from plan>\n\nTDD Protocol:\n- If this is a TEST FILE task: Write the tests, then run them and verify they FAIL (RED). Tests must fail because the feature is missing, not because of syntax errors.\n- If this is a PRODUCTION CODE task: Implement the code, then run the corresponding tests and verify they PASS (GREEN). Write only the minimum code needed to pass.\n- If this is a non-code task (config, types, docs): Execute directly.\n\nSteps:\n1. Execute the task following TDD protocol above\n2. Run the Success Criteria verification command to confirm completion\n3. If ALL criteria pass: commit the changed files with git add <changed-files> && git commit -m \"<brief description>\"\n4. Output your final status in EXACTLY this format (no other text after):\n\n   SUCCESS Task-1: <one-line summary of what was done>\n   \n   OR if you could not complete the task or Success Criteria failed:\n   \n   FAILURE Task-1: <reason for failure or which criteria failed>\n   \n5. Exit immediately after outputting SUCCESS or FAILURE"
 })
 ```
 

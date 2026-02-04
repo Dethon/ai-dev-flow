@@ -39,7 +39,7 @@ The user invoked this skill with arguments: `$ARGUMENTS`
 The first argument is the plan file path. Read it and extract tasks. **DO NOT read other files, grep, or explore the codebase** - just parse the plan. **Never spawn sub-agents or delegate work — do ALL implementation directly yourself.**
 1. **Files to Edit** - existing files that need modification
 2. **Files to Create** - new files to create
-3. **Implementation Plan** - per-file implementation instructions
+3. **Implementation Plan** - per-file implementation instructions (including **Success Criteria** for each file)
 4. **Requirements** - acceptance criteria
 5. **Exit Criteria** - verification script and success conditions
 6. **Dependency Graph** - file dependency phases for execution ordering
@@ -104,22 +104,26 @@ Follow test-driven development for every task. The plan's dependency graph ensur
 **For test file tasks** (task creates/edits a test file):
 
 1. **Claim**: `TaskUpdate({ taskId: "N", status: "in_progress" })`
-2. **Read**: Get test specifications from plan
+2. **Read**: Get test specifications AND Success Criteria from plan
 3. **Write tests**: Create the test file with all specified test cases
 4. **RED — Verify tests fail**: Run the test file and confirm tests fail for the expected reason (feature missing, not syntax errors). This is MANDATORY — never skip.
-5. **Commit**: Stage and commit the test file: `git add <test-file> && git commit -m "Add failing tests: <brief description>"`
-6. **Complete**: `TaskUpdate({ taskId: "N", status: "completed" })`
+5. **Verify Success Criteria**: Run the task's Success Criteria verification command (e.g., test file exists, has expected test count).
+6. **Commit**: Stage and commit the test file: `git add <test-file> && git commit -m "Add failing tests: <brief description>"`
+7. **Complete**: `TaskUpdate({ taskId: "N", status: "completed" })`
 
 **For production file tasks** (task creates/edits production code):
 
 1. **Claim**: `TaskUpdate({ taskId: "N", status: "in_progress" })`
-2. **Read**: Get implementation details from plan
+2. **Read**: Get implementation details AND Success Criteria from plan
 3. **Implement**: Make changes following plan exactly — write the minimum code to make the corresponding tests pass
 4. **GREEN — Verify tests pass**: Run the corresponding test file and confirm all tests pass. This is MANDATORY.
 5. **Refactor** (if needed): Clean up while keeping tests green
-6. **Commit**: Stage and commit the changed files with a descriptive message: `git add <changed-files> && git commit -m "<brief description of what was implemented>"`
-7. **Complete**: `TaskUpdate({ taskId: "N", status: "completed" })`
-8. **Next**: Find next unblocked task via TaskList
+6. **Verify Success Criteria**: Run the task's Success Criteria verification command from the plan. ALL criteria must pass before proceeding.
+7. **Commit**: Stage and commit the changed files with a descriptive message: `git add <changed-files> && git commit -m "<brief description of what was implemented>"`
+8. **Complete**: `TaskUpdate({ taskId: "N", status: "completed" })`
+9. **Next**: Find next unblocked task via TaskList
+
+**If Success Criteria fails**: Fix the issue and re-run verification. Do NOT mark the task complete until all Success Criteria pass.
 
 **For non-code tasks** (config, documentation, types-only): Execute directly without the red-green cycle. Commit the changed files after completing the task.
 
