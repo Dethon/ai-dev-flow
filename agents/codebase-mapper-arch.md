@@ -2,7 +2,7 @@
 name: codebase-mapper-arch
 description: |
   Analyzes system architecture and code structure. Produces ARCHITECTURE.md and STRUCTURE.md in docs/specs/. Part of the /codemap-creator workflow.
-model: sonnet
+model: opusW
 color: blue
 ---
 

@@ -45,7 +45,7 @@ This command works with plans from:
 
 - `<plan_path>` (required): Path to the plan file
 - `--workers N` (optional): Max concurrent workers (default: 3)
-- `--model MODEL` (optional): Model for workers: haiku, sonnet, opus (default: sonnet)
+- `--model MODEL` (optional): Model for workers: haiku, sonnet, opus (default: opus)
 - `--max-retries N` (optional): Max retry attempts per task (default: 5)
 
 ## Instructions
@@ -127,7 +127,7 @@ Mark each task `in_progress` before spawning its worker. Spawn up to N backgroun
 Task({
   "description": "Task-1: Implement auth middleware",
   "subagent_type": "general-purpose",
-  "model": "sonnet",
+  "model": "opus",
   "run_in_background": true,
   "prompt": "Execute this ONE task using TDD then exit:\n\nTask ID: 1\nSubject: Implement auth middleware\nDescription: <full details from plan>\n\nSuccess Criteria (from plan - MUST ALL PASS):\n- [ ] <criteria 1 from plan>\n- [ ] <criteria 2 from plan>\n- [ ] Verification command: <exact command from plan>\n\nTDD Protocol:\n- If this is a TEST FILE task: Write the tests, then run them and verify they FAIL (RED). Tests must fail because the feature is missing, not because of syntax errors.\n- If this is a PRODUCTION CODE task: Implement the code, then run the corresponding tests and verify they PASS (GREEN). Write only the minimum code needed to pass.\n- If this is a non-code task (config, types, docs): Execute directly.\n\nSteps:\n1. Execute the task following TDD protocol above\n2. Run the Success Criteria verification command to confirm completion\n3. If ALL criteria pass: commit the changed files with git add <changed-files> && git commit -m \"<brief description>\"\n4. Output your final status in EXACTLY this format (no other text after):\n\n   SUCCESS Task-1: <one-line summary of what was done>\n   \n   OR if you could not complete the task or Success Criteria failed:\n   \n   FAILURE Task-1: <reason for failure or which criteria failed>\n   \n5. Exit immediately after outputting SUCCESS or FAILURE"
 })

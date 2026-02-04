@@ -2,7 +2,7 @@
 name: codebase-mapper-quality
 description: |
   Analyzes coding conventions and testing practices. Produces CONVENTIONS.md and TESTING.md in docs/specs/. Part of the /codemap-creator workflow.
-model: sonnet
+model: opus
 color: green
 ---
 

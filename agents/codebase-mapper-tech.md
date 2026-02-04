@@ -2,7 +2,7 @@
 name: codebase-mapper-tech
 description: |
   Analyzes technology stack and external integrations. Produces STACK.md and INTEGRATIONS.md in docs/specs/. Part of the /codemap-creator workflow.
-model: sonnet
+model: opus
 color: cyan
 ---
 

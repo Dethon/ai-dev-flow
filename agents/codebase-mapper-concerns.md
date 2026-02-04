@@ -2,7 +2,7 @@
 name: codebase-mapper-concerns
 description: |
   Analyzes technical debt and risk areas. Produces CONCERNS.md in docs/specs/. Part of the /codemap-creator workflow.
-model: sonnet
+model: opusW
 color: red
 ---
 
