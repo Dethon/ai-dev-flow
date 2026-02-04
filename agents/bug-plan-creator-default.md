@@ -114,9 +114,11 @@ Key Questions:
 
 # PHASE 1: PROJECT CONTEXT GATHERING
 
-## Step 1: Check for Existing Codemaps
+## Step 1: Check for Existing Documentation
 
-Before exploring manually, check if codemaps exist:
+Before exploring manually, check if documentation exists:
+
+### 1a. Check for Codemaps (structural)
 
 ```bash
 Glob(pattern="docs/maps/code-map-*.json")
@@ -133,12 +135,32 @@ Glob(pattern="docs/maps/code-map-*.json")
    - **Reference counts** - Identify heavily-used code paths and consumers
 3. Focus file reads on suspected bug locations rather than exploring blindly
 
-**If no codemaps found:**
+### 1b. Check for Codebase Specs (semantic)
+
+```bash
+Glob(pattern="docs/specs/*.md")
+```
+
+**If specs found, prioritize these for bug investigation:**
+
+| Spec File | Why It Helps |
+|-----------|--------------|
+| CONCERNS.md | **Read first** - Known fragile areas, existing tech debt, may explain the bug |
+| ARCHITECTURE.md | Understand layers and data flow to trace the bug |
+| TESTING.md | Know how to write regression tests for the fix |
+| CONVENTIONS.md | Ensure fix follows project patterns |
+
+**Use CONCERNS.md to:**
+- Check if bug location is a known fragile area
+- Find related technical debt that may contribute
+- Identify required precautions when modifying the area
+
+**If no documentation found:**
 
 - Proceed with manual exploration
 - Consider suggesting `/codemap-creator` for future investigations
 
-**Codemap structure:**
+**Codemap structure (for reference):**
 
 ```json
 {

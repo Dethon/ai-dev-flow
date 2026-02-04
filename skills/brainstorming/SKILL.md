@@ -24,12 +24,16 @@ Start by understanding the current project context, then ask questions one at a 
 - If a topic needs more exploration, break it into multiple sequential `AskUserQuestion` calls
 - Focus on understanding: purpose, constraints, success criteria
 
-**Check for existing codemaps:**
+**Check for existing documentation:**
 
-Before exploring manually, check if codemaps exist:
+Before exploring manually, check if documentation exists:
 
 ```
+# Codemaps (structural)
 Glob(pattern="docs/maps/code-map-*.json")
+
+# Codebase specs (semantic)
+Glob(pattern="docs/specs/*.md")
 ```
 
 **If codemaps found:**
@@ -43,10 +47,21 @@ Glob(pattern="docs/maps/code-map-*.json")
    - **Reference counts** - Identify heavily-used vs unused code
 3. Only read specific files when you need implementation details beyond the codemap
 
-**If no codemaps found:**
+**If specs found:**
+
+1. Read specs relevant to the brainstorming topic:
+   - **ARCHITECTURE.md** - Understand layers, patterns, constraints
+   - **CONVENTIONS.md** - Know coding standards to maintain
+   - **CONCERNS.md** - Be aware of tech debt and fragile areas
+   - **STACK.md** - Know available technologies
+   - **INTEGRATIONS.md** - Understand external service patterns
+2. Use specs to inform design decisions and constraints
+3. Reference specs when proposing approaches ("per ARCHITECTURE.md, we should...")
+
+**If no documentation found:**
 
 - Proceed with manual exploration (files, docs, recent commits)
-- Consider suggesting `/codemap-creator` for future brainstorming sessions
+- Consider suggesting `/codemap-creator` to create both codemaps and specs
 
 **Exploring approaches:**
 
