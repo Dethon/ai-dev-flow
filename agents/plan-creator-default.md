@@ -82,9 +82,9 @@ This agent handles **new features and enhancements** in existing codebases. Keyw
 
 ## Step 2: Check for Existing Documentation
 
-Before exploring manually, check if documentation exists:
+Before exploring manually, check for generated documentation in `docs/maps/` (structural) and `docs/specs/` (semantic).
 
-### 2a. Check for Codemaps (structural)
+### 2a. Check for Codemaps (structural) in `docs/maps/`
 
 ```bash
 Glob(pattern="docs/maps/code-map-*.json")
@@ -101,7 +101,7 @@ Glob(pattern="docs/maps/code-map-*.json")
    - **Reference counts** - Identify heavily-used vs unused code
 3. Only read specific files when you need implementation details beyond the codemap
 
-### 2b. Check for Codebase Specs (semantic)
+### 2b. Check for Codebase Specs (semantic) in `docs/specs/`
 
 ```bash
 Glob(pattern="docs/specs/*.md")

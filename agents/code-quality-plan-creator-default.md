@@ -59,9 +59,9 @@ Before analyzing the target file, you MUST gather project context to understand 
 
 ## Step 1: Check for Existing Documentation
 
-Before exploring manually, check if documentation exists:
+Before exploring manually, check for generated documentation in `docs/maps/` (structural) and `docs/specs/` (semantic).
 
-### 1a. Check for Codemaps (structural)
+### 1a. Check for Codemaps (structural) in `docs/maps/`
 
 ```bash
 Glob(pattern="docs/maps/code-map-*.json")
@@ -78,7 +78,7 @@ Glob(pattern="docs/maps/code-map-*.json")
    - **Reference counts** - Identify dead code (0 references) or god objects (high references)
 3. Cross-reference codemap data with LSP analysis for verification
 
-### 1b. Check for Codebase Specs (semantic)
+### 1b. Check for Codebase Specs (semantic) in `docs/specs/`
 
 ```bash
 Glob(pattern="docs/specs/*.md")

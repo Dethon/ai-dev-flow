@@ -26,13 +26,13 @@ Start by understanding the current project context, then ask questions one at a 
 
 **Check for existing documentation:**
 
-Before exploring manually, check if documentation exists:
+Before exploring manually, check for generated documentation in `docs/maps/` (structural) and `docs/specs/` (semantic):
 
 ```
-# Codemaps (structural)
+# Codemaps (structural) in docs/maps/
 Glob(pattern="docs/maps/code-map-*.json")
 
-# Codebase specs (semantic)
+# Codebase specs (semantic) in docs/specs/
 Glob(pattern="docs/specs/*.md")
 ```
 
