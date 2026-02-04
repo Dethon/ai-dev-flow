@@ -15,6 +15,25 @@ Execute a plan file using parallel worker agents. **Requires a plan file.** All 
 
 Uses Claude Code's built-in Task Management System for dependency tracking and visual progress (`ctrl+t`).
 
+## Orchestrator Role
+
+**CRITICAL: The orchestrator NEVER executes tasks itself.** The orchestrator's ONLY responsibilities are:
+- Reading and parsing the plan file
+- Creating and managing the task graph
+- Spawning worker subagents
+- Processing worker completions and failures
+- Tracking retry counts
+- Reporting final status
+
+**All work is delegated to subagents**, including:
+- File edits/creates
+- Running tests
+- Diagnosis of failures
+- Exit criteria verification
+- Any code inspection or debugging
+
+If something fails, spawn a subagent to investigate and fix it. Never read code files, run commands, or attempt fixes directly as the orchestrator.
+
 ## Supported Plan Types
 
 This command works with plans from:
@@ -35,7 +54,7 @@ This command works with plans from:
 
 The user invoked this skill with arguments: `$ARGUMENTS`
 
-The first argument is the plan file path. Read it and extract tasks. **DO NOT read other files, grep, or explore the codebase** - just parse the plan:
+The first argument is the plan file path. Read it and extract tasks. **DO NOT read other files, grep, explore the codebase, or run any commands** - just parse the plan. The orchestrator's only file read is the plan itself:
 1. **Files to Edit** - existing files that need modification
 2. **Files to Create** - new files to create
 3. **Implementation Plan** - per-file implementation instructions (including **Success Criteria** for each file)
@@ -169,11 +188,13 @@ Tasks (2 done, 2 in progress, 3 open)
 | Scenario | Action |
 |----------|--------|
 | Plan file not found | Report error and exit |
-| Worker reports `FAILURE` | Retry with new worker (up to max-retries), include failure context in retry prompt |
-| Worker exits without SUCCESS/FAILURE | Treat as failure, retry with new worker |
+| Worker reports `FAILURE` | Spawn new worker to retry (up to max-retries), include failure context in retry prompt |
+| Worker exits without SUCCESS/FAILURE | Treat as failure, spawn new worker to retry |
 | Task exceeds max-retries | Mark task completed with `failed: true` metadata, continue with other tasks |
-| All tasks blocked | Circular dependency - review task graph |
+| All tasks blocked | Circular dependency - report to user |
 | Context compacted | TaskList → check retry counts → spawn ready tasks → end turn |
+
+**IMPORTANT:** Never attempt to diagnose or fix failures yourself. Always delegate to a new worker subagent with the failure context included in the prompt.
 
 ### Retry State Tracking
 
@@ -199,8 +220,10 @@ When all tasks are completed, output a summary:
 - Task M: <failure reason>
 
 ### Exit Criteria
-[Run exit criteria verification script and report result]
+[Report the exit criteria result from the verification task worker]
 ```
+
+**Note:** The exit criteria verification task is run by a worker subagent (the final task in the dependency graph). The orchestrator reports the result from that worker's output — it does NOT run verification commands itself.
 
 If any tasks failed, the exit criteria will likely fail. Report this clearly so the user knows which tasks need manual intervention.
 
