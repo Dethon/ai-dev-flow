@@ -191,6 +191,7 @@ Tasks (2 done, 2 in progress, 3 open)
 | Worker reports `FAILURE` | Spawn new worker to retry (up to max-retries), include failure context in retry prompt |
 | Worker exits without SUCCESS/FAILURE | Treat as failure, spawn new worker to retry |
 | Task exceeds max-retries | Mark task completed with `failed: true` metadata, continue with other tasks |
+| Exit criteria verification fails | Spawn post-verification fix task to diagnose and fix issues |
 | All tasks blocked | Circular dependency - report to user |
 | Context compacted | TaskList → check retry counts → spawn ready tasks → end turn |
 
@@ -225,7 +226,32 @@ When all tasks are completed, output a summary:
 
 **Note:** The exit criteria verification task is run by a worker subagent (the final task in the dependency graph). The orchestrator reports the result from that worker's output — it does NOT run verification commands itself.
 
-If any tasks failed, the exit criteria will likely fail. Report this clearly so the user knows which tasks need manual intervention.
+### Post-Verification Fix Task
+
+If the exit criteria verification task reports `FAILURE`, the orchestrator can spawn an additional **fix task** to address the issues:
+
+1. Create a new task with the verification failure details:
+   ```json
+   TaskCreate({
+     "subject": "Fix exit criteria failures",
+     "description": "Verification failed: <failure details from worker>. Diagnose and fix the issues.",
+     "activeForm": "Fixing verification failures"
+   })
+   ```
+
+2. Spawn a worker with full context:
+   ```json
+   Task({
+     "description": "Fix verification failures",
+     "subagent_type": "general-purpose",
+     "run_in_background": true,
+     "prompt": "The exit criteria verification failed:\n\n<failure output from verification worker>\n\nDiagnose the root cause and fix the issues. After fixing:\n1. Re-run the verification command\n2. If passing, commit the fixes\n3. Output SUCCESS or FAILURE as usual"
+   })
+   ```
+
+3. If the fix task succeeds, report success. If it fails after max-retries, report to user for manual intervention.
+
+This allows the swarm to self-heal when verification catches issues that individual task success criteria missed.
 
 ## Stopping
 
