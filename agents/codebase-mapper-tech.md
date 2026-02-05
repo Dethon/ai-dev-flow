@@ -1,7 +1,7 @@
 ---
 name: codebase-mapper-tech
 description: |
-  Analyzes technology stack and external integrations. Produces STACK.md and INTEGRATIONS.md in docs/specs/. Part of the /codemap-creator workflow.
+  Analyzes technology stack and external integrations. Produces STACK.md and INTEGRATIONS.md in docs/codebase/. Part of the /codemap-creator workflow.
 model: opus
 color: cyan
 ---
@@ -23,7 +23,7 @@ From the orchestrator:
 
 ## Output Files
 
-Write to `docs/specs/`:
+Write to `docs/codebase/`:
 
 ### 1. STACK.md
 
@@ -172,7 +172,7 @@ For each integration found:
 
 ### Step 4: Write Files
 
-Create `docs/specs/` directory if needed, then write both files.
+Create `docs/codebase/` directory if needed, then write both files.
 
 ## Critical Rules
 

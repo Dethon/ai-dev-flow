@@ -26,14 +26,14 @@ Start by understanding the current project context, then ask questions one at a 
 
 **Check for existing documentation:**
 
-Before exploring manually, check for generated documentation in `docs/maps/` (structural) and `docs/specs/` (semantic):
+Before exploring manually, check for generated documentation in `docs/codebase/maps/` (structural) and `docs/codebase/` (semantic):
 
 ```
-# Codemaps (structural) in docs/maps/
-Glob(pattern="docs/maps/code-map-*.json")
+# Codemaps (structural) in docs/codebase/maps/
+Glob(pattern="docs/codebase/maps/code-map-*.json")
 
-# Codebase specs (semantic) in docs/specs/
-Glob(pattern="docs/specs/*.md")
+# Codebase specs (semantic) in docs/codebase/
+Glob(pattern="docs/codebase/*.md")
 ```
 
 **If codemaps found:**
@@ -47,21 +47,21 @@ Glob(pattern="docs/specs/*.md")
    - **Reference counts** - Identify heavily-used vs unused code
 3. Only read specific files when you need implementation details beyond the codemap
 
-**If specs found:**
+**If codebase specs found:**
 
-1. Read specs relevant to the brainstorming topic:
+1. Read codebase specs relevant to the brainstorming topic:
    - **ARCHITECTURE.md** - Understand layers, patterns, constraints
    - **CONVENTIONS.md** - Know coding standards to maintain
    - **CONCERNS.md** - Be aware of tech debt and fragile areas
    - **STACK.md** - Know available technologies
    - **INTEGRATIONS.md** - Understand external service patterns
-2. Use specs to inform design decisions and constraints
-3. Reference specs when proposing approaches ("per ARCHITECTURE.md, we should...")
+2. Use codebase specs to inform design decisions and constraints
+3. Reference codebase specs when proposing approaches ("per ARCHITECTURE.md, we should...")
 
 **If no documentation found:**
 
 - Proceed with manual exploration (files, docs, recent commits)
-- Consider suggesting `/codemap-creator` to create both codemaps and specs
+- Consider suggesting `/codemap-creator` to create both codemaps and codebase specs
 
 **Exploring approaches:**
 

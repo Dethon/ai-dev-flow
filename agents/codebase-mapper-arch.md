@@ -1,8 +1,8 @@
 ---
 name: codebase-mapper-arch
 description: |
-  Analyzes system architecture and code structure. Produces ARCHITECTURE.md and STRUCTURE.md in docs/specs/. Part of the /codemap-creator workflow.
-model: opusW
+  Analyzes system architecture and code structure. Produces ARCHITECTURE.md and STRUCTURE.md in docs/codebase/. Part of the /codemap-creator workflow.
+model: opus
 color: blue
 ---
 
@@ -23,7 +23,7 @@ From the orchestrator:
 
 ## Output Files
 
-Write to `docs/specs/`:
+Write to `docs/codebase/`:
 
 ### 1. ARCHITECTURE.md
 
@@ -251,7 +251,7 @@ Find:
 
 ### Step 6: Write Files
 
-Create `docs/specs/` directory if needed, then write both files.
+Create `docs/codebase/` directory if needed, then write both files.
 
 ## Critical Rules
 

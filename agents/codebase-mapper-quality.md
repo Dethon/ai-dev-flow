@@ -1,7 +1,7 @@
 ---
 name: codebase-mapper-quality
 description: |
-  Analyzes coding conventions and testing practices. Produces CONVENTIONS.md and TESTING.md in docs/specs/. Part of the /codemap-creator workflow.
+  Analyzes coding conventions and testing practices. Produces CONVENTIONS.md and TESTING.md in docs/codebase/. Part of the /codemap-creator workflow.
 model: opus
 color: green
 ---
@@ -23,7 +23,7 @@ From the orchestrator:
 
 ## Output Files
 
-Write to `docs/specs/`:
+Write to `docs/codebase/`:
 
 ### 1. CONVENTIONS.md
 
@@ -449,7 +449,7 @@ Read 3-5 test files to identify:
 
 ### Step 5: Write Files
 
-Create `docs/specs/` directory if needed, then write both files.
+Create `docs/codebase/` directory if needed, then write both files.
 
 ## Critical Rules
 

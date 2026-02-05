@@ -59,12 +59,12 @@ Before analyzing the target file, you MUST gather project context to understand 
 
 ## Step 1: Check for Existing Documentation
 
-Before exploring manually, check for generated documentation in `docs/maps/` (structural) and `docs/specs/` (semantic).
+Before exploring manually, check for generated documentation in `docs/codebase/maps/` (structural) and `docs/codebase/` (semantic).
 
-### 1a. Check for Codemaps (structural) in `docs/maps/`
+### 1a. Check for Codemaps (structural) in `docs/codebase/maps/`
 
 ```bash
-Glob(pattern="docs/maps/code-map-*.json")
+Glob(pattern="docs/codebase/maps/code-map-*.json")
 ```
 
 **If codemaps found:**
@@ -78,13 +78,13 @@ Glob(pattern="docs/maps/code-map-*.json")
    - **Reference counts** - Identify dead code (0 references) or god objects (high references)
 3. Cross-reference codemap data with LSP analysis for verification
 
-### 1b. Check for Codebase Specs (semantic) in `docs/specs/`
+### 1b. Check for Codebase Specs (semantic) in `docs/codebase/`
 
 ```bash
-Glob(pattern="docs/specs/*.md")
+Glob(pattern="docs/codebase/*.md")
 ```
 
-**If specs found, prioritize these for code quality analysis:**
+**If codebase specs found, prioritize these for code quality analysis:**
 
 | Spec File | Why It Helps |
 |-----------|--------------|
@@ -93,7 +93,7 @@ Glob(pattern="docs/specs/*.md")
 | ARCHITECTURE.md | Understand intended layer boundaries for violation detection |
 | TESTING.md | Know test coverage expectations |
 
-**Use specs to:**
+**Use codebase specs to:**
 - Compare current code against documented conventions
 - Identify violations of architectural boundaries
 - Check if issues are already documented in CONCERNS.md

@@ -82,12 +82,12 @@ This agent handles **new features and enhancements** in existing codebases. Keyw
 
 ## Step 2: Check for Existing Documentation
 
-Before exploring manually, check for generated documentation in `docs/maps/` (structural) and `docs/specs/` (semantic).
+Before exploring manually, check for generated documentation in `docs/codebase/maps/` (structural) and `docs/codebase/` (semantic).
 
-### 2a. Check for Codemaps (structural) in `docs/maps/`
+### 2a. Check for Codemaps (structural) in `docs/codebase/maps/`
 
 ```bash
-Glob(pattern="docs/maps/code-map-*.json")
+Glob(pattern="docs/codebase/maps/code-map-*.json")
 ```
 
 **If codemaps found:**
@@ -101,13 +101,13 @@ Glob(pattern="docs/maps/code-map-*.json")
    - **Reference counts** - Identify heavily-used vs unused code
 3. Only read specific files when you need implementation details beyond the codemap
 
-### 2b. Check for Codebase Specs (semantic) in `docs/specs/`
+### 2b. Check for Codebase Specs (semantic) in `docs/codebase/`
 
 ```bash
-Glob(pattern="docs/specs/*.md")
+Glob(pattern="docs/codebase/*.md")
 ```
 
-**If specs found, read the relevant ones based on task type:**
+**If codebase specs found, read the relevant ones based on task type:**
 
 | Task Type | Read These Specs |
 |-----------|------------------|
@@ -116,7 +116,7 @@ Glob(pattern="docs/specs/*.md")
 | Any task | CONCERNS.md (always check for risks) |
 | Code with tests | TESTING.md |
 
-**Use specs for:**
+**Use codebase specs for:**
 
 - **ARCHITECTURE.md** - Layer boundaries, allowed imports, patterns to follow
 - **CONVENTIONS.md** - Naming, error handling, code style to maintain

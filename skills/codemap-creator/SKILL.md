@@ -7,16 +7,16 @@ context: fork
 model: opus
 ---
 
-# Code Map & Specs Creator
+# Code Map & Codebase Specs Creator
 
-Generate both **structural** (codemap) and **semantic** (specs) documentation for a codebase using parallel agents.
+Generate both **structural** (codemap) and **semantic** (codebase specs) documentation for a codebase using parallel agents.
 
 ## What Gets Created
 
-### Codemap (structural) → `docs/maps/`
+### Codemap (structural) → `docs/codebase/maps/`
 - `code-map-{name}-{hash5}.json` - LSP-extracted symbols, signatures, dependencies
 
-### Codebase Specs (semantic) → `docs/specs/`
+### Codebase Specs (semantic) → `docs/codebase/`
 - `STACK.md` - Languages, frameworks, runtime, build tools
 - `INTEGRATIONS.md` - External APIs, databases, third-party services
 - `ARCHITECTURE.md` - Layers, patterns, data flow, key abstractions
@@ -29,7 +29,7 @@ Generate both **structural** (codemap) and **semantic** (specs) documentation fo
 
 ### Create Mode (default)
 
-Generate codemap and specs from scratch:
+Generate codemap and codebase specs from scratch:
 
 ```bash
 /codemap-creator src/
@@ -38,7 +38,7 @@ Generate codemap and specs from scratch:
 
 ### Create Mode (partial)
 
-Generate only codemap or only specs:
+Generate only codemap or only codebase specs:
 
 ```bash
 /codemap-creator src/ --codemap-only
@@ -50,8 +50,8 @@ Generate only codemap or only specs:
 Update existing codemap with changed files (specs not updated in this mode):
 
 ```bash
-/codemap-creator --update docs/maps/code-map-src-a3f9e.json --diff
-/codemap-creator --update docs/maps/code-map-src-a3f9e.json --pr 456
+/codemap-creator --update docs/codebase/maps/code-map-src-a3f9e.json --diff
+/codemap-creator --update docs/codebase/maps/code-map-src-a3f9e.json --pr 456
 ```
 
 ## Arguments
@@ -67,7 +67,7 @@ Update existing codemap with changed files (specs not updated in this mode):
 
 - **Partial generation** (optional):
   - `--codemap-only` → Only generate structural codemap
-  - `--specs-only` → Only generate semantic specs
+  - `--specs-only` → Only generate semantic codebase specs
 
 ### Update Mode
 
@@ -121,21 +121,21 @@ Task(
   prompt: "MODE: create\nRoot: <root_dir>\nIgnore: <patterns or none>"
 )
 
-# Agent 2: Tech specs (STACK.md, INTEGRATIONS.md)
+# Agent 2: Tech codebase specs (STACK.md, INTEGRATIONS.md)
 Task(
   subagent_type: "codebase-mapper-tech",
   run_in_background: true,
   prompt: "Root: <root_dir>\nIgnore: <patterns or none>"
 )
 
-# Agent 3: Architecture specs (ARCHITECTURE.md, STRUCTURE.md)
+# Agent 3: Architecture codebase specs (ARCHITECTURE.md, STRUCTURE.md)
 Task(
   subagent_type: "codebase-mapper-arch",
   run_in_background: true,
   prompt: "Root: <root_dir>\nIgnore: <patterns or none>"
 )
 
-# Agent 4: Quality specs (CONVENTIONS.md, TESTING.md)
+# Agent 4: Quality codebase specs (CONVENTIONS.md, TESTING.md)
 Task(
   subagent_type: "codebase-mapper-quality",
   run_in_background: true,
@@ -154,7 +154,7 @@ Task(
 
 Launch only Agent 1.
 
-**Create Mode - Specs Only (`--specs-only`):**
+**Create Mode - Codebase Specs Only (`--specs-only`):**
 
 Launch only Agents 2-5.
 
@@ -180,7 +180,7 @@ Output status message and **end your turn**. The system wakes you when agents fi
 ## Codebase Documentation Created
 
 ### Codemap (structural)
-**Map**: docs/maps/code-map-{name}-{hash5}.json
+**Map**: docs/codebase/maps/code-map-{name}-{hash5}.json
 
 | Metric | Count |
 |--------|-------|
@@ -188,8 +188,8 @@ Output status message and **end your turn**. The system wakes you when agents fi
 | Files | X |
 | Symbols | X |
 
-### Specs (semantic)
-**Location**: docs/specs/
+### Codebase Specs (semantic)
+**Location**: docs/codebase/
 
 | File | Content |
 |------|---------|
@@ -218,7 +218,7 @@ Output status message and **end your turn**. The system wakes you when agents fi
 | Added | X |
 | Removed | X |
 
-**Note**: Run `/codemap-creator <root> --specs-only` to refresh specs if architecture changed significantly.
+**Note**: Run `/codemap-creator <root> --specs-only` to refresh codebase specs if architecture changed significantly.
 ```
 
 ## Error Handling
@@ -241,10 +241,10 @@ Output status message and **end your turn**. The system wakes you when agents fi
 # Codemap only (structural)
 /codemap-creator src/ --codemap-only
 
-# Specs only (semantic)
+# Codebase Specs only (semantic)
 /codemap-creator src/ --specs-only
 
 # Update codemap after changes
-/codemap-creator --update docs/maps/code-map-src-a3f9e.json --diff
-/codemap-creator --update docs/maps/code-map-src-a3f9e.json --pr 456
+/codemap-creator --update docs/codebase/maps/code-map-src-a3f9e.json --diff
+/codemap-creator --update docs/codebase/maps/code-map-src-a3f9e.json --pr 456
 ```

@@ -116,12 +116,12 @@ Key Questions:
 
 ## Step 1: Check for Existing Documentation
 
-Before exploring manually, check for generated documentation in `docs/maps/` (structural) and `docs/specs/` (semantic).
+Before exploring manually, check for generated documentation in `docs/codebase/maps/` (structural) and `docs/codebase/` (semantic).
 
-### 1a. Check for Codemaps (structural) in `docs/maps/`
+### 1a. Check for Codemaps (structural) in `docs/codebase/maps/`
 
 ```bash
-Glob(pattern="docs/maps/code-map-*.json")
+Glob(pattern="docs/codebase/maps/code-map-*.json")
 ```
 
 **If codemaps found:**
@@ -135,13 +135,13 @@ Glob(pattern="docs/maps/code-map-*.json")
    - **Reference counts** - Identify heavily-used code paths and consumers
 3. Focus file reads on suspected bug locations rather than exploring blindly
 
-### 1b. Check for Codebase Specs (semantic) in `docs/specs/`
+### 1b. Check for Codebase Specs (semantic) in `docs/codebase/`
 
 ```bash
-Glob(pattern="docs/specs/*.md")
+Glob(pattern="docs/codebase/*.md")
 ```
 
-**If specs found, prioritize these for bug investigation:**
+**If codebase specs found, prioritize these for bug investigation:**
 
 | Spec File | Why It Helps |
 |-----------|--------------|

@@ -566,16 +566,16 @@ Update the `lsp_config` object (initialized in Phase 1, Step 3) with final count
 
 ## Step 1: Determine File Location
 
-Write to: `docs/maps/code-map-{root_name}-{hash5}.json`
+Write to: `docs/codebase/maps/code-map-{root_name}-{hash5}.json`
 
 **Naming convention**:
 
 - Use the root directory name (last segment)
 - Prefix with `code-map-`
 - Append a 5-character random hash
-- Example: Root `src/services` → `docs/maps/code-map-services-7m4k3.json`
+- Example: Root `src/services` → `docs/codebase/maps/code-map-services-7m4k3.json`
 
-**Create the `docs/maps/` directory if it doesn't exist.**
+**Create the `docs/codebase/maps/` directory if it doesn't exist.**
 
 ## Step 2: Write Complete JSON Structure
 
@@ -627,7 +627,7 @@ Write to: `docs/maps/code-map-{root_name}-{hash5}.json`
 
 **Status**: COMPLETE
 **Root**: <root_dir>
-**Map File**: docs/maps/code-map-[name]-[hash5].json
+**Map File**: docs/codebase/maps/code-map-[name]-[hash5].json
 
 ### Totals
 
@@ -679,6 +679,6 @@ Write to: `docs/maps/code-map-{root_name}-{hash5}.json`
 4. **Resolve dependencies** - Parse imports into resolved file paths
 5. **Complete JSON format** - Follow the exact nested structure specified
 
-**Create Mode:** 6. **Build tree first** - Discover complete directory structure before extracting symbols 7. **Nest properly** - Files under directories, symbols under files 8. **Track levels** - Every node has a level (depth from root) 9. **Calculate aggregates** - Each directory has file_count and total_symbols 10. **Write to docs/maps/** - Ensure directory exists before writing
+**Create Mode:** 6. **Build tree first** - Discover complete directory structure before extracting symbols 7. **Nest properly** - Files under directories, symbols under files 8. **Track levels** - Every node has a level (depth from root) 9. **Calculate aggregates** - Each directory has file_count and total_symbols 10. **Write to docs/codebase/maps/** - Ensure directory exists before writing
 
 **Update Mode:** 11. **Read existing first** - Always parse existing codemap before modifying 12. **Only touch changed files** - Do not re-scan unchanged files 13. **Categorize changes** - Classify each file as added, updated, or removed 14. **Recalculate aggregates** - Update all counts after changes 15. **Write in place** - Update same file, do not create new hash
