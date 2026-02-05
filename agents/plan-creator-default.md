@@ -80,12 +80,14 @@ This agent handles **new features and enhancements** in existing codebases. Keyw
 - WHAT patterns to follow
 - HOW things connect
 
-## Step 2: Check for Existing Codemaps
+## Step 2: Check for Existing Documentation
 
-Before exploring manually, check if codemaps exist:
+Before exploring manually, check for generated documentation in `docs/codebase/maps/` (structural) and `docs/codebase/` (semantic).
+
+### 2a. Check for Codemaps (structural) in `docs/codebase/maps/`
 
 ```bash
-glob(pattern="docs/maps/code-map-*.json")
+glob(pattern="docs/codebase/maps/code-map-*.json")
 ```
 
 **If codemaps found:**
@@ -99,12 +101,37 @@ glob(pattern="docs/maps/code-map-*.json")
    - **Reference counts** - Identify heavily-used vs unused code
 3. Only read specific files when you need implementation details beyond the codemap
 
-**If no codemaps found:**
+### 2b. Check for Codebase Specs (semantic) in `docs/codebase/`
+
+```bash
+Glob(pattern="docs/codebase/*.md")
+```
+
+**If codebase specs found, read the relevant ones based on task type:**
+
+| Task Type | Read These Specs |
+|-----------|------------------|
+| New feature | ARCHITECTURE.md, CONVENTIONS.md, STRUCTURE.md |
+| Integration work | STACK.md, INTEGRATIONS.md, ARCHITECTURE.md |
+| Any task | CONCERNS.md (always check for risks) |
+| Code with tests | TESTING.md |
+
+**Use codebase specs for:**
+
+- **ARCHITECTURE.md** - Layer boundaries, allowed imports, patterns to follow
+- **CONVENTIONS.md** - Naming, error handling, code style to maintain
+- **STRUCTURE.md** - Where to put new files, module organization
+- **CONCERNS.md** - Areas to avoid or handle carefully, known tech debt
+- **TESTING.md** - Test patterns, what type of tests to write
+- **STACK.md** - What technologies are used, correct versions
+- **INTEGRATIONS.md** - How to use external services, existing wrappers
+
+**If no documentation found:**
 
 - Proceed with manual exploration (Step 3)
 - Consider suggesting `/codemap-creator` for future planning sessions
 
-**Codemap structure:**
+**Codemap structure (for reference):**
 
 ```json
 {

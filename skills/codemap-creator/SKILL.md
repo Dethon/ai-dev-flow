@@ -1,75 +1,84 @@
 ---
 name: codemap-creator
-allowed-tools: task, powershell
-argument-hint: "<root_dir> [--ignore <patterns>] | --update <codemap> [--diff | --pr <id>]"
-description: Generate or update hierarchical code map from any directory as root, with nested tree structure (project)
+allowed-tools: task, powershell, glob
+argument-hint: "<root_dir> [--ignore <patterns>] [--codemap-only | --specs-only] | --update [--codemap-only | --specs-only] [--diff | --pr <id>]"
+description: Generate code map (structural) and codebase specs (semantic) for comprehensive project documentation
 context: fork
-agent: codemap-creator-default
 model: opus
 ---
 
-# Code Map Creator
+# Code Map & Codebase Specs Creator
 
-Generate or update a hierarchical code map using Claude Code's built-in LSP tools. Maps functions, classes, variables, and imports in a nested tree structure.
+Generate both **structural** (codemap) and **semantic** (codebase specs) documentation for a codebase using parallel agents.
+
+## What Gets Created
+
+### Codemap (structural) → `docs/codebase/maps/`
+- `code-map-{name}.json` - LSP-extracted symbols, signatures, dependencies
+
+### Codebase Specs (semantic) → `docs/codebase/`
+- `STACK.md` - Languages, frameworks, runtime, build tools
+- `INTEGRATIONS.md` - External APIs, databases, third-party services
+- `ARCHITECTURE.md` - Layers, patterns, data flow, key abstractions
+- `STRUCTURE.md` - Directory organization, file naming, module boundaries
+- `CONVENTIONS.md` - Naming, imports, error handling, code style
+- `TESTING.md` - Test framework, patterns, coverage requirements
+- `CONCERNS.md` - Technical debt, fragile areas, known risks
 
 ## Modes
 
 ### Create Mode (default)
 
-Generate a new codemap from scratch:
+Generate codemap and codebase specs from scratch:
 
 ```bash
 /codemap-creator src/
 /codemap-creator . --ignore "node_modules,dist"
 ```
 
-### Update Mode
+### Create Mode (partial)
 
-Update an existing codemap with only changed files:
+Generate only codemap or only codebase specs:
 
 ```bash
-/codemap-creator --update docs/maps/code-map-src-a3f9e.json --diff
-/codemap-creator --update docs/maps/code-map-src-a3f9e.json --pr 456
+/codemap-creator src/ --codemap-only
+/codemap-creator src/ --specs-only
+```
+
+### Update Mode
+
+Update existing codemap(s) and codebase specs with changed files:
+
+```bash
+/codemap-creator --update                           # Auto-detect codemaps, update all
+/codemap-creator --update --codemap-only            # Only update codemaps
+/codemap-creator --update --specs-only              # Only update codebase specs
+/codemap-creator --update --diff                    # Use git diff (default)
+/codemap-creator --update --pr 456                  # Use PR diff
 ```
 
 ## Arguments
 
 ### Create Mode
 
-- **Root directory** (required): Starting point for the tree
-  - `/codemap-creator src/` → maps from `src/` as root
-  - `/codemap-creator backend/services` → maps from `services/` as root
-  - `/codemap-creator .` → maps entire project as root
+- **Root directory** (required): Starting point for analysis
+  - `/codemap-creator src/` → analyzes from `src/` as root
+  - `/codemap-creator .` → analyzes entire project
 
 - **Ignore patterns** (optional): Skip files/directories
   - `/codemap-creator src/ --ignore "*.test.ts,node_modules"`
 
+- **Partial generation** (optional):
+  - `--codemap-only` → Only generate structural codemap
+  - `--specs-only` → Only generate semantic codebase specs
+
 ### Update Mode
 
-- **--update <codemap>** (required): Path to existing codemap to update
-- **--diff** (optional): Use `git diff` to find changed files (uncommitted + staged)
-- **--pr <id>** (optional): Use GitHub PR to find changed files (via `gh`)
-
-If no diff source specified with --update, defaults to --diff.
-
-## Hierarchical Output
-
-The codemap shows a nested tree structure from your chosen root:
-
-```
-root_dir/
-├── subdir1/
-│   ├── file1.ts
-│   │   └── symbols: [class UserService, function getUser...]
-│   └── nested/
-│       └── file2.ts
-│           └── symbols: [interface Config...]
-├── subdir2/
-│   └── file3.ts
-│       └── symbols: [function helper...]
-└── index.ts
-    └── symbols: [export *, function main...]
-```
+- **--update** (required): Enable update mode (auto-detects codemaps in `docs/codebase/maps/`)
+- **--codemap-only** (optional): Only update structural codemaps
+- **--specs-only** (optional): Only update semantic codebase specs
+- **--diff** (optional): Use `git diff` to find changed files (default)
+- **--pr <id>** (optional): Use GitHub PR to find changed files
 
 ## Instructions
 
@@ -77,28 +86,37 @@ root_dir/
 
 The user invoked this skill with arguments: `$ARGUMENTS`
 
-Determine mode from these arguments:
-
 **Update Mode** (if `--update` present):
 
-1. Extract codemap path after `--update`
-2. Detect diff source:
-   - `--diff` → use `git diff --name-only` + `git diff --staged --name-only`
-   - `--pr <id>` → use `gh pr diff <id> --name-only`
-   - Default to `--diff` if no source specified
-3. Get list of changed files
+1. Detect diff source (`--diff` or `--pr <id>`, default to `--diff`)
+2. Check for partial flags: `--codemap-only` or `--specs-only`
+3. Proceed to Step 2 (Update Mode Only)
 
 **Create Mode** (default):
 
-1. **Root directory** (required, first argument)
-   - If not provided, default to `.` (current directory)
-   - Validate directory exists
+1. **Root directory** (required, first argument, default to `.`)
 2. **Ignore patterns** (optional `--ignore`)
-   - Comma-separated patterns to skip
+3. **Partial flags**: Check for `--codemap-only` or `--specs-only`
+4. Skip to Step 3 (Launch Agents)
 
-### Step 2: Get Changed Files (Update Mode Only)
+### Step 2: Discover Codemaps and Changed Files (Update Mode Only)
 
-Run the appropriate command to get changed files:
+**Step 2a: Find Existing Codemaps**
+
+```bash
+# Use Glob to find all codemaps
+Glob(pattern="docs/codebase/maps/code-map-*.json")
+```
+
+If no codemaps found, report error and suggest using create mode.
+
+**Step 2b: Extract Root Directories**
+
+For each codemap found, read the file and extract the `root` field. This determines:
+- Which directories the codemaps cover
+- Where to scope the changed file filtering
+
+**Step 2c: Get Changed Files**
 
 ```bash
 # For --diff (default)
@@ -108,97 +126,225 @@ git diff --name-only && git diff --staged --name-only
 gh pr diff <id> --name-only
 ```
 
-Filter to only files within the codemap's root directory.
+Filter changed files to those within each codemap's root directory.
 
-### Step 3: Launch Agent
+### Step 3: Launch Agents
 
-**Create Mode:**
+**Create Mode - Full (default):**
 
-```
-subagent_type: "codemap-creator-default"
-run_in_background: true
-prompt: "MODE: create\nRoot: <root_dir>\nIgnore: <patterns or none>"
-```
-
-**Update Mode:**
+Launch 5 agents in parallel using a single message with multiple Task tool calls:
 
 ```
-subagent_type: "codemap-creator-default"
-run_in_background: true
-prompt: "MODE: update\nCodemap: <codemap_path>\nChanged files:\n- file1.ts\n- file2.ts\n..."
+# Agent 1: Codemap (structural)
+Task(
+  subagent_type: "codemap-creator-default",
+  run_in_background: true,
+  prompt: "MODE: create\nRoot: <root_dir>\nIgnore: <patterns or none>"
+)
+
+# Agent 2: Tech codebase specs (STACK.md, INTEGRATIONS.md)
+Task(
+  subagent_type: "codebase-mapper-tech",
+  run_in_background: true,
+  prompt: "Root: <root_dir>\nIgnore: <patterns or none>"
+)
+
+# Agent 3: Architecture codebase specs (ARCHITECTURE.md, STRUCTURE.md)
+Task(
+  subagent_type: "codebase-mapper-arch",
+  run_in_background: true,
+  prompt: "Root: <root_dir>\nIgnore: <patterns or none>"
+)
+
+# Agent 4: Quality codebase specs (CONVENTIONS.md, TESTING.md)
+Task(
+  subagent_type: "codebase-mapper-quality",
+  run_in_background: true,
+  prompt: "Root: <root_dir>\nIgnore: <patterns or none>"
+)
+
+# Agent 5: Concerns spec (CONCERNS.md)
+Task(
+  subagent_type: "codebase-mapper-concerns",
+  run_in_background: true,
+  prompt: "Root: <root_dir>\nIgnore: <patterns or none>"
+)
 ```
 
-Output a status message like "Creating code map..." and **end your turn**. The system wakes you when the agent finishes.
+**Create Mode - Codemap Only (`--codemap-only`):**
+
+Launch only Agent 1.
+
+**Create Mode - Codebase Specs Only (`--specs-only`):**
+
+Launch only Agents 2-5.
+
+**Update Mode - Full (default):**
+
+Launch codemap update agent(s) AND codebase spec agents in parallel:
+
+```
+# For EACH codemap found, launch an update agent:
+Task(
+  subagent_type: "codemap-creator-default",
+  run_in_background: true,
+  prompt: "MODE: update\nCodemap: <codemap_path>\nChanged files:\n- file1.ts\n..."
+)
+
+# Plus launch all 4 codebase spec agents (using first codemap's root or ".")
+Task(
+  subagent_type: "codebase-mapper-tech",
+  run_in_background: true,
+  prompt: "Root: <root_dir>\nIgnore: <patterns or none>"
+)
+
+Task(
+  subagent_type: "codebase-mapper-arch",
+  run_in_background: true,
+  prompt: "Root: <root_dir>\nIgnore: <patterns or none>"
+)
+
+Task(
+  subagent_type: "codebase-mapper-quality",
+  run_in_background: true,
+  prompt: "Root: <root_dir>\nIgnore: <patterns or none>"
+)
+
+Task(
+  subagent_type: "codebase-mapper-concerns",
+  run_in_background: true,
+  prompt: "Root: <root_dir>\nIgnore: <patterns or none>"
+)
+```
+
+**Update Mode - Codemap Only (`--codemap-only`):**
+
+Launch only the codemap update agent(s).
+
+**Update Mode - Specs Only (`--specs-only`):**
+
+Launch only the 4 codebase spec agents.
+
+Output status message and **end your turn**. The system wakes you when agents finish.
 
 ### Step 4: Report Result
 
-**Create Mode:**
+**Create Mode - Full:**
 
 ```
-## Hierarchical Code Map Created (LSP)
+## Codebase Documentation Created
 
-**Root**: <root_dir>
-**Map**: docs/maps/code-map-{name}-{hash5}.json
-
-### Totals
+### Codemap (structural)
+**Map**: docs/codebase/maps/code-map-{name}.json
 
 | Metric | Count |
 |--------|-------|
 | Directories | X |
 | Files | X |
 | Symbols | X |
-| Exported | X |
 
-Next: view the map file for hierarchical code navigation.
+### Codebase Specs (semantic)
+**Location**: docs/codebase/
+
+| File | Content |
+|------|---------|
+| STACK.md | Languages, frameworks, runtime |
+| INTEGRATIONS.md | External services, APIs |
+| ARCHITECTURE.md | Layers, patterns, data flow |
+| STRUCTURE.md | Directory organization |
+| CONVENTIONS.md | Code style, naming, patterns |
+| TESTING.md | Test framework, strategies |
+| CONCERNS.md | Tech debt, risks |
+
+**Next**: Planning agents will automatically use this documentation.
 ```
 
-**Update Mode:**
+**Update Mode - Full:**
 
 ```
-## Code Map Updated (LSP)
+## Codebase Documentation Updated
 
-**Map**: <codemap_path>
+### Codemaps (structural)
 **Source**: git diff | PR #X
-**Files Updated**: X
-**Files Added**: X
-**Files Removed**: X
 
-### Changes
+| Map | Updated | Added | Removed |
+|-----|---------|-------|---------|
+| code-map-{name}.json | X | X | X |
 
-| File | Action | Symbols |
-|------|--------|---------|
-| path/to/file.ts | updated | 5 |
-| path/to/new.ts | added | 3 |
-| path/to/old.ts | removed | - |
+### Codebase Specs (semantic)
+**Location**: docs/codebase/
 
-Next: Codemap is current with latest changes.
+| File | Status |
+|------|--------|
+| STACK.md | Updated |
+| INTEGRATIONS.md | Updated |
+| ARCHITECTURE.md | Updated |
+| STRUCTURE.md | Updated |
+| CONVENTIONS.md | Updated |
+| TESTING.md | Updated |
+| CONCERNS.md | Updated |
+```
+
+**Update Mode - Codemap Only:**
+
+```
+## Codemaps Updated
+
+**Source**: git diff | PR #X
+
+| Map | Updated | Added | Removed |
+|-----|---------|-------|---------|
+| code-map-{name}.json | X | X | X |
+```
+
+**Update Mode - Specs Only:**
+
+```
+## Codebase Specs Updated
+
+**Location**: docs/codebase/
+
+| File | Status |
+|------|--------|
+| STACK.md | Updated |
+| INTEGRATIONS.md | Updated |
+| ARCHITECTURE.md | Updated |
+| STRUCTURE.md | Updated |
+| CONVENTIONS.md | Updated |
+| TESTING.md | Updated |
+| CONCERNS.md | Updated |
 ```
 
 ## Error Handling
 
-| Scenario                   | Action                               |
-| -------------------------- | ------------------------------------ |
-| Root directory not found   | Report error, suggest valid paths    |
-| Codemap not found (update) | Report error, suggest create mode    |
-| No files in tree           | Report empty, suggest different root |
-| No changed files (update)  | Report "already up to date"          |
-| gh not installed           | Report error, suggest install        |
-| PR not found               | Report error, check ID               |
-| LSP fails for file         | Log error, mark file, continue       |
+| Scenario | Action |
+|----------|--------|
+| Root directory not found | Report error, suggest valid paths |
+| No codemaps found (update) | Report error, suggest create mode first |
+| No files in tree | Report empty, suggest different root |
+| Agent fails | Report which agent failed, others continue |
+| gh not installed | Report error for PR mode |
 
 ## Example Usage
 
 ```bash
-# Create mode
+# Full documentation (codemap + all specs)
 /codemap-creator src/
-/codemap-creator backend/services
-/codemap-creator frontend/components --ignore "*.test.tsx,*.stories.tsx"
-/codemap-creator .
+/codemap-creator . --ignore "node_modules,dist,coverage"
 
-# Update mode - git diff (uncommitted changes)
-/codemap-creator --update docs/maps/code-map-src-a3f9e.json
-/codemap-creator --update docs/maps/code-map-src-a3f9e.json --diff
+# Codemap only (structural)
+/codemap-creator src/ --codemap-only
 
-# Update mode - from PR
-/codemap-creator --update docs/maps/code-map-src-a3f9e.json --pr 456
+# Codebase Specs only (semantic)
+/codemap-creator src/ --specs-only
+
+# Update everything after changes (auto-detects codemaps)
+/codemap-creator --update
+/codemap-creator --update --pr 456
+
+# Update only codemaps (faster)
+/codemap-creator --update --codemap-only
+
+# Update only codebase specs
+/codemap-creator --update --specs-only
 ```

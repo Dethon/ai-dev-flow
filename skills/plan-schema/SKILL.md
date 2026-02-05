@@ -180,9 +180,23 @@ const newCode = somethingBetter()
 - Test: [test name] — Asserts: [expected behavior]
 - Test: [test name] — Asserts: [expected behavior]
 
+**Success Criteria**: How to verify THIS task is complete:
+- [ ] [Specific verification step with exact command or check]
+- [ ] [Another verification step]
+- [ ] Verification command: `[exact command to run, e.g., npm test -- path/to/file.test.ts]`
+
 **Dependencies**: [File paths from this plan that must exist first]
 **Provides**: [Exports other plan files depend on]
 ```
+
+**Success Criteria guidelines:**
+- Must be task-specific, not generic "tests pass"
+- Include the exact command to verify (scoped to this file/feature)
+- Should be runnable by the executor to confirm task completion
+- Examples:
+  - `npm test -- src/auth/middleware.test.ts` (run specific test file)
+  - `grep -q "export function validateToken" src/auth/service.ts` (verify export exists)
+  - `curl -s localhost:3000/health | jq -e '.status == "ok"'` (verify endpoint works)
 
 ### Dependency Graph
 
@@ -253,7 +267,7 @@ Replace with: exact exceptions, specific line numbers, file:line references, exp
 
 ### Structure
 - [ ] All required sections exist (Summary, Files, Code Context, External Context, Architectural Narrative, Implementation Plan, Dependency Graph, Exit Criteria)
-- [ ] Each per-file entry has: Purpose, Changes (numbered with line numbers), Reference Implementation, Dependencies, Provides
+- [ ] Each per-file entry has: Purpose, Changes (numbered with line numbers), Reference Implementation, Success Criteria, Dependencies, Provides
 
 ### Dependencies
 - [ ] Every per-file `Dependencies` has a matching `Provides` in another file
@@ -275,6 +289,12 @@ Replace with: exact exceptions, specific line numbers, file:line references, exp
 - [ ] Line numbers provided for edits
 - [ ] Full reference implementation code included (not patterns)
 
+### Per-Task Verification
+- [ ] Every per-file entry has a Success Criteria section
+- [ ] Success Criteria includes at least one runnable verification command
+- [ ] Verification commands are scoped to the specific task (not global test suite)
+- [ ] No vague criteria like "tests pass" — must be specific and actionable
+
 ### Requirements Coverage
 - [ ] Every requirement maps to at least one file change
 - [ ] No requirements are orphaned
@@ -292,11 +312,12 @@ Extract the path from the arguments (e.g., `/plan-schema validate docs/plans/aut
 view the plan file and check against the validation checklist:
 
 1. Check all required sections exist
-2. Check each per-file entry has required subsections
+2. Check each per-file entry has required subsections (including Success Criteria)
 3. Check Dependency Graph includes all files from `## Files`
 4. Check for banned anti-patterns
 5. Check Dependencies/Provides consistency
-6. Report violations with the fix from the schema above
+6. Check each Success Criteria has a runnable verification command
+7. Report violations with the fix from the schema above
 
 ### If no arguments were provided:
 
@@ -320,6 +341,7 @@ Per-file format:
   Purpose, TOTAL CHANGES, Changes (numbered + line numbers),
   Reference Implementation (FULL code), Migration Pattern (for edits),
   Test File (test cases to write BEFORE implementation),
+  Success Criteria (task-specific verification with runnable command),
   Dependencies, Provides
 
 Dependency Graph rules:

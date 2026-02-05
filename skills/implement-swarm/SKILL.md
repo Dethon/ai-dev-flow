@@ -21,7 +21,7 @@ Uses Claude Code's built-in Task Management System for dependency tracking and v
 
 - `<task description>` (required): What to implement
 - `--workers N` (optional): Max concurrent workers (default: 3)
-- `--model MODEL` (optional): Model for workers: haiku, sonnet, opus (default: sonnet)
+- `--model MODEL` (optional): Model for workers: haiku, sonnet, opus (default: opus)
 
 ## Instructions
 
@@ -76,7 +76,7 @@ Mark each task `in_progress` before spawning its worker. Spawn up to N backgroun
 task({
   "description": "task-1: Fix auth validation",
   "subagent_type": "general-purpose",
-  "model": "sonnet",
+  "model": "opus",
   "run_in_background": true,
   "allowed_tools": ["view", "edit", "create", "powershell", "glob", "grep"],
   "prompt": "Execute this ONE task using TDD then exit:\n\nTask ID: 1\nSubject: Fix auth token validation\nDescription: <full details>\n\nTDD Protocol:\n- Before writing any production code, write a failing test first (RED)\n- Run the test and verify it fails for the expected reason (feature/fix missing, not syntax errors)\n- create the minimum production code to make the test pass (GREEN)\n- Run the test and verify it passes\n- Clean up while keeping tests green (REFACTOR)\n- Exception: Config, type definitions (no logic), and docs tasks can skip the red-green cycle\n\nSteps:\n1. Execute the task following TDD protocol above\n2. Output ONLY a one-line summary\n3. Exit immediately"

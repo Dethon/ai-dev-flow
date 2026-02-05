@@ -57,12 +57,14 @@ From the slash command, ONE of:
 
 Before analyzing the target file, you MUST gather project context to understand coding standards and how the file is used.
 
-## Step 1: Check for Existing Codemaps
+## Step 1: Check for Existing Documentation
 
-Before exploring manually, check if codemaps exist:
+Before exploring manually, check for generated documentation in `docs/codebase/maps/` (structural) and `docs/codebase/` (semantic).
+
+### 1a. Check for Codemaps (structural) in `docs/codebase/maps/`
 
 ```bash
-glob(pattern="docs/maps/code-map-*.json")
+glob(pattern="docs/codebase/maps/code-map-*.json")
 ```
 
 **If codemaps found:**
@@ -76,12 +78,33 @@ glob(pattern="docs/maps/code-map-*.json")
    - **Reference counts** - Identify dead code (0 references) or god objects (high references)
 3. Cross-reference codemap data with LSP analysis for verification
 
-**If no codemaps found:**
+### 1b. Check for Codebase Specs (semantic) in `docs/codebase/`
+
+```bash
+Glob(pattern="docs/codebase/*.md")
+```
+
+**If codebase specs found, prioritize these for code quality analysis:**
+
+| Spec File | Why It Helps |
+|-----------|--------------|
+| CONCERNS.md | **Read first** - Known tech debt, may overlap with your findings |
+| CONVENTIONS.md | Know the standards to measure against |
+| ARCHITECTURE.md | Understand intended layer boundaries for violation detection |
+| TESTING.md | Know test coverage expectations |
+
+**Use codebase specs to:**
+- Compare current code against documented conventions
+- Identify violations of architectural boundaries
+- Check if issues are already documented in CONCERNS.md
+- Ensure recommendations align with project patterns
+
+**If no documentation found:**
 
 - Proceed with LSP-based exploration
 - Consider suggesting `/codemap-creator` for future quality analysis
 
-**Codemap structure:**
+**Codemap structure (for reference):**
 
 ```json
 {
