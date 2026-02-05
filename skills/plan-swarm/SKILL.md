@@ -1,7 +1,7 @@
 ---
 name: plan-swarm
 description: "Execute a plan file with parallel agent swarm (dependency-aware)"
-argument-hint: "<plan_path> [--workers N] [--model MODEL] [--review MODE] [--max-review-cycles N]"
+argument-hint: "<plan_path> [--workers N] [--model MODEL] [--review MODE]"
 allowed-tools: Read, TaskCreate, TaskUpdate, TaskList, TaskGet, Task, Bash
 model: opus
 skills: ["test-driven-development"]
@@ -48,7 +48,6 @@ This command works with plans from:
 - `--model MODEL` (optional): Model for workers: haiku, sonnet, opus (default: opus)
 - `--max-retries N` (optional): Max retry attempts per task (default: 5)
 - `--review MODE` (optional): Review mode: none, per-task, final-only (default: per-task)
-- `--max-review-cycles N` (optional): Max review cycles per task before escalating (default: 3)
 
 ## Review Modes
 
@@ -58,19 +57,14 @@ This command works with plans from:
 | `per-task` | Review after each task SUCCESS, before marking complete |
 | `final-only` | Single review after exit criteria task completes |
 
-### Review Cycle Flow
+### Review Failure = Task Failure
 
-When `--review` is enabled:
+When `--review` is enabled and a review finds issues, the task is treated as **failed** and goes through the normal retry mechanism. A NEW subagent is spawned with fresh context containing:
+1. Original task description (same as initial implementer received)
+2. Note that a previous attempt was made but had review issues
+3. The specific issues found by the reviewer
 
-```
-Implement → SUCCESS → Review → APPROVED? → Complete
-                         ↓
-                    ISSUES? → Same worker fixes → Re-review
-                         ↓
-                    Max cycles? → Escalate to user
-```
-
-**Key principle**: The same implementer type fixes review issues (context continuity).
+This ensures retry workers start fresh without polluted context from failed attempts.
 
 ## Instructions
 
@@ -226,27 +220,30 @@ When a worker finishes, you are automatically woken. **Parse the worker output**
 4. Output "Task N passed review, marking complete." and **end your turn**
 
 **If reviewer output contains `REVIEW_ISSUES Task-N:`**
-1. Check review cycle count for this task (track: `reviewCycles[taskId]`)
-2. **If reviewCycles < max-review-cycles** (default 3):
-   - Increment: `reviewCycles[taskId]++`
+
+Treat this as a task failure and use the standard retry mechanism:
+
+1. Check retry count for this task (track in memory: `retries[taskId]`)
+2. **If retries < max-retries** (default 5):
+   - Increment retry count: `retries[taskId]++`
    - Keep task as `in_progress`
-   - Respawn implementer with fix instructions:
+   - Spawn a NEW worker with fresh context:
 
    ```json
    Task({
-     "description": "Task-N FIX: Fix review issues",
+     "description": "Task-N RETRY: ...",
      "subagent_type": "general-purpose",
      "model": "opus",
      "run_in_background": true,
-     "prompt": "Fix review issues for Task-N:\n\n## Original Task\n<task subject and description>\n\n## Review Feedback\n<full REVIEW_ISSUES output>\n\n## Instructions\n1. Fix all Critical issues (required)\n2. Fix all Important issues (required)\n3. Consider Suggestions (optional)\n4. Re-run tests to verify fixes\n5. Output SUCCESS with updated changed files list\n\nDo NOT skip any Critical or Important issues."
+     "prompt": "Execute this ONE task using TDD then exit:\n\nTask ID: N\nSubject: <subject from task>\nDescription: <full description from task - same as original implementer received>\n\nSuccess Criteria (from plan - MUST ALL PASS):\n<same success criteria as original>\n\n## Previous Attempt\nA previous implementation was completed but failed code review.\n\n## Review Issues Found\n<full REVIEW_ISSUES output with all Critical and Important issues>\n\n## Instructions\n1. Review the issues found above\n2. Fix all Critical issues (required)\n3. Fix all Important issues (required)\n4. Run tests to verify fixes don't break anything\n5. Output SUCCESS Task-N or FAILURE Task-N"
    })
    ```
 
-   - Output "Task N has review issues, respawning worker for fixes (cycle M of max)..." and **end your turn**
+   - Output "Task N failed review, retrying (attempt M of max-retries)..." and **end your turn**
 
-3. **If reviewCycles >= max-review-cycles**:
-   - Mark task as `completed` with metadata: `{ "review_failed": true, "reason": "Max review cycles exceeded" }`
-   - Output "Task N failed code review after max cycles. Manual intervention required."
+3. **If retries >= max-retries**:
+   - Mark task as `completed` with failure note in metadata: `TaskUpdate({ taskId: "N", status: "completed", metadata: { "failed": true, "reason": "Review issues: <summary>" } })`
+   - Output "Task N failed after max-retries attempts. Marking as failed."
    - Continue with other tasks
 
 Repeat until all tasks completed → check for any failed tasks → report summary → say **"Swarm complete"**
@@ -268,6 +265,7 @@ Tasks (2 done, 2 in progress, 3 open)
 | Plan file not found | Report error and exit |
 | Worker reports `FAILURE` | Spawn new worker to retry (up to max-retries), include failure context in retry prompt |
 | Worker exits without SUCCESS/FAILURE | Treat as failure, spawn new worker to retry |
+| Reviewer reports `REVIEW_ISSUES` | Treat as failure, spawn new worker to retry with review issues in prompt |
 | Task exceeds max-retries | Mark task completed with `failed: true` metadata, continue with other tasks |
 | Exit criteria verification fails | Spawn post-verification fix task to diagnose and fix issues |
 | All tasks blocked | Circular dependency - report to user |
@@ -284,15 +282,6 @@ retries = { "1": 0, "2": 1, "3": 0, ... }  // taskId → attempt count
 
 On context compaction, retry counts are lost. If a task is `in_progress` after compaction, treat it as attempt 0 and respawn a worker.
 
-### Review State Tracking
-
-Track review cycles in memory during orchestration:
-```
-reviewCycles = { "1": 0, "2": 1, "3": 0, ... }  // taskId → review cycle count
-```
-
-On context compaction, review cycles are lost. If a task is `in_progress` with review pending after compaction, treat it as cycle 0 and restart the review process.
-
 ## Final Summary
 
 When all tasks are completed, output a summary:
@@ -302,17 +291,10 @@ When all tasks are completed, output a summary:
 
 **Succeeded**: X tasks
 **Failed**: Y tasks (after max retries)
-**Review Stats** (if reviews enabled):
-  - Approved on first review: A
-  - Required fix cycles: B
-  - Failed review (max cycles): C
 
 ### Failed Tasks (if any)
 - Task N: <failure reason>
-- Task M: <failure reason>
-
-### Review Failures (if any)
-- Task M: Review failed after 3 cycles - <last issues>
+- Task M: Review issues - <summary of issues>
 
 ### Exit Criteria
 [Report the exit criteria result from the verification task worker]
@@ -355,10 +337,9 @@ This allows the swarm to self-heal when verification catches issues that individ
 ## Example Usage
 
 ```bash
-/plan-swarm docs/plans/add-user-auth.md              # Default: 3 workers
+/plan-swarm docs/plans/add-user-auth.md              # Default: 3 workers, no review
 /plan-swarm docs/plans/refactor.md --workers 5       # Override: force 5 workers
 /plan-swarm docs/plans/docs.md --model haiku         # Cheaper workers
-/plan-swarm docs/plans/feature.md --review per-task    # Review each task
-/plan-swarm docs/plans/feature.md --review final-only  # Review only at end
-/plan-swarm docs/plans/feature.md --review per-task --max-review-cycles 5
+/plan-swarm docs/plans/feature.md --review per-task  # Review each task
+/plan-swarm docs/plans/feature.md --review final-only # Review only at end
 ```
