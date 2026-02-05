@@ -1,7 +1,7 @@
 ---
 name: plan-swarm
 description: "Execute a plan file with parallel agent swarm (dependency-aware)"
-argument-hint: "<plan_path> [--workers N] [--model MODEL]"
+argument-hint: "<plan_path> [--workers N] [--model MODEL] [--review MODE] [--max-review-cycles N]"
 allowed-tools: Read, TaskCreate, TaskUpdate, TaskList, TaskGet, Task, Bash
 model: opus
 skills: ["test-driven-development"]
@@ -47,6 +47,30 @@ This command works with plans from:
 - `--workers N` (optional): Max concurrent workers (default: 3)
 - `--model MODEL` (optional): Model for workers: haiku, sonnet, opus (default: opus)
 - `--max-retries N` (optional): Max retry attempts per task (default: 5)
+- `--review MODE` (optional): Review mode: none, per-task, final-only (default: per-task)
+- `--max-review-cycles N` (optional): Max review cycles per task before escalating (default: 3)
+
+## Review Modes
+
+| Mode | Behavior |
+|------|----------|
+| `none` | No reviews (default, backward compatible) |
+| `per-task` | Review after each task SUCCESS, before marking complete |
+| `final-only` | Single review after exit criteria task completes |
+
+### Review Cycle Flow
+
+When `--review` is enabled:
+
+```
+Implement → SUCCESS → Review → APPROVED? → Complete
+                         ↓
+                    ISSUES? → Same worker fixes → Re-review
+                         ↓
+                    Max cycles? → Escalate to user
+```
+
+**Key principle**: The same implementer type fixes review issues (context continuity).
 
 ## Instructions
 
@@ -142,11 +166,35 @@ After all Task() calls return, output a status message like "3 workers launched.
 When a worker finishes, you are automatically woken. **Parse the worker output** to determine success or failure:
 
 **If worker output contains `SUCCESS Task-N:`**
-1. **TaskUpdate** — mark task N as `completed`
-2. **TaskList()** — see overall progress and find newly unblocked tasks
-3. **Find ready tasks**: A task is ready when its status is `pending` AND its `blockedBy` list is empty
-4. Mark ready tasks `in_progress` and spawn new workers if slots available (respect worker limit N)
-5. Output status and **end your turn**
+
+1. **Check review mode** (from `--review` argument):
+
+   **If `--review none`** (default):
+   - **TaskUpdate** — mark task N as `completed`
+   - **TaskList()** — find newly unblocked tasks
+   - Mark ready tasks `in_progress` and spawn new workers
+   - Output status and **end your turn**
+
+   **If `--review per-task`**:
+   - Keep task as `in_progress` (NOT completed yet)
+   - Extract changed files and summary from worker output
+   - Spawn reviewer subagent:
+
+   ```json
+   Task({
+     "description": "Review Task-N",
+     "subagent_type": "code-reviewer-default",
+     "model": "opus",
+     "run_in_background": true,
+     "prompt": "Review implementation for Task-N:\n\n## Original Task\nSubject: <subject from task>\nDescription: <description from task>\n\n## Success Criteria\n<from task description>\n\n## Worker Output\n<full SUCCESS output including changed files and summary>\n\n## Instructions\nPerform two-stage review:\n1. Spec Compliance: Verify all success criteria are met\n2. Code Quality: Check patterns, errors, security, performance\n\nOutput REVIEW_APPROVED Task-N or REVIEW_ISSUES Task-N with details."
+   })
+   ```
+
+   - Output "Task N complete, spawning reviewer..." and **end your turn**
+
+   **If `--review final-only`**:
+   - For non-exit-criteria tasks: mark `completed` (no review)
+   - For exit criteria task: spawn reviewer for full implementation review
 
 **If worker output contains `FAILURE Task-N:`**
 1. Extract the failure reason from the output
@@ -170,6 +218,36 @@ When a worker finishes, you are automatically woken. **Parse the worker output**
    - Continue with other tasks (dependents will be blocked by design flaw, not transient failure)
 
 **Task lifecycle**: `pending` → `in_progress` → (`FAILURE` → retry) → `completed`
+
+**If reviewer output contains `REVIEW_APPROVED Task-N:`**
+1. **TaskUpdate** — mark task N as `completed`
+2. **TaskList()** — find newly unblocked tasks
+3. Spawn new workers if slots available
+4. Output "Task N passed review, marking complete." and **end your turn**
+
+**If reviewer output contains `REVIEW_ISSUES Task-N:`**
+1. Check review cycle count for this task (track: `reviewCycles[taskId]`)
+2. **If reviewCycles < max-review-cycles** (default 3):
+   - Increment: `reviewCycles[taskId]++`
+   - Keep task as `in_progress`
+   - Respawn implementer with fix instructions:
+
+   ```json
+   Task({
+     "description": "Task-N FIX: Fix review issues",
+     "subagent_type": "general-purpose",
+     "model": "opus",
+     "run_in_background": true,
+     "prompt": "Fix review issues for Task-N:\n\n## Original Task\n<task subject and description>\n\n## Review Feedback\n<full REVIEW_ISSUES output>\n\n## Instructions\n1. Fix all Critical issues (required)\n2. Fix all Important issues (required)\n3. Consider Suggestions (optional)\n4. Re-run tests to verify fixes\n5. Output SUCCESS with updated changed files list\n\nDo NOT skip any Critical or Important issues."
+   })
+   ```
+
+   - Output "Task N has review issues, respawning worker for fixes (cycle M of max)..." and **end your turn**
+
+3. **If reviewCycles >= max-review-cycles**:
+   - Mark task as `completed` with metadata: `{ "review_failed": true, "reason": "Max review cycles exceeded" }`
+   - Output "Task N failed code review after max cycles. Manual intervention required."
+   - Continue with other tasks
 
 Repeat until all tasks completed → check for any failed tasks → report summary → say **"Swarm complete"**
 
@@ -206,6 +284,15 @@ retries = { "1": 0, "2": 1, "3": 0, ... }  // taskId → attempt count
 
 On context compaction, retry counts are lost. If a task is `in_progress` after compaction, treat it as attempt 0 and respawn a worker.
 
+### Review State Tracking
+
+Track review cycles in memory during orchestration:
+```
+reviewCycles = { "1": 0, "2": 1, "3": 0, ... }  // taskId → review cycle count
+```
+
+On context compaction, review cycles are lost. If a task is `in_progress` with review pending after compaction, treat it as cycle 0 and restart the review process.
+
 ## Final Summary
 
 When all tasks are completed, output a summary:
@@ -215,10 +302,17 @@ When all tasks are completed, output a summary:
 
 **Succeeded**: X tasks
 **Failed**: Y tasks (after max retries)
+**Review Stats** (if reviews enabled):
+  - Approved on first review: A
+  - Required fix cycles: B
+  - Failed review (max cycles): C
 
 ### Failed Tasks (if any)
 - Task N: <failure reason>
 - Task M: <failure reason>
+
+### Review Failures (if any)
+- Task M: Review failed after 3 cycles - <last issues>
 
 ### Exit Criteria
 [Report the exit criteria result from the verification task worker]
@@ -264,4 +358,7 @@ This allows the swarm to self-heal when verification catches issues that individ
 /plan-swarm docs/plans/add-user-auth.md              # Default: 3 workers
 /plan-swarm docs/plans/refactor.md --workers 5       # Override: force 5 workers
 /plan-swarm docs/plans/docs.md --model haiku         # Cheaper workers
+/plan-swarm docs/plans/feature.md --review per-task    # Review each task
+/plan-swarm docs/plans/feature.md --review final-only  # Review only at end
+/plan-swarm docs/plans/feature.md --review per-task --max-review-cycles 5
 ```
