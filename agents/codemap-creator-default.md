@@ -566,14 +566,14 @@ Update the `lsp_config` object (initialized in Phase 1, Step 3) with final count
 
 ## Step 1: Determine File Location
 
-Write to: `docs/codebase/maps/code-map-{root_name}-{hash5}.json`
+Write to: `docs/codebase/maps/code-map-{root_name}.json`
 
 **Naming convention**:
 
 - Use the root directory name (last segment)
 - Prefix with `code-map-`
 - Append a 5-character random hash
-- Example: Root `src/services` → `docs/codebase/maps/code-map-services-7m4k3.json`
+- Example: Root `src/services` → `docs/codebase/maps/code-map-services.json`
 
 **Create the `docs/codebase/maps/` directory if it doesn't exist.**
 
@@ -627,7 +627,7 @@ Write to: `docs/codebase/maps/code-map-{root_name}-{hash5}.json`
 
 **Status**: COMPLETE
 **Root**: <root_dir>
-**Map File**: docs/codebase/maps/code-map-[name]-[hash5].json
+**Map File**: docs/codebase/maps/code-map-[name].json
 
 ### Totals
 

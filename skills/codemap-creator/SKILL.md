@@ -14,7 +14,7 @@ Generate both **structural** (codemap) and **semantic** (codebase specs) documen
 ## What Gets Created
 
 ### Codemap (structural) → `docs/codebase/maps/`
-- `code-map-{name}-{hash5}.json` - LSP-extracted symbols, signatures, dependencies
+- `code-map-{name}.json` - LSP-extracted symbols, signatures, dependencies
 
 ### Codebase Specs (semantic) → `docs/codebase/`
 - `STACK.md` - Languages, frameworks, runtime, build tools
@@ -50,8 +50,8 @@ Generate only codemap or only codebase specs:
 Update existing codemap with changed files (specs not updated in this mode):
 
 ```bash
-/codemap-creator --update docs/codebase/maps/code-map-src-a3f9e.json --diff
-/codemap-creator --update docs/codebase/maps/code-map-src-a3f9e.json --pr 456
+/codemap-creator --update docs/codebase/maps/code-map-src.json --diff
+/codemap-creator --update docs/codebase/maps/code-map-src.json --pr 456
 ```
 
 ## Arguments
@@ -180,7 +180,7 @@ Output status message and **end your turn**. The system wakes you when agents fi
 ## Codebase Documentation Created
 
 ### Codemap (structural)
-**Map**: docs/codebase/maps/code-map-{name}-{hash5}.json
+**Map**: docs/codebase/maps/code-map-{name}.json
 
 | Metric | Count |
 |--------|-------|
@@ -245,6 +245,6 @@ Output status message and **end your turn**. The system wakes you when agents fi
 /codemap-creator src/ --specs-only
 
 # Update codemap after changes
-/codemap-creator --update docs/codebase/maps/code-map-src-a3f9e.json --diff
-/codemap-creator --update docs/codebase/maps/code-map-src-a3f9e.json --pr 456
+/codemap-creator --update docs/codebase/maps/code-map-src.json --diff
+/codemap-creator --update docs/codebase/maps/code-map-src.json --pr 456
 ```
