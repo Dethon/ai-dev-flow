@@ -104,7 +104,7 @@ glob(pattern="docs/codebase/maps/code-map-*.json")
 ### 2b. Check for Codebase Specs (semantic) in `docs/codebase/`
 
 ```bash
-Glob(pattern="docs/codebase/*.md")
+glob(pattern="docs/codebase/*.md")
 ```
 
 **If codebase specs found, read the relevant ones based on task type:**

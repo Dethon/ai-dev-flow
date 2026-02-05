@@ -22,7 +22,7 @@ Analyze code quality using Claude Code's built-in LSP for semantic understanding
 File paths to analyze (one agent per file) OR a design file path:
 - Single file: `/code-quality-plan-creator src/services/auth_service`
 - Multiple files: `/code-quality-plan-creator src/agent src/hitl src/app`
-- Glob pattern: `/code-quality-plan-creator agent/*`
+- glob pattern: `/code-quality-plan-creator agent/*`
 - Design file: `/code-quality-plan-creator docs/designs/2025-01-15-auth-refactor-design.md`
 
 **Tip:** For complex refactoring or quality improvement efforts, use the brainstorming skill first to create a design document describing the quality goals and target files, then pass the design file path here.

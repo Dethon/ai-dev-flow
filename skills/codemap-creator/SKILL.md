@@ -104,8 +104,8 @@ The user invoked this skill with arguments: `$ARGUMENTS`
 **Step 2a: Find Existing Codemaps**
 
 ```bash
-# Use Glob to find all codemaps
-Glob(pattern="docs/codebase/maps/code-map-*.json")
+# Use glob to find all codemaps
+glob(pattern="docs/codebase/maps/code-map-*.json")
 ```
 
 If no codemaps found, report error and suggest using create mode.

@@ -2,7 +2,7 @@
 name: requesting-code-review
 description: Request code review after completing implementation task
 argument-hint: "<task-id>"
-allowed-tools: Bash, Read
+allowed-tools: powershell, Read
 ---
 
 # Requesting Code Review

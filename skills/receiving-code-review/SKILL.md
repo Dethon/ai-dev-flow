@@ -2,7 +2,7 @@
 name: receiving-code-review
 description: Process code review feedback and fix issues
 argument-hint: "<review-output>"
-allowed-tools: Read, Edit, Write, Bash, Glob, Grep
+allowed-tools: read, edit, write, powershell, glob, grep
 ---
 
 # Receiving Code Review
