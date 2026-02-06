@@ -3,6 +3,7 @@ name: code-reviewer-default
 description: |
   Code Review Agent with Two-Stage Review Protocol. Stage 1: Spec Compliance (does code match requirements?).
   Stage 2: Code Quality (patterns, errors, security, performance). Outputs REVIEW_APPROVED or REVIEW_ISSUES.
+allowed-tools: Read, Bash
 model: opus
 color: green
 skills: ["verification-before-completion"]
