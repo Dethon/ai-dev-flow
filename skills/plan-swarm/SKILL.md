@@ -2,7 +2,7 @@
 name: plan-swarm
 description: "Execute a plan file with parallel agent swarm (dependency-aware)"
 argument-hint: "<plan_path> [--workers N] [--model MODEL] [--review MODE]"
-allowed-tools: Read, TaskCreate, TaskUpdate, TaskList, TaskGet, Task, Bash
+allowed-tools: Read, Write, Edit, TaskCreate, TaskUpdate, TaskList, TaskGet, Task, Bash
 model: opus
 skills: ["test-driven-development"]
 ---
@@ -53,8 +53,8 @@ This command works with plans from:
 
 | Mode | Behavior |
 |------|----------|
-| `none` | No reviews (default, backward compatible) |
-| `per-task` | Review after each task SUCCESS, before marking complete |
+| `none` | No reviews |
+| `per-task` | Review after each task SUCCESS, before marking complete (default)|
 | `final-only` | Single review after exit criteria task completes |
 
 ### Review Failure = Task Failure
@@ -128,20 +128,15 @@ If the plan has no `## Dependency Graph` section (older plans), infer dependenci
 
 A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a blocking task is marked `completed`, it's automatically removed from the blocked list. A task becomes **ready** when its blockedBy list is empty.
 
-**Task types (one task = one worker, never combine):**
-- File edits/creates → one task per file → one worker per task
-- Major requirements → one task each → one worker per task
-- Exit criteria verification → final task, blocked by all others → one worker
+**Task types:**
+- File edits/creates → one task per file
+- Major requirements → one task each
+- Exit criteria verification → final task, blocked by all others
 
 ### Step 3: Spawn Workers
 
 **Worker limit N** = `--workers` value from arguments or **3** if not specified. This is a queue — spawn up to N, then wait for completions before spawning more.
 
-**CRITICAL: ONE worker = ONE task. NEVER group multiple tasks into a single worker.** Each task from the plan gets its own dedicated worker subagent. If 4 tasks are ready and N=3, spawn 3 workers (one per task) and queue the 4th. If 2 tasks are ready and N=5, spawn 2 workers — never combine them into 1.
-
-**Parallel vs Sequential:**
-- **Parallel**: Tasks with no dependency between them (same phase or unblocked) are each assigned to their own worker and spawned simultaneously in a single message — up to the worker limit N.
-- **Sequential**: Tasks that depend on earlier tasks MUST wait. The blocking task must complete (and pass review if enabled) before any dependent task is spawned. Never speculatively start a dependent task.
 
 Mark each task `in_progress` before spawning its worker. Spawn up to N background workers in a **SINGLE message** (all Task calls in one response).
 
@@ -169,10 +164,10 @@ When a worker finishes, you are automatically woken. **Parse the worker output**
 
 1. **Check review mode** (from `--review` argument):
 
-   **If `--review none`** (default):
+   **If `--review none`**:
    - **TaskUpdate** — mark task N as `completed`
    - **TaskList()** — find newly unblocked tasks
-   - Mark ready tasks `in_progress` and spawn new workers (one worker per task, up to N concurrent)
+   - Mark ready tasks `in_progress` and spawn new workers
    - Output status and **end your turn**
 
    **If `--review per-task`**:
@@ -222,7 +217,7 @@ When a worker finishes, you are automatically woken. **Parse the worker output**
 **If reviewer output contains `REVIEW_APPROVED Task-N:`**
 1. **TaskUpdate** — mark task N as `completed`
 2. **TaskList()** — find newly unblocked tasks
-3. Spawn new workers if slots available (one worker per task, never group)
+3. Spawn new workers if slots available
 4. Output "Task N passed review, marking complete." and **end your turn**
 
 **If reviewer output contains `REVIEW_ISSUES Task-N:`**
@@ -343,7 +338,7 @@ This allows the swarm to self-heal when verification catches issues that individ
 ## Example Usage
 
 ```bash
-/plan-swarm docs/plans/add-user-auth.md              # Default: 3 workers, no review
+/plan-swarm docs/plans/add-user-auth.md              # Default: 3 workers, per-task review
 /plan-swarm docs/plans/refactor.md --workers 5       # Override: force 5 workers
 /plan-swarm docs/plans/docs.md --model haiku         # Cheaper workers
 /plan-swarm docs/plans/feature.md --review per-task  # Review each task
