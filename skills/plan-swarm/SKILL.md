@@ -128,14 +128,20 @@ If the plan has no `## Dependency Graph` section (older plans), infer dependenci
 
 A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a blocking task is marked `completed`, it's automatically removed from the blocked list. A task becomes **ready** when its blockedBy list is empty.
 
-**Task types:**
-- File edits/creates → one task per file
-- Major requirements → one task each
-- Exit criteria verification → final task, blocked by all others
+**Task types (one task = one worker, never combine):**
+- File edits/creates → one task per file → one worker per task
+- Major requirements → one task each → one worker per task
+- Exit criteria verification → final task, blocked by all others → one worker
 
 ### Step 3: Spawn Workers
 
 **Worker limit N** = `--workers` value from arguments or **3** if not specified. This is a queue — spawn up to N, then wait for completions before spawning more.
+
+**CRITICAL: ONE worker = ONE task. NEVER group multiple tasks into a single worker.** Each task from the plan gets its own dedicated worker subagent. If 4 tasks are ready and N=3, spawn 3 workers (one per task) and queue the 4th. If 2 tasks are ready and N=5, spawn 2 workers — never combine them into 1.
+
+**Parallel vs Sequential:**
+- **Parallel**: Tasks with no dependency between them (same phase or unblocked) are each assigned to their own worker and spawned simultaneously in a single message — up to the worker limit N.
+- **Sequential**: Tasks that depend on earlier tasks MUST wait. The blocking task must complete (and pass review if enabled) before any dependent task is spawned. Never speculatively start a dependent task.
 
 Mark each task `in_progress` before spawning its worker. Spawn up to N background workers in a **SINGLE message** (all Task calls in one response).
 
@@ -166,7 +172,7 @@ When a worker finishes, you are automatically woken. **Parse the worker output**
    **If `--review none`** (default):
    - **TaskUpdate** — mark task N as `completed`
    - **TaskList()** — find newly unblocked tasks
-   - Mark ready tasks `in_progress` and spawn new workers
+   - Mark ready tasks `in_progress` and spawn new workers (one worker per task, up to N concurrent)
    - Output status and **end your turn**
 
    **If `--review per-task`**:
@@ -216,7 +222,7 @@ When a worker finishes, you are automatically woken. **Parse the worker output**
 **If reviewer output contains `REVIEW_APPROVED Task-N:`**
 1. **TaskUpdate** — mark task N as `completed`
 2. **TaskList()** — find newly unblocked tasks
-3. Spawn new workers if slots available
+3. Spawn new workers if slots available (one worker per task, never group)
 4. Output "Task N passed review, marking complete." and **end your turn**
 
 **If reviewer output contains `REVIEW_ISSUES Task-N:`**
