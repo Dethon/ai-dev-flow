@@ -1,7 +1,7 @@
 ---
 name: plan-swarm
 description: "Execute a plan file with parallel agent swarm (dependency-aware)"
-argument-hint: "<plan_path> [--workers N] [--model MODEL] [--review MODE]"
+argument-hint: "<plan_path> [--workers N] [--model MODEL]"
 allowed-tools: Read, Write, Edit, TaskCreate, TaskUpdate, TaskList, TaskGet, Task, Bash
 model: opus
 skills: ["test-driven-development"]
@@ -47,19 +47,14 @@ This command works with plans from:
 - `--workers N` (optional): Max concurrent workers (default: 3)
 - `--model MODEL` (optional): Model for workers: haiku, sonnet, opus (default: opus)
 - `--max-retries N` (optional): Max retry attempts per task (default: 5)
-- `--review MODE` (optional): Review mode: none, per-task, final-only (default: per-task)
 
-## Review Modes
+## Review
 
-| Mode | Behavior |
-|------|----------|
-| `none` | No reviews |
-| `per-task` | Review after each task SUCCESS, before marking complete (default)|
-| `final-only` | Single review after exit criteria task completes |
+Every task is reviewed after SUCCESS, before it can be marked complete. There is no way to disable this.
 
 ### Review Failure = Task Failure
 
-When `--review` is enabled and a review finds issues, the task is treated as **failed** and goes through the normal retry mechanism. A NEW subagent is spawned with fresh context containing:
+When a review finds issues, the task is treated as **failed** and goes through the normal retry mechanism. A NEW subagent is spawned with fresh context containing:
 1. Original task description (same as initial implementer received)
 2. Note that a previous attempt was made but had review issues
 3. The specific issues found by the reviewer
@@ -128,8 +123,6 @@ If the plan has no `## Dependency Graph` section (older plans), infer dependenci
 
 A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a blocking task is marked `completed`, it's automatically removed from the blocked list. A task becomes **ready** when its blockedBy list is empty.
 
-**NEVER merge multiple phases into a single task.** Each phase in the dependency graph must produce its own separate tasks. Tasks from different phases may run concurrently if their dependencies are satisfied, but they must remain distinct tasks — never combine work from phase 1 and phase 2 (or any other phases) into one task.
-
 **Task types:**
 - File edits/creates → one task per file
 - Major requirements → one task each
@@ -160,38 +153,27 @@ After all Task() calls return, output a status message like "3 workers launched.
 
 ### Step 4: Process Completions
 
+**CRITICAL: NEVER mark a task as `completed` on SUCCESS alone. Every successful task MUST be reviewed first. The ONLY way a task reaches `completed` is through `REVIEW_APPROVED`.**
+
 When a worker finishes, you are automatically woken. **Parse the worker output** to determine success or failure:
 
 **If worker output contains `SUCCESS Task-N:`**
 
-1. **Check review mode** (from `--review` argument):
+1. Keep task as `in_progress` (NOT completed yet — needs review)
+2. Extract changed files and summary from worker output
+3. Spawn reviewer subagent:
 
-   **If `--review none`**:
-   - **TaskUpdate** — mark task N as `completed`
-   - **TaskList()** — find newly unblocked tasks
-   - Mark ready tasks `in_progress` and spawn new workers
-   - Output status and **end your turn**
+```json
+Task({
+  "description": "Review Task-N",
+  "subagent_type": "code-reviewer-default",
+  "model": "sonnet",
+  "run_in_background": true,
+  "prompt": "Review implementation for Task-N:\n\n## Original Task\nSubject: <subject from task>\nDescription: <description from task>\n\n## Success Criteria\n<from task description>\n\n## Worker Output\n<full SUCCESS output including changed files and summary>\n\n## Instructions\nPerform two-stage review:\n1. Spec Compliance: Verify all success criteria are met\n2. Code Quality: Check patterns, errors, security, performance\n\nOutput REVIEW_APPROVED Task-N or REVIEW_ISSUES Task-N with details."
+})
+```
 
-   **If `--review per-task`**:
-   - Keep task as `in_progress` (NOT completed yet)
-   - Extract changed files and summary from worker output
-   - Spawn reviewer subagent:
-
-   ```json
-   Task({
-     "description": "Review Task-N",
-     "subagent_type": "code-reviewer-default",
-     "model": "opus",
-     "run_in_background": true,
-     "prompt": "Review implementation for Task-N:\n\n## Original Task\nSubject: <subject from task>\nDescription: <description from task>\n\n## Success Criteria\n<from task description>\n\n## Worker Output\n<full SUCCESS output including changed files and summary>\n\n## Instructions\nPerform two-stage review:\n1. Spec Compliance: Verify all success criteria are met\n2. Code Quality: Check patterns, errors, security, performance\n\nOutput REVIEW_APPROVED Task-N or REVIEW_ISSUES Task-N with details."
-   })
-   ```
-
-   - Output "Task N complete, spawning reviewer..." and **end your turn**
-
-   **If `--review final-only`**:
-   - For non-exit-criteria tasks: mark `completed` (no review)
-   - For exit criteria task: spawn reviewer for full implementation review
+4. Output "Task N succeeded, spawning reviewer..." and **end your turn**
 
 **If worker output contains `FAILURE Task-N:`**
 1. Extract the failure reason from the output
@@ -340,9 +322,7 @@ This allows the swarm to self-heal when verification catches issues that individ
 ## Example Usage
 
 ```bash
-/plan-swarm docs/plans/add-user-auth.md              # Default: 3 workers, per-task review
+/plan-swarm docs/plans/add-user-auth.md              # Default: 3 workers
 /plan-swarm docs/plans/refactor.md --workers 5       # Override: force 5 workers
 /plan-swarm docs/plans/docs.md --model haiku         # Cheaper workers
-/plan-swarm docs/plans/feature.md --review per-task  # Review each task
-/plan-swarm docs/plans/feature.md --review final-only # Review only at end
 ```
