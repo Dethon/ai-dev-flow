@@ -128,6 +128,8 @@ If the plan has no `## Dependency Graph` section (older plans), infer dependenci
 
 A task with non-empty `blockedBy` shows as **blocked** in `ctrl+t`. When a blocking task is marked `completed`, it's automatically removed from the blocked list. A task becomes **ready** when its blockedBy list is empty.
 
+**NEVER merge multiple phases into a single task.** Each phase in the dependency graph must produce its own separate tasks. Tasks from different phases may run concurrently if their dependencies are satisfied, but they must remain distinct tasks — never combine work from phase 1 and phase 2 (or any other phases) into one task.
+
 **Task types:**
 - File edits/creates → one task per file
 - Major requirements → one task each
