@@ -1,0 +1,17 @@
+{
+    "name": "deth",
+    "description": "Skills for an explore-plan-execute workflow",
+    "version": "1.0.0",
+    "author": {
+        "name": "Francisco Crespo",
+        "url": "https://github.com/Dethon"
+    },
+    "homepage": "https://github.com/Dethon/ai-dev-flow",
+    "keywords": [
+        "agent-teams",
+        "multi-agent",
+        "orchestration",
+        "parallel-agents",
+        "tdd"
+    ]
+}

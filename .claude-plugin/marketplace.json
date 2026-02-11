@@ -1,0 +1,21 @@
+{
+    "name": "deth",
+    "owner": {
+        "name": "Francisco Crespo"
+    },
+    "metadata": {
+        "description": "Skills for an explore-plan-execute workflow",
+        "version": "1.0.0"
+    },
+    "plugins": [
+        {
+            "name": "deth",
+            "description": "Skills for an explore-plan-execute workflow",
+            "source": {
+                "source": "url",
+                "url": "https://github.com/Dethon/ai-dev-flow.git"
+            },
+            "version": "1.0.0"
+        }
+    ]
+}
