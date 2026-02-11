@@ -1,7 +1,7 @@
 {
     "name": "deth",
     "description": "Skills for an explore-plan-execute workflow",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": {
         "name": "Francisco Crespo",
         "url": "https://github.com/Dethon"
