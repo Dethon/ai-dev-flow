@@ -292,8 +292,8 @@ Quick reference for gates between each task in a triplet:
 |---|---|---|
 | Task 0 (scaffolding) | sonnet | Setup work, moderate reasoning |
 | RED (test writing) | sonnet | Code generation + requirement interpretation |
-| GREEN (implementation) | sonnet | Standard implementation |
-| REVIEW (adversarial) | sonnet | Judgment, code reading, test writing |
+| GREEN (implementation) | opus | Standard implementation |
+| REVIEW (adversarial) | opus | Judgment, code reading, test writing |
 | Triplet runner (parallel) | sonnet | Manages one triplet pipeline |
 | Orchestrator (team) | opus | Complex multi-pipeline coordination |
 | Explorer (team) | haiku | File finding, cheap queries |
