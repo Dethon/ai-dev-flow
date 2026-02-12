@@ -49,10 +49,6 @@ Start by understanding the current project context, then ask questions one at a 
 - Use elements-of-style:writing-clearly-and-concisely skill if available
 - Commit the design document to git
 
-**Implementation (if continuing):**
-- Use `AskUserQuestion` to ask: "Ready to set up for implementation?" (options: "Yes, let's go" / "Not yet, more changes needed")
-- Create isolated workspace and detailed implementation plan
-
 ## Key Principles
 
 - **Always use `AskUserQuestion`** - Never ask questions via plain text; always use the tool
