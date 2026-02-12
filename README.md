@@ -4,8 +4,7 @@
 
 Personal collection of agents and skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code), tailored to fit my preferred workflow.
 
-Heavily inspired by and some skills copied from:
-
+Some skills copied from:
 - [obra/superpowers](https://github.com/obra/superpowers)
 - [glittercowboy/get-shit-done](https://github.com/glittercowboy/get-shit-done)
 
