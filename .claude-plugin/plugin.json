@@ -1,12 +1,14 @@
 {
     "name": "ai-dev-flow",
     "description": "Skills for an explore-plan-execute workflow",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "author": {
         "name": "Francisco Crespo",
         "url": "https://github.com/Dethon"
     },
     "homepage": "https://github.com/Dethon/ai-dev-flow",
+    "repository": "https://github.com/obra/superpowers",
+    "license": "MIT",
     "keywords": [
         "agent-teams",
         "multi-agent",
