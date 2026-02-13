@@ -3,7 +3,7 @@
 Use this template when dispatching a subagent for a GREEN (implementation) task from a TDD plan.
 
 ```
-Task tool (general-purpose, model: sonnet):
+Task tool (general-purpose):
   description: "Implement [feature name]"
   prompt: |
     You are implementing: [feature name]
