@@ -34,20 +34,20 @@ digraph process {
     "STOP" [shape=box, style=filled, fillcolor=lightyellow];
 
     subgraph cluster_parallel_1 {
-        label="Parallel (haiku)";
+        label="Parallel";
         "Step 1A: Skip check" [shape=box];
         "Step 1B: CLAUDE.md discovery" [shape=box];
     }
 
     "Trivial/automated?" [shape=diamond];
 
-    "Step 2: Summarize changes\n(sonnet)" [shape=box];
+    "Step 2: Summarize changes" [shape=box];
 
     subgraph cluster_parallel_2 {
         label="Parallel Review";
-        "CLAUDE.md ×2\n(sonnet, if CLAUDE.md found)" [shape=box];
-        "Bug scan: diff only\n(opus)" [shape=box];
-        "Bug scan: introduced\n(opus)" [shape=box];
+        "CLAUDE.md ×2\n(if CLAUDE.md found)" [shape=box];
+        "Bug scan: diff only" [shape=box];
+        "Bug scan: introduced" [shape=box];
     }
 
     "Step 4: Dedup + Validate\n(parallel agents)" [shape=box];
@@ -59,14 +59,14 @@ digraph process {
     "On base branch?\nEmpty diff?\nDraft/closed PR?" -> "Step 1B: CLAUDE.md discovery" [label="no"];
     "Step 1A: Skip check" -> "Trivial/automated?";
     "Trivial/automated?" -> "STOP" [label="yes"];
-    "Trivial/automated?" -> "Step 2: Summarize changes\n(sonnet)" [label="no"];
-    "Step 1B: CLAUDE.md discovery" -> "Step 2: Summarize changes\n(sonnet)";
-    "Step 2: Summarize changes\n(sonnet)" -> "CLAUDE.md ×2\n(sonnet, if CLAUDE.md found)";
-    "Step 2: Summarize changes\n(sonnet)" -> "Bug scan: diff only\n(opus)";
-    "Step 2: Summarize changes\n(sonnet)" -> "Bug scan: introduced\n(opus)";
-    "CLAUDE.md ×2\n(sonnet, if CLAUDE.md found)" -> "Step 4: Dedup + Validate\n(parallel agents)";
-    "Bug scan: diff only\n(opus)" -> "Step 4: Dedup + Validate\n(parallel agents)";
-    "Bug scan: introduced\n(opus)" -> "Step 4: Dedup + Validate\n(parallel agents)";
+    "Trivial/automated?" -> "Step 2: Summarize changes" [label="no"];
+    "Step 1B: CLAUDE.md discovery" -> "Step 2: Summarize changes";
+    "Step 2: Summarize changes" -> "CLAUDE.md ×2\n(if CLAUDE.md found)";
+    "Step 2: Summarize changes" -> "Bug scan: diff only";
+    "Step 2: Summarize changes" -> "Bug scan: introduced";
+    "CLAUDE.md ×2\n(if CLAUDE.md found)" -> "Step 4: Dedup + Validate\n(parallel agents)";
+    "Bug scan: diff only" -> "Step 4: Dedup + Validate\n(parallel agents)";
+    "Bug scan: introduced" -> "Step 4: Dedup + Validate\n(parallel agents)";
     "Step 4: Dedup + Validate\n(parallel agents)" -> "Step 5: Filter + Report";
 }
 ```
@@ -98,7 +98,7 @@ You (the controller) determine the review source directly. Do NOT delegate this 
 
 Store MODE, DIFF_CMD, TITLE, DESCRIPTION, BASE_BRANCH for use in all subsequent steps.
 
-### Step 1: Pre-flight + Context (2 Haiku Agents, Parallel)
+### Step 1: Pre-flight + Context (2 Agents, Parallel)
 
 **Agent A — Skip check:**
 - Give: TITLE, DESCRIPTION, first 100 lines of diff
@@ -114,7 +114,7 @@ Store MODE, DIFF_CMD, TITLE, DESCRIPTION, BASE_BRANCH for use in all subsequent 
 
 If Agent A returns SKIP → **stop**.
 
-### Step 2: Summarize Changes (Sonnet Agent)
+### Step 2: Summarize Changes
 
 - Give: DIFF_CMD, TITLE, DESCRIPTION
 - Task: Read the full diff and produce a 3-5 sentence summary of the changes
@@ -124,20 +124,20 @@ If Agent A returns SKIP → **stop**.
 
 Launch agents in parallel. Each gets: DIFF_CMD, TITLE, DESCRIPTION, MODE (PR or LOCAL), and the HIGH SIGNAL criteria from this skill.
 
-**Agents 1 + 2 — CLAUDE.md Compliance (sonnet) — ONLY if CLAUDE.md files were found in Step 1:**
+**Agents 1 + 2 — CLAUDE.md Compliance — ONLY if CLAUDE.md files were found in Step 1:**
 - Skip these agents entirely if no CLAUDE.md files exist
 - Also give: CLAUDE.md contents from Step 1
 - Task: Audit changes for CLAUDE.md compliance ONLY — do NOT flag bugs or other issues
 - Only evaluate files against CLAUDE.md files that share a path (same directory or parent)
 - Split modified files roughly in half between the two agents (by alphabetical order)
 
-**Agent 3 — Bug Scanner, Diff Only (opus):**
+**Agent 3 — Bug Scanner, Diff Only:**
 - Task: Scan for obvious bugs focusing ONLY on the diff itself
 - Do NOT read extra context outside the diff
 - Flag only significant bugs; ignore nitpicks and likely false positives
 - Do not flag issues that cannot be validated without context outside the diff
 
-**Agent 4 — Bug Scanner, Introduced Code (opus):**
+**Agent 4 — Bug Scanner, Introduced Code:**
 - Task: Look for problems in the introduced code (security issues, incorrect logic, etc.)
 - Only look for issues within the changed code
 - MAY read surrounding context to understand the changes
@@ -179,8 +179,7 @@ For each unique issue, launch a validation subagent in parallel:
 - Task: Verify the issue is real with high confidence
   - Example: "variable not defined" → verify it's actually undefined in the code
   - Example: "CLAUDE.md rule violated" → verify the rule is scoped to the file and actually broken
-- **Opus** agents for bugs and logic issues
-- **Sonnet** agents for CLAUDE.md violations
+- All validation agents inherit the caller's model
 - Return: VALID or INVALID with reasoning
 
 ### Step 5: Filter + Report (Controller)
@@ -226,19 +225,6 @@ Use this template:
 ```
 
 If no issues were found, replace the "Issues Found" section with: "No issues found."
-
-## Model Selection
-
-| Agent | Model | Rationale |
-|---|---|---|
-| Skip check | haiku | Simple judgment call |
-| CLAUDE.md discovery | haiku | File system search |
-| Change summary | sonnet | Moderate reasoning |
-| CLAUDE.md compliance (×2) | sonnet | Rule matching |
-| Bug scanner - diff only | opus | Deep reasoning needed |
-| Bug scanner - introduced code | opus | Deep reasoning needed |
-| Issue validation (bugs) | opus | Verification requires deep reasoning |
-| Issue validation (CLAUDE.md) | sonnet | Rule verification |
 
 ## Common Mistakes
 
