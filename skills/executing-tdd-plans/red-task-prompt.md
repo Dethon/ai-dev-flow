@@ -3,7 +3,7 @@
 Use this template when dispatching a subagent for a RED (test-writing) task from a TDD plan.
 
 ```
-Task tool (general-purpose, model: sonnet):
+Task tool (general-purpose):
   description: "Write failing tests for [feature name]"
   prompt: |
     You are writing failing tests for: [feature name]

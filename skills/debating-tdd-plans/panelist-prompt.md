@@ -11,7 +11,6 @@ Task tool:
   subagent_type: "general-purpose"
   team_name: "debating-tdd-plans"
   name: "{role-name}"          # e.g., "decomposer", "test-strategist", "devils-advocate", "codebase-guardian"
-  model: "sonnet"              # or "opus" for very complex designs
 ```
 
 ## Prompt Template

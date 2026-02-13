@@ -178,7 +178,6 @@ Use a short topic slug (e.g., "debating-auth-system") to avoid name conflicts ac
    - Discussion log file path
    - Names of all other panelists
 
-**Model:** sonnet for all panelists (opus for very complex designs)
 **Subagent type:** general-purpose (panelists need Read, Glob, Grep, Edit, SendMessage)
 
 ## Phase 1: Research (parallel)
@@ -261,14 +260,6 @@ Rounds are coordinated via messages:
 | All rounds complete | Moderator | Reads log, synthesizes, writes plan |
 | Plan written | Moderator → All | Broadcast "synthesis complete", then `shutdown_request` to each |
 | Panelists chat after "done" | Moderator → All | Broadcast "stop exchanging messages, moving to synthesis" |
-
-## Model Selection
-
-| Role | Model | Rationale |
-|------|-------|-----------|
-| Moderator | opus | Synthesis requires deep judgment |
-| Panelists | sonnet | Research and debate, moderate reasoning |
-| Panelists (complex designs) | opus | When deep architectural reasoning needed |
 
 ## Common Mistakes
 

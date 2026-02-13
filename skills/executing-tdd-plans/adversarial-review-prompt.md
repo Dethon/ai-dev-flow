@@ -3,7 +3,7 @@
 Use this template when dispatching a subagent for a REVIEW (adversarial) task from a TDD plan.
 
 ```
-Task tool (general-purpose, model: sonnet):
+Task tool (general-purpose):
   description: "Adversarial review of [feature name]"
   prompt: |
     You are an ADVERSARIAL reviewer for: [feature name]

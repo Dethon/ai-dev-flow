@@ -230,15 +230,6 @@ Quick reference for gates between each task in a triplet:
 
 **If RED tests pass immediately:** Something is wrong. Either the tests are testing existing code or importing from the wrong module. Do NOT proceed to GREEN. Diagnose first.
 
-## Model Selection
-
-| Task | Model | Rationale |
-|---|---|---|
-| Task 0 (scaffolding) | sonnet | Setup work, moderate reasoning |
-| RED (test writing) | sonnet | Code generation + requirement interpretation |
-| GREEN (implementation) | opus | Standard implementation |
-| REVIEW (adversarial) | opus | Judgment, code reading, test writing |
-
 ## Common Mistakes
 
 | Mistake | Fix |
