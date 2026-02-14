@@ -234,10 +234,10 @@ Moderator reads the full discussion log and:
 1. Identifies areas of consensus across all panelists
 2. Resolves remaining disagreements using evidence from the log
 3. Appends synthesis to the "## Consensus" section of the log
-4. Writes the final TDD plan in **writing-tdd-plans format**:
+4. Writes the final TDD plan following the **Plan Output Format** section below:
    - Header with goal, architecture, tech stack, design doc path
    - Task 0 (scaffolding) if identified by panelists
-   - Triplets (RED/GREEN/REVIEW) for each feature
+   - Triplets (RED/GREEN/REVIEW) for each feature — with complete code, verification, and commit per task
    - Integration triplet
    - Dependency graph
    - Execution instructions
@@ -246,6 +246,15 @@ Moderator reads the full discussion log and:
 7. Sends `shutdown_request` to each panelist individually
 
 **The plan output is identical to writing-tdd-plans** — compatible with executing-tdd-plans.
+
+## Plan Output Format
+
+**REQUIRED:** During synthesis, read `../writing-tdd-plans/plan-format.md` (relative to this skill's directory) for the complete plan output format. It defines triplet templates, required fields, commit patterns, detail level, and execution instructions.
+
+**Critical reminders** (full spec in the shared file):
+- Every task ends with a git commit (incremental progress)
+- Tasks must include complete code, exact file paths, verification commands
+- A plan that summarizes what to do instead of specifying what to build is too short
 
 ## Round Coordination Protocol
 
@@ -272,6 +281,8 @@ Rounds are coordinated via messages:
 | Spawning panelists without log path | Every panelist prompt MUST include the log file path |
 | Not waiting for all panelists | Wait for all 4 "done" messages before advancing rounds |
 | Output differs from writing-tdd-plans format | Plan must be identical format for executing-tdd-plans compatibility |
+| Plan tasks are summaries, not complete specifications | Each task must include complete code, exact file paths, verification command, and commit message |
+| No commit messages in plan tasks | Every task ends with a commit — this enables incremental progress tracking |
 | Using Explore-type for panelists | Panelists need Edit for the log — use general-purpose |
 | Panelists continue chatting after "done" | Broadcast "stop exchanging messages" — "done" means STOP |
 | Forgetting to shut down the team | Broadcast notice, then shutdown_request each panelist |
@@ -286,6 +297,8 @@ Rounds are coordinated via messages:
 - Skip spawning any of the 4 panelist roles
 - Run more than 3 debate rounds (diminishing returns — synthesize what you have)
 - Proceed with the plan if a panelist hasn't participated in all rounds
+- Produce tasks that describe what to do instead of specifying exactly what to build
+- Omit commit messages from tasks — every RED/GREEN/REVIEW task must commit
 
 ## Integration
 
