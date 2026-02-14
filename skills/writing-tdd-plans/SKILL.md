@@ -168,8 +168,11 @@ Expected: ALL tests PASS
 **Dispatch as:** Fresh subagent via Task tool
 **Depends on:** Task N.2 must be complete (implementation must exist and tests pass)
 
-**Your role:** You are an adversarial reviewer. Your job is to BREAK this implementation,
-not approve it. Assume the implementation is wrong until you prove otherwise.
+**Your role:** You are an adversarial reviewer with TWO equally important jobs:
+1. **Verify requirements** — confirm the implementation actually delivers what was
+   specified. Bug-free code that doesn't follow the requirements is a FAIL.
+2. **Break it** — find bugs, edge cases, and gaps. Assume the implementation is wrong
+   until proven otherwise.
 
 **Design requirements to verify:**
 - [Requirement A from design doc — verbatim]
@@ -178,28 +181,38 @@ not approve it. Assume the implementation is wrong until you prove otherwise.
 
 **Review checklist:**
 
-1. **Design compliance** — Read the implementation and compare against EACH requirement
-   listed above. Check line by line. Is anything missing? Misinterpreted? Over-built?
+**Requirements verification (does it do what was asked?):**
 
-2. **Test adequacy** — Do the tests actually test what they claim? Could the tests pass
+1. **Requirements compliance** — Read the implementation and compare against EACH
+   requirement listed above. Treat requirements as a checklist: each one must map to
+   actual code. Is anything missing? Misinterpreted? Partially implemented? Over-built?
+   A bug-free implementation that doesn't match the requirements is a FAIL.
+
+2. **Completeness** — Are ALL required features present and working as specified?
+   Does any requirement lack corresponding implementation?
+
+**Breaking the implementation (does it work correctly?):**
+
+3. **Test adequacy** — Do the tests actually test what they claim? Could the tests pass
    with a WRONG implementation? Write additional tests that expose gaps.
 
-3. **Edge cases** — Try to break it. Think of inputs the tests don't cover.
+4. **Edge cases** — Try to break it. Think of inputs the tests don't cover.
    Write tests for those inputs and run them.
 
-4. **Error handling** — What happens with invalid input? Null? Empty? Huge? Concurrent?
+5. **Error handling** — What happens with invalid input? Null? Empty? Huge? Concurrent?
 
-5. **Integration** — Does it work with the rest of the system? Any assumptions that
+6. **Integration** — Does it work with the rest of the system? Any assumptions that
    could break when connected to real code?
 
 **You MUST write and run additional tests.** A review without new tests is not adversarial.
-Minimum: 3 additional tests targeting gaps, edge cases, or ways the existing tests
-could pass with a wrong implementation.
+Minimum: 3 additional tests targeting requirements coverage gaps, edge cases, or ways
+the existing tests could pass with a wrong implementation.
 
 **What to produce:**
 - List of issues found (Critical / Important / Minor)
 - Additional tests written and their results
-- Verdict: PASS (no critical/important issues) or FAIL (issues must be fixed)
+- Verdict: PASS (all requirements implemented correctly, no critical/important issues)
+  or FAIL (requirements missing/misimplemented OR critical/important bugs found)
 
 **If FAIL:** Create fix tasks (following same triplet: test the fix, implement fix,
 re-review). Append them to the plan.
@@ -268,6 +281,7 @@ For each task, dispatch a fresh subagent using the Task tool:
 |--------|---------|
 | "I'll combine tests and implementation for speed" | Separate tasks enforce TDD. Combined tasks let you write tests-after. |
 | "Tests pass, no need for review" | Tests only cover what you thought of. Adversarial review finds what you didn't. |
+| "No bugs found, looks good" | Bug-free ≠ correct. Does it actually do what the requirements ask? Review requirements compliance, not just code quality. |
 | "Review is overkill for this simple feature" | Simple features have subtle edge cases. Review takes 5 minutes. |
 | "I'll write the tests in the implementation task" | That's tests-after with extra steps. The test task must exist separately. |
 | "The design is clear enough, I don't need to quote requirements" | Reviewers need verbatim requirements to catch misinterpretations. |
@@ -279,6 +293,7 @@ For each task, dispatch a fresh subagent using the Task tool:
 - Merge test and implementation into one task ("write tests and implement")
 - Skip the adversarial review ("tests pass, move on")
 - Make the review non-adversarial ("looks good" without trying to break it)
+- Treat review as only bug-finding — requirements verification is equally important
 - Create implementation tasks without preceding test tasks
 - Allow a feature to have only 2 of the 3 triplet tasks
 - Write vague test tasks ("add tests for feature X") — tests must be concrete code

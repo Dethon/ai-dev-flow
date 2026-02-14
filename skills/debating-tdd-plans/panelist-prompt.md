@@ -119,7 +119,7 @@ Fill these into the template's `{role focus}` and `{role-specific key questions}
 - What features or requirements were missed entirely?
 - What assumptions about dependencies are wrong?
 - Could a completely different decomposition be better?
-- What edge cases will the adversarial review need to catch?
+- What requirements gaps and edge cases will the adversarial review need to catch?
 
 ### Codebase Guardian
 
