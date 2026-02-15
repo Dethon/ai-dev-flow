@@ -58,16 +58,21 @@ Task tool (general-purpose):
     **Breaking the implementation (does it work correctly?):**
 
     4. **Test adequacy** — could the tests pass with a WRONG implementation?
-       Write tests that expose gaps.
+       If yes, write additional tests that expose gaps.
     5. **Edge cases** — try to break it with unusual inputs.
-       Write tests for those inputs.
+       If you find uncovered cases, write tests for them.
     6. **Error handling** — what happens with invalid input? Null? Empty? Huge?
     7. **Integration** — does it work with the rest of the system?
 
-    ## You MUST Write Additional Tests
+    ## You MUST Actively Try to Break It
 
-    A review without new tests is not adversarial.
-    **Minimum: 3 additional tests** targeting:
+    You MUST thoroughly analyze the implementation for gaps. If you find coverage gaps,
+    edge cases, or ways the existing tests could pass with a wrong implementation,
+    you MUST write and run additional tests targeting those gaps. If the existing tests
+    are comprehensive and you find no gaps after thorough analysis, you may skip writing
+    tests — but you must explain why the existing coverage is sufficient.
+
+    If writing tests, target:
     - Requirements not adequately covered by existing tests
     - Gaps in existing test coverage
     - Edge cases not considered
@@ -89,16 +94,17 @@ Task tool (general-purpose):
     - File and line reference
     - Suggested fix
 
-    ## Commit Additional Tests
+    ## Commit Additional Tests (if any written)
 
-    Commit ONLY your test files (do NOT use `git add .`):
+    If you wrote additional tests, commit ONLY your test files (do NOT use `git add .`):
     `git add [test file paths] && git commit -m "test: add adversarial tests for [feature]"`
 
     ## Report Format
 
     When done, report:
     - Issues found (severity, description, file:line)
-    - Additional tests written and their results
+    - Additional tests written and their results (if gaps were found)
+    - If no tests written: explanation of why existing coverage is sufficient
     - Verdict: PASS or FAIL
     - If FAIL: specific issues that must be fixed
 ```

@@ -227,30 +227,33 @@ Expected: ALL tests PASS
 **Breaking the implementation (does it work correctly?):**
 
 3. **Test adequacy** — Do the tests actually test what they claim? Could the tests pass
-   with a WRONG implementation? Write additional tests that expose gaps.
+   with a WRONG implementation? If yes, write additional tests that expose gaps.
 
 4. **Edge cases** — Try to break it. Think of inputs the tests don't cover.
-   Write tests for those inputs and run them.
+   If you find uncovered cases, write tests for them and run them.
 
 5. **Error handling** — What happens with invalid input? Null? Empty? Huge? Concurrent?
 
 6. **Integration** — Does it work with the rest of the system? Any assumptions that
    could break when connected to real code?
 
-**You MUST write and run additional tests.** A review without new tests is not adversarial.
-Minimum: 3 additional tests targeting requirements coverage gaps, edge cases, or ways
-the existing tests could pass with a wrong implementation.
+**You MUST actively try to break the implementation and find gaps.** If you find coverage
+gaps, edge cases, or ways the existing tests could pass with a wrong implementation,
+you MUST write and run additional tests targeting those gaps. If the existing tests are
+comprehensive and you find no gaps after thorough analysis, you may skip writing tests
+— but you must explain why the existing coverage is sufficient.
 
 **What to produce:**
 - List of issues found (Critical / Important / Minor)
-- Additional tests written and their results
+- Additional tests written and their results (if gaps were found)
+- If no tests written: explanation of why existing coverage is sufficient
 - Verdict: PASS (all requirements implemented correctly, no critical/important issues)
   or FAIL (requirements missing/misimplemented OR critical/important bugs found)
 
 **If FAIL:** Create fix tasks (following same triplet: test the fix, implement fix,
 re-review). Append them to the plan.
 
-**Commit additional tests:** `git commit -m "test: add adversarial tests for [feature]"`
+**If additional tests written:** `git commit -m "test: add adversarial tests for [feature]"`
 ```
 
 ## Special Task Types
