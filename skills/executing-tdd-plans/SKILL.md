@@ -7,9 +7,9 @@ description: Use when you have a TDD plan from writing-tdd-plans with triplet ta
 
 ## Overview
 
-Execute TDD plans using parallel per-step subagent architecture with task tracking. Fresh subagent per task, triplet structure enforced, progress tracked via TaskCreate/TaskUpdate/TaskList.
+Execute TDD plans using parallel per-step background subagent architecture with task tracking. Fresh background subagent per task, triplet structure enforced, progress tracked via TaskCreate/TaskUpdate/TaskList.
 
-**Core principle:** Always use parallel per-step execution. Independent triplets in a dependency layer execute in parallel per step. The triplet (RED → GREEN → REVIEW) is always sequential internally. All progress is tracked with task tools.
+**Core principle:** Always dispatch background subagents (`run_in_background: true`). Independent triplets in a dependency layer execute in parallel per step. The triplet (RED → GREEN → REVIEW) is always sequential internally. Dispatch background agents → end turn → system wakes you → verify → next step. All progress is tracked with task tools.
 
 **Announce at start:** "I'm using the executing-tdd-plans skill to execute this plan."
 
@@ -51,7 +51,7 @@ digraph process {
     "Execute per-step parallel" [shape=box];
 
     subgraph cluster_per_layer {
-        label="Per Layer (all triplets in parallel per step, TaskUpdate to track progress)";
+        label="Per Layer (background subagents per step: dispatch → end turn → system wakes → verify)";
         "Dispatch RED subagents (./red-task-prompt.md)" [shape=box];
         "Verify: ALL tests FAIL" [shape=diamond];
         "Dispatch GREEN subagents (./green-task-prompt.md)" [shape=box];
@@ -200,34 +200,43 @@ Update task status as execution proceeds:
 
 **Critical constraint:** Only the top-level controller has the Task tool for dispatching subagents. Subagents and team members cannot dispatch further subagents. Therefore, **all subagent dispatching is done by the controller directly**.
 
-### Per-Step Parallelism
+### Background Subagent Dispatch
 
-Controller processes dependency layers. Within each layer, dispatch **all subagents for the same step in parallel**, then verify, then move to the next step.
+**Always dispatch subagents with `run_in_background: true`.** The controller yields after each dispatch and is woken by the system when agents complete.
+
+**Execution loop per step:**
+1. **Dispatch:** TaskUpdate tasks → `in_progress`, dispatch all step's subagents with `run_in_background: true` in a single message
+2. **End turn:** Output status message and **end your turn** — do NOT continue working
+3. **Wake:** System wakes you when all background agents finish
+4. **Verify:** Check results against verification gates (see table below)
+5. **Advance:** TaskUpdate tasks → `completed`, proceed to next step (go to 1)
 
 ```
-Task 0 (if present) → TaskUpdate completed
+Task 0 (if present):
+  Dispatch scaffolding subagent (run_in_background: true) → end turn
+  → System wakes → verify → TaskUpdate completed
 → Layer 0:
   Step 1: TaskUpdate RED tasks → in_progress
-          Dispatch RED-A, RED-B subagents in parallel → wait → verify ALL fail
-          TaskUpdate RED tasks → completed
+          Dispatch RED-A, RED-B (run_in_background: true) → end turn
+          → System wakes → verify ALL fail → TaskUpdate RED tasks → completed
   Step 2: TaskUpdate GREEN tasks → in_progress
-          Dispatch GREEN-A, GREEN-B subagents in parallel → wait → verify ALL pass
-          TaskUpdate GREEN tasks → completed
+          Dispatch GREEN-A, GREEN-B (run_in_background: true) → end turn
+          → System wakes → verify ALL pass → TaskUpdate GREEN tasks → completed
   Step 3: TaskUpdate REVIEW tasks → in_progress
-          Dispatch REVIEW-A, REVIEW-B subagents in parallel → wait → check verdicts
-          TaskUpdate REVIEW tasks → completed
+          Dispatch REVIEW-A, REVIEW-B (run_in_background: true) → end turn
+          → System wakes → check verdicts → TaskUpdate REVIEW tasks → completed
 → Layer 1:
   [same pattern for C, D]
 → Integration triplet
 ```
 
-**Dispatching parallel subagents:** In a single message, dispatch all independent subagents for the current step simultaneously:
+**Dispatching background subagents:** In a single message, dispatch all independent subagents for the current step with `run_in_background: true`:
 
 ```
 // All RED subagents for this layer, dispatched in one message
-Task("RED: write failing tests for feature A")   // red-task-prompt.md
-Task("RED: write failing tests for feature B")   // red-task-prompt.md
-// Both run concurrently, controller waits for all to return
+Task("RED: write failing tests for feature A", run_in_background: true)   // red-task-prompt.md
+Task("RED: write failing tests for feature B", run_in_background: true)   // red-task-prompt.md
+// End turn. System wakes you when both finish.
 ```
 
 **Why per-step, not per-triplet?** Subagents cannot dispatch sub-subagents (they lack the Task tool). A "triplet runner" subagent would have to do all RED/GREEN/REVIEW work itself, losing fresh context per task. Per-step parallelism preserves the core principle: **one fresh subagent per task**.
@@ -271,6 +280,8 @@ Quick reference for gates between each task in a triplet:
 
 | Mistake | Fix |
 |---|---|
+| Dispatching foreground subagents (without run_in_background) | Always use `run_in_background: true` — dispatch, end turn, system wakes you |
+| Continuing to work after dispatching background agents | End turn immediately — do NOT verify or dispatch more until system wakes you |
 | Running triplets sequentially when plan shows independence | Always use parallel per-step execution across dependency layers |
 | Skipping dependency analysis entirely | ALWAYS extract layers before creating tasks |
 | Using per-triplet runners (they can't dispatch subagents) | Use per-step parallelism — controller dispatches all REDs, then GREENs, then REVIEWs |
@@ -289,6 +300,8 @@ Quick reference for gates between each task in a triplet:
 ## Red Flags
 
 **Never:**
+- Dispatch foreground subagents — always use `run_in_background: true`
+- Continue working after dispatching background agents — end turn and wait for system wake
 - Skip the dependency analysis (always analyze dependency graph first)
 - Combine RED and GREEN into one subagent dispatch
 - Skip the REVIEW task ("tests pass, move on")
