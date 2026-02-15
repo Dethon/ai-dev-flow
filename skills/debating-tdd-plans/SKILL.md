@@ -92,10 +92,9 @@ digraph process {
     subgraph cluster_synthesis {
         label="Phase 4: Synthesis";
         "Read full discussion log" [shape=box];
-        "Determine PR scope" [shape=box];
-        "Multiple PRs needed?" [shape=diamond];
-        "Write one TDD plan" [shape=box];
-        "Write separate plan per PR" [shape=box];
+        "Enumerate PRs (1 or more)" [shape=box];
+        "For each PR: write complete plan" [shape=box];
+        "All PRs have plan folders?" [shape=diamond];
         "Shutdown team" [shape=box];
     }
 
@@ -123,12 +122,11 @@ digraph process {
     "Convergence?" -> "Optional extra round" [label="no"];
     "Optional extra round" -> "Read full discussion log";
 
-    "Read full discussion log" -> "Determine PR scope";
-    "Determine PR scope" -> "Multiple PRs needed?";
-    "Multiple PRs needed?" -> "Write one TDD plan" [label="no"];
-    "Multiple PRs needed?" -> "Write separate plan per PR" [label="yes"];
-    "Write one TDD plan" -> "Shutdown team";
-    "Write separate plan per PR" -> "Shutdown team";
+    "Read full discussion log" -> "Enumerate PRs (1 or more)";
+    "Enumerate PRs (1 or more)" -> "For each PR: write complete plan";
+    "For each PR: write complete plan" -> "All PRs have plan folders?";
+    "All PRs have plan folders?" -> "Shutdown team" [label="yes — count matches"];
+    "All PRs have plan folders?" -> "For each PR: write complete plan" [label="no — write missing"];
 }
 ```
 
@@ -241,19 +239,27 @@ Moderator reads the full discussion log and:
 
 1. Identifies areas of consensus across all panelists
 2. Resolves remaining disagreements using evidence from the log
-3. **Determines PR scope (MANDATORY before writing any plan):**
+3. **Enumerates PRs (MANDATORY before writing any plan):**
    - Re-read the design document for: "deferred to PR 2", "phase 2 scope", "future work", "out of scope for initial PR", or any phased delivery language
    - Check the discussion log "PR Scope Signals" header and panelist findings for additional PR boundary recommendations
-   - **If ANY items are scoped to a different PR/phase** → you MUST produce a separate plan for each PR
-   - Append the PR scope determination to the "## Consensus" section of the log
-4. Writes TDD plan(s) following the **Plan Output Format** section below:
-   - Header with goal, architecture, tech stack, design doc path
-   - Task 0 (scaffolding) if identified by panelists
-   - Triplets (RED/GREEN/REVIEW) for each feature — with complete code, verification, and commit per task
-   - Integration triplet
-   - Dependency graph
-   - Execution instructions
-5. Saves plan(s) as a subfolder under `docs/plans/` — **always use multi-file format regardless of plan size** (overrides the size-based rule in plan-format.md):
+   - **Write a numbered PR list** with features belonging to each. Example:
+     ```
+     PR 1 (core auth): login, signup, session management
+     PR 2 (admin dashboard): user admin, audit logs
+     ```
+   - Append the numbered PR list to the "## Consensus" section of the log
+   - **This list is your contract.** Every PR in this list MUST get its own complete plan before shutdown.
+4. **For EACH PR in the numbered list from step 3, repeat steps 4a–4c:**
+   - **4a.** Write a complete TDD plan for THIS PR following the **Plan Output Format** section below:
+     - Header with goal, architecture, tech stack, design doc path
+     - Task 0 (scaffolding) if identified by panelists
+     - Triplets (RED/GREEN/REVIEW) for each feature **in THIS PR** — with detailed specs, verification, and commit per task
+     - Integration triplet
+     - Dependency graph
+     - Execution instructions
+   - **4b.** Save to `docs/plans/{plan-name}-{pr-descriptor}/` subfolder
+   - **4c. Check:** Re-read your numbered PR list from step 3. Have you written plans for ALL PRs? If NO → return to 4a for the next PR. If YES → proceed to step 5.
+5. **Always use multi-file format** regardless of plan size (overrides the size-based rule in plan-format.md):
 
    ```
    docs/plans/{plan-name}/
@@ -267,12 +273,13 @@ Moderator reads the full discussion log and:
 
    Each feature file contains the complete triplet (N.1 RED, N.2 GREEN, N.3 REVIEW). The README.md contains the plan header, file index table, dependency graph, and execution instructions.
    - **Multiple PRs:** Each PR gets its own subfolder: `docs/plans/{plan-name}-{pr-descriptor}/`
-6. Broadcasts "Synthesis complete, shutting down" to give panelists notice
-7. Sends `shutdown_request` to each panelist individually
+6. **Verify all plans exist (MANDATORY before shutdown):** Run `ls docs/plans/` and confirm the number of plan folders matches the number of PRs from step 3. If any PR is missing a plan, **write it now** — do NOT skip it. This is the single most common failure mode of this skill.
+7. Broadcasts "Synthesis complete, shutting down" to give panelists notice
+8. Sends `shutdown_request` to each panelist individually
 
 **The plan output is identical to writing-tdd-plans** — compatible with executing-tdd-plans.
 
-**Multiple PRs — CRITICAL:** Each PR gets its own **complete, self-contained plan file**, independently executable by executing-tdd-plans. A single plan that internally references "PR 1" and "PR 2" sections is NOT acceptable. Common triggers for multi-PR plans:
+**Multiple PRs — CRITICAL:** Each PR gets its own **complete, self-contained plan folder**, independently executable by executing-tdd-plans. A single plan that internally references "PR 1" and "PR 2" sections is NOT acceptable. The numbered PR list from step 3 is your contract — every PR in that list MUST have a plan folder before you shut down the team. **Verify with `ls docs/plans/` in step 6.** Common triggers for multi-PR plans:
 - Design says "deferred to PR 2" or "phase 2 scope" for any feature
 - Panelists recommend splitting for cleaner review, independent deployability, or risk isolation
 - Design has clearly separable deliverables (e.g., backend API vs frontend UI)
@@ -283,7 +290,7 @@ Moderator reads the full discussion log and:
 
 **Critical reminders** (full spec in the shared file):
 - Every task ends with a git commit (incremental progress)
-- Tasks must include complete code, exact file paths, verification commands
+- Tasks must include detailed specs (what to build, what to test), exact file paths, verification commands — but NOT full implementation code
 - A plan that summarizes what to do instead of specifying what to build is too short
 
 ## Round Coordination Protocol
@@ -311,11 +318,12 @@ Rounds are coordinated via messages:
 | Spawning panelists without log path | Every panelist prompt MUST include the log file path |
 | Not waiting for all panelists | Wait for all 4 "done" messages before advancing rounds |
 | Output differs from writing-tdd-plans format | Plan must be identical format for executing-tdd-plans compatibility |
-| Plan tasks are summaries, not complete specifications | Each task must include complete code, exact file paths, verification command, and commit message |
+| Plan tasks are vague summaries | Each task must include detailed specs (test cases, behaviors, constraints), exact file paths, verification command, and commit — but NOT pre-written code |
 | No commit messages in plan tasks | Every task ends with a commit — this enables incremental progress tracking |
 | Using Explore-type for panelists | Panelists need Edit for the log — use general-purpose |
 | Panelists continue chatting after "done" | Broadcast "stop exchanging messages" — "done" means STOP |
-| Design mentions "PR 2" / deferred items but only one plan is written | The moderator MUST check the design doc for PR scope signals BEFORE writing any plan. If items are deferred to another PR, each PR gets its own plan file. Do NOT fold deferred items into footnotes of a single plan. |
+| Design mentions "PR 2" / deferred items but only one plan is written | The moderator MUST enumerate all PRs BEFORE writing any plan, then write a complete plan for EACH PR, then verify all plan folders exist before shutdown. Writing one plan and moving on is the #1 failure mode. |
+| Wrote plan for PR 1, then proceeded to shutdown without writing PR 2's plan | After writing each plan, check: "Have I written plans for ALL PRs in my numbered list?" If not, write the next one. The verification step (step 6) catches this. |
 | Writing a single-file plan instead of multi-file | Always use `docs/plans/` subfolder format — even for small plans with ≤3 features |
 | Marking features as parallel without checking file overlap | Parallel subagents sharing a file cause merge conflicts — Codebase Guardian and Decomposer must flag overlapping files |
 | Forgetting to shut down the team | Broadcast notice, then shutdown_request each panelist |
@@ -332,8 +340,9 @@ Rounds are coordinated via messages:
 - Proceed with the plan if a panelist hasn't participated in all rounds
 - Produce tasks that describe what to do instead of specifying exactly what to build
 - Omit commit messages from tasks — every RED/GREEN/REVIEW task must commit
-- Write one plan when the design document or debate mentions deferred items / multiple PRs — each PR needs its own complete plan file
-- Skip the PR scope determination step in synthesis — this is MANDATORY before writing any plan
+- Write one plan when the design document or debate mentions deferred items / multiple PRs — each PR needs its own complete plan file. **This is the #1 failure mode: writing PR 1's plan and proceeding to shutdown without writing PR 2's plan.**
+- Skip the PR enumeration step in synthesis — this is MANDATORY before writing any plan
+- Skip the verification step (step 6) — you MUST `ls docs/plans/` and confirm folder count matches PR count before shutdown
 
 ## Integration
 

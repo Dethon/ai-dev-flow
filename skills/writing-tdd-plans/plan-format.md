@@ -10,7 +10,7 @@ Shared format for TDD implementation plans. Both writing-tdd-plans and debating-
 | **Depends on** | Previous feature's REVIEW, or none (also serialize if file overlap with parallel features) | Same feature's RED | Same feature's GREEN |
 | **Design requirements** | Verbatim from design | Reference RED task | Verbatim from design |
 | **Files** | Exact paths to create | Exact paths to create/modify | Files to review |
-| **Code** | Complete test code | Complete implementation | Review checklist + min 3 new tests |
+| **Spec** | Test cases table + key assertions | Implementation spec (what to build, behaviors, API) | Review checklist + min 3 new tests |
 | **Verification** | Command + "ALL tests FAIL" | Command + "ALL tests PASS" | Verdict: PASS/FAIL |
 | **Commit** | `test: add failing tests for [feature]` | `feat: implement [feature]` | `test: add adversarial tests for [feature]` |
 
@@ -24,12 +24,20 @@ Every task ends with a git commit. The plan must specify the commit message:
 
 ## Detail Level
 
-**A plan that summarizes what to do instead of specifying what to build is too short.**
+**A plan that vaguely summarizes what to do is too short. A plan that pre-writes the full code is too verbose.**
 
-- Include **complete code** (test functions, implementation, classes) — not "write a test that verifies X"
+The sweet spot: detailed specifications that tell the executor exactly WHAT to build, without writing the code for them. The executor (a capable subagent) writes the actual code from the spec.
+
+**Too short:** "Write tests for the delete endpoint" (no specifics)
+**Too verbose:** Full function bodies with fixtures, setup, complete assertions
+**Just right:** Test case table with scenario + expected behavior per test, key assertions to check, setup notes
+
+- Specify **what to test**: test names, scenario, expected behavior — not full test function bodies
+- Specify **what to implement**: functions/classes, signatures, behaviors, constraints — not full implementation code
 - Specify **exact file paths** — not "create a test file for the feature"
 - Include **verification commands** with expected outcomes — not "run the tests"
 - Quote **design requirements verbatim** in each task — don't reference the design doc
+- Include **key assertions/edge cases** the executor must not miss — not every assertion line
 
 ## Save Location
 
@@ -109,21 +117,17 @@ For each feature/component identified in the design:
 **Files:**
 - Create: `tests/exact/path/to/test_feature.py`
 
-**What to test:**
+**Test cases:**
 
-[Complete test code covering all requirements listed above. Tests MUST fail
-because the implementation doesn't exist yet.]
+| Test | Scenario | Expected |
+|------|----------|----------|
+| test_requirement_a | [Setup/input] | [Expected outcome. Verifies: Requirement A] |
+| test_requirement_b | [Setup/input] | [Expected outcome. Verifies: Requirement B] |
+| test_edge_case_x | [Edge input] | [Expected behavior. Verifies: Edge case X] |
 
-```python
-def test_requirement_a():
-    """[Requirement A verbatim from design]"""
-    result = feature_function(input)
-    assert result == expected
+**Setup:** [Fixtures or test data needed — describe what, not how]
 
-def test_edge_case_x():
-    """[Edge case X from design]"""
-    ...
-```
+**Key assertions:** [Non-obvious assertions the executor must include, e.g., "soft-delete means record stays in DB with deleted_at set"]
 
 **Verification:**
 Run: `[exact test command]`
@@ -148,15 +152,12 @@ Do NOT add functionality beyond what the tests require. YAGNI.
 - Create/Modify: `src/exact/path/to/feature.py`
 - Reference: `tests/exact/path/to/test_feature.py` (already exists from N.1)
 
-**Implementation:**
+**What to implement:**
 
-[Complete implementation code. Minimal — just enough to pass the tests.]
-
-```python
-def feature_function(input):
-    # Implementation that satisfies test requirements
-    ...
-```
+- [Function/class to create, its signature, and key behavior]
+- [How it connects to existing code — imports, integrations]
+- [Constraints: what it must/must not do]
+- [Any non-obvious implementation detail the executor needs to know]
 
 **Verification:**
 Run: `[exact test command]`

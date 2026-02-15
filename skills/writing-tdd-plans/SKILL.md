@@ -65,7 +65,7 @@ digraph process {
 Key points (see `plan-format.md` for full templates):
 - Every feature gets three tasks: RED (tests) → GREEN (implementation) → REVIEW (adversarial)
 - Every task ends with a git commit (incremental progress)
-- Tasks must include complete code, exact file paths, verification commands, and verbatim design requirements
+- Tasks must include detailed specifications (what to build, what to test, acceptance criteria), exact file paths, verification commands, and verbatim design requirements — but NOT full implementation code
 - A plan that summarizes what to do instead of specifying what to build is too short
 
 ## Decomposition Guidelines
@@ -121,7 +121,7 @@ Independent triplets execute as parallel subagents sharing the same workspace. T
 - Treat review as only bug-finding — requirements verification is equally important
 - Create implementation tasks without preceding test tasks
 - Allow a feature to have only 2 of the 3 triplet tasks
-- Write vague test tasks ("add tests for feature X") — tests must be concrete code
+- Write vague test tasks ("add tests for feature X") — tests must list specific test cases with scenarios and expected behavior
 - Write vague review tasks — review criteria must list specific design requirements
 - Write review tasks without minimum additional tests requirement
 - Put design requirements in the plan header only — each triplet needs its OWN requirements
