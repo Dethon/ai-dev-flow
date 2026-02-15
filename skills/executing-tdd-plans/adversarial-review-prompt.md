@@ -73,7 +73,10 @@ Task tool (general-purpose):
     - Edge cases not considered
     - Ways existing tests could pass with wrong implementation
 
-    Run your additional tests. Report results.
+    Run ONLY this feature's test file(s): [exact test file path(s)]
+    Include both existing tests and your new tests.
+    Do NOT run the full test suite or global build commands —
+    other agents may be working in parallel. The controller verifies the full suite after.
 
     ## Verdict
 
@@ -88,7 +91,8 @@ Task tool (general-purpose):
 
     ## Commit Additional Tests
 
-    `git commit -m "test: add adversarial tests for [feature]"`
+    Commit ONLY your test files (do NOT use `git add .`):
+    `git add [test file paths] && git commit -m "test: add adversarial tests for [feature]"`
 
     ## Report Format
 

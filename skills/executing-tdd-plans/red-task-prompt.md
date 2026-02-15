@@ -32,8 +32,11 @@ Task tool (general-purpose):
     2. Tests MUST reference the implementation module (even though it doesn't exist yet)
     3. Each test should map to a specific requirement from the design
     4. Include edge cases listed in the task
-    5. Run the tests — they MUST ALL FAIL (module not found / function not found)
-    6. Commit: `git commit -m "test: add failing tests for [feature]"`
+    5. Run ONLY YOUR test file(s): [exact test file path(s)]
+       They MUST ALL FAIL (module not found / function not found)
+       Do NOT run the full test suite — other agents may be working in parallel
+    6. Commit ONLY your test files (do NOT use `git add .`):
+       `git add [test file paths] && git commit -m "test: add failing tests for [feature]"`
 
     ## Critical: Tests Must FAIL
 

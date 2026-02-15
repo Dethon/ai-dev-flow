@@ -241,6 +241,22 @@ Task("RED: write failing tests for feature B", run_in_background: true)   // red
 
 **Why per-step, not per-triplet?** Subagents cannot dispatch sub-subagents (they lack the Task tool). A "triplet runner" subagent would have to do all RED/GREEN/REVIEW work itself, losing fresh context per task. Per-step parallelism preserves the core principle: **one fresh subagent per task**.
 
+### Build Conflict Prevention
+
+When multiple subagents execute in parallel (same step within a layer), they share the workspace. Global commands — full test suite, project-wide build — pick up other agents' in-progress changes, causing spurious failures or corrupted build artifacts.
+
+**Rules for parallel subagents:**
+1. **Scoped test runs only:** Run ONLY your own test file(s), never the full test suite (e.g., `npx jest tests/my-feature.test.ts` not `npm test`)
+2. **No global builds:** Do NOT run `npm run build`, `tsc`, or other workspace-wide compilation commands
+3. **Targeted commits:** Commit only your specific files — never `git add .` or `git add -A`
+
+**Controller responsibilities at verification gates:**
+1. Run the **full test suite** after all parallel subagents in a step complete
+2. Run a **full project build** if the project requires compilation
+3. If the full suite/build fails, diagnose which feature caused the issue before proceeding
+
+**Include in every parallel subagent prompt:** Specify the exact test file(s) the subagent should run and explicitly prohibit full test suite or global build commands.
+
 ### Prompt Templates
 
 For each task, use the corresponding prompt template:
@@ -267,12 +283,12 @@ When an adversarial review verdict is **FAIL:**
 
 Quick reference for gates between each task in a triplet:
 
-| After | Must verify | If fails |
-|---|---|---|
-| RED (N.1) | ALL tests FAIL (no implementation exists yet) | Fix: tests may be importing wrong module or testing existing code |
-| GREEN (N.2) | ALL tests PASS (including RED's tests) | Fix: implementation incomplete, dispatch new GREEN subagent |
-| REVIEW (N.3) | Verdict = PASS, no Critical/Important issues | Fix: create fix triplet (see Handling FAILs) |
-| Fix cycle | Original tests + fix tests all PASS, review PASS | Escalate to user after 2 cycles |
+| After | Subagent verifies (scoped) | Controller verifies (after all parallel agents finish) | If fails |
+|---|---|---|---|
+| RED (N.1) | Own test file(s) ALL FAIL | Full test suite still passes (new tests don't break existing code) | Fix: tests may be importing wrong module or testing existing code |
+| GREEN (N.2) | Own test file(s) ALL PASS | Full test suite passes + full project builds | Fix: implementation incomplete or breaks other features, dispatch new GREEN subagent |
+| REVIEW (N.3) | Own test file(s) ALL PASS (existing + new) | Full test suite passes, verdict = PASS | Fix: create fix triplet (see Handling FAILs) |
+| Fix cycle | Own test file(s) ALL PASS | Full test suite passes, review PASS | Escalate to user after 2 cycles |
 
 **If RED tests pass immediately:** Something is wrong. Either the tests are testing existing code or importing from the wrong module. Do NOT proceed to GREEN. Diagnose first.
 
@@ -296,6 +312,9 @@ Quick reference for gates between each task in a triplet:
 | Reading all feature files upfront for a multi-file plan | Read README.md first for the index and dep graph, then read feature files as needed per layer |
 | Dispatching a "triplet runner" to handle RED/GREEN/REVIEW | Subagents can't dispatch sub-subagents — controller must dispatch each step directly |
 | Dispatching parallel triplets that share files | Check file scopes — parallel triplets must touch different files |
+| Parallel subagent runs full test suite (npm test) | Each subagent runs ONLY its own test files; controller runs full suite at verification gate |
+| Parallel subagent runs global build (tsc, npm run build) | No global builds in parallel subagents; controller validates full build at verification gate |
+| Parallel subagent uses `git add .` or `git add -A` | Commit only specific files to avoid staging another agent's in-progress changes |
 
 ## Red Flags
 
@@ -310,6 +329,7 @@ Quick reference for gates between each task in a triplet:
 - More than 2 fix cycles without escalating to user
 - Start implementation on main/master without explicit user consent
 - Dispatch parallel subagents that modify overlapping files
+- Let parallel subagents run the full test suite or global build commands (scoped runs only)
 - Let the controller execute tasks directly (always fresh subagent per task)
 - Dispatch a "triplet runner" subagent to manage RED/GREEN/REVIEW (subagents lack the Task tool — they can't dispatch sub-subagents)
 - Ask the user whether to proceed (analyze, create tasks, execute immediately)

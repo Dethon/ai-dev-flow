@@ -35,8 +35,12 @@ Task tool (general-purpose):
     1. Read the failing tests first — understand what they expect
     2. Write the MINIMAL code to make ALL tests pass
     3. Do NOT add functionality beyond what the tests require (YAGNI)
-    4. Run ALL tests — they must ALL PASS
-    5. Commit: `git commit -m "feat: implement [feature]"`
+    4. Run ONLY this feature's test file(s): [exact test file path(s)]
+       They must ALL PASS.
+       Do NOT run the full test suite or global build commands (tsc, npm run build) —
+       other agents may be working in parallel. The controller verifies the full suite after.
+    5. Commit ONLY your implementation files (do NOT use `git add .`):
+       `git add [implementation file paths] && git commit -m "feat: implement [feature]"`
 
     ## Critical: Minimal Implementation
 
