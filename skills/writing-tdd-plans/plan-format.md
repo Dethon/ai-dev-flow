@@ -35,6 +35,8 @@ Every task ends with a git commit. The plan must specify the commit message:
 
 Same directory as the design file, with `-implementation` appended to the filename. Example: `docs/design.md` produces `docs/design-implementation.md`.
 
+**Multiple plans:** If work is split across multiple PRs, each plan gets a descriptive suffix: `docs/design-implementation-auth-backend.md`, `docs/design-implementation-auth-frontend.md`. Each plan must be self-contained and independently executable.
+
 ## Header Template
 
 ```markdown

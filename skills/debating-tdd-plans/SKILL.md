@@ -247,6 +247,8 @@ Moderator reads the full discussion log and:
 
 **The plan output is identical to writing-tdd-plans** — compatible with executing-tdd-plans.
 
+**Multiple PRs:** If the debate concludes that work should be split across multiple PRs (e.g., for cleaner review, independent deployability, or risk isolation), the moderator MUST create a **separate plan file for each PR**. Each plan must be self-contained, follow the full plan format, and be independently executable by executing-tdd-plans. Naming: `{design-basename}-implementation-{pr-descriptor}.md` — e.g., `auth-design.md` split into backend/frontend produces `auth-design-implementation-backend.md` and `auth-design-implementation-frontend.md`. A single plan that internally references "PR 1" and "PR 2" sections is NOT acceptable — each PR gets its own complete plan file.
+
 ## Plan Output Format
 
 **REQUIRED:** During synthesis, read `../writing-tdd-plans/plan-format.md` (relative to this skill's directory) for the complete plan output format. It defines triplet templates, required fields, commit patterns, detail level, and execution instructions.
@@ -285,6 +287,7 @@ Rounds are coordinated via messages:
 | No commit messages in plan tasks | Every task ends with a commit — this enables incremental progress tracking |
 | Using Explore-type for panelists | Panelists need Edit for the log — use general-purpose |
 | Panelists continue chatting after "done" | Broadcast "stop exchanging messages" — "done" means STOP |
+| Debate recommends multiple PRs but only one plan is written | If panelists agree on splitting into multiple PRs, create a separate plan file per PR — each self-contained and independently executable |
 | Forgetting to shut down the team | Broadcast notice, then shutdown_request each panelist |
 
 ## Red Flags
@@ -299,6 +302,7 @@ Rounds are coordinated via messages:
 - Proceed with the plan if a panelist hasn't participated in all rounds
 - Produce tasks that describe what to do instead of specifying exactly what to build
 - Omit commit messages from tasks — every RED/GREEN/REVIEW task must commit
+- Write one plan when the debate concluded work should split across multiple PRs — each PR needs its own plan file
 
 ## Integration
 
