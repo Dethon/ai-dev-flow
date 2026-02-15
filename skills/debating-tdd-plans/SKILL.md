@@ -46,7 +46,7 @@ digraph when_to_use {
 | Role | Focus | Key Questions |
 |------|-------|---------------|
 | **Decomposer** | Feature decomposition, granularity, Task 0, PR boundaries | How should this split? Is each triplet 5-15 min? What shared infrastructure needs Task 0? Are there deferred items that define PR boundaries? |
-| **Test Strategist** | Test coverage, testing challenges, requirement verification | What does each feature need tested? Where are mocking challenges? Do tests truly verify requirements? |
+| **Test Strategist** | Test coverage, integration-first testing, requirement verification, testing behavior not implementation | What does each feature need tested? Can it be tested with real services via fixtures/testcontainers? Are mocks truly unavoidable? Do tests verify behavior, not implementation details? |
 | **Devil's Advocate** | Challenge everything, alternative decompositions, gaps, PR scope | What's wrong with this plan? What features were missed? What assumptions are wrong? Are deferred items properly excluded? |
 | **Codebase Guardian** | Side effects, hidden dependencies, dead code, DRY | What existing code is affected? Hidden couplings? Dead code to remove? Are we duplicating logic? |
 

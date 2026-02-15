@@ -103,12 +103,13 @@ Fill these into the template's `{role focus}` and `{role-specific key questions}
 
 ### Test Strategist
 
-**Focus:** Test coverage, testing challenges, requirement verification
+**Focus:** Test coverage, integration-first testing, requirement verification, testing behavior not implementation
 
 **Key questions:**
 - What should the RED tests cover for each feature?
-- Where are the mocking/stubbing challenges?
-- Do the proposed tests truly verify the design requirements?
+- Can each component be tested against real services using fixtures and testcontainers? This is ALWAYS the preferred approach.
+- Mocks are a last resort — only acceptable when integration testing is truly impossible (e.g., third-party SaaS with no local alternative). Where, if anywhere, are mocks genuinely unavoidable?
+- Do the proposed tests verify actual functionality and observable behavior, or are they coupled to implementation details? Tests should assert on outcomes and side effects, not on how the code is internally wired.
 - What integration testing gaps exist between features?
 - Are there testability issues that require design changes?
 
