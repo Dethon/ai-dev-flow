@@ -7,9 +7,9 @@ description: Use when you have a TDD plan from writing-tdd-plans with triplet ta
 
 ## Overview
 
-Execute TDD plans by analyzing their dependency graph and choosing the optimal subagent architecture. Fresh subagent per task, triplet structure enforced.
+Execute TDD plans using parallel per-step subagent architecture with task tracking. Fresh subagent per task, triplet structure enforced, progress tracked via TaskCreate/TaskUpdate/TaskList.
 
-**Core principle:** The plan's dependency graph determines the architecture. Independent triplets run in parallel; dependent triplets run sequentially. The triplet (RED → GREEN → REVIEW) is always sequential internally.
+**Core principle:** Always use parallel per-step execution. Independent triplets in a dependency layer execute in parallel per step. The triplet (RED → GREEN → REVIEW) is always sequential internally. All progress is tracked with task tools.
 
 **Announce at start:** "I'm using the executing-tdd-plans skill to execute this plan."
 
@@ -45,28 +45,20 @@ digraph process {
     "Read feature files for triplets" [shape=box];
     "Extract triplets, dependency graph" [shape=box];
     "Compute dependency layers" [shape=box];
-
-    subgraph cluster_decide {
-        label="Architecture Decision";
-        "Widest layer width?" [shape=diamond];
-        "Sequential" [shape=box];
-        "Parallel" [shape=box];
-    }
-
-    "Present recommendation to user" [shape=box];
+    "Create tasks with TaskCreate + set dependencies" [shape=box];
     "Execute Task 0 scaffolding?" [shape=diamond];
     "Dispatch scaffolding subagent" [shape=box];
-    "Execute per chosen architecture" [shape=box];
+    "Execute per-step parallel" [shape=box];
 
     subgraph cluster_per_layer {
-        label="Per Layer (parallel: all triplets at once; sequential: one at a time)";
+        label="Per Layer (all triplets in parallel per step, TaskUpdate to track progress)";
         "Dispatch RED subagents (./red-task-prompt.md)" [shape=box];
         "Verify: ALL tests FAIL" [shape=diamond];
         "Dispatch GREEN subagents (./green-task-prompt.md)" [shape=box];
         "Verify: ALL tests PASS" [shape=diamond];
         "Dispatch REVIEW subagents (./adversarial-review-prompt.md)" [shape=box];
         "All verdicts PASS?" [shape=diamond];
-        "Create fix triplets for FAILs" [shape=box];
+        "Create fix tasks with TaskCreate" [shape=box];
         "Mark layer complete" [shape=box];
     }
 
@@ -80,17 +72,13 @@ digraph process {
     "Read feature files for triplets" -> "Extract triplets, dependency graph";
     "Read single plan file" -> "Extract triplets, dependency graph";
     "Extract triplets, dependency graph" -> "Compute dependency layers";
-    "Compute dependency layers" -> "Widest layer width?";
-    "Widest layer width?" -> "Sequential" [label="1"];
-    "Widest layer width?" -> "Parallel" [label="2+"];
-    "Sequential" -> "Present recommendation to user";
-    "Parallel" -> "Present recommendation to user";
-    "Present recommendation to user" -> "Execute Task 0 scaffolding?";
+    "Compute dependency layers" -> "Create tasks with TaskCreate + set dependencies";
+    "Create tasks with TaskCreate + set dependencies" -> "Execute Task 0 scaffolding?";
     "Execute Task 0 scaffolding?" -> "Dispatch scaffolding subagent" [label="yes"];
-    "Execute Task 0 scaffolding?" -> "Execute per chosen architecture" [label="no"];
-    "Dispatch scaffolding subagent" -> "Execute per chosen architecture";
+    "Execute Task 0 scaffolding?" -> "Execute per-step parallel" [label="no"];
+    "Dispatch scaffolding subagent" -> "Execute per-step parallel";
 
-    "Execute per chosen architecture" -> "Dispatch RED subagents (./red-task-prompt.md)";
+    "Execute per-step parallel" -> "Dispatch RED subagents (./red-task-prompt.md)";
     "Dispatch RED subagents (./red-task-prompt.md)" -> "Verify: ALL tests FAIL";
     "Verify: ALL tests FAIL" -> "Dispatch GREEN subagents (./green-task-prompt.md)" [label="yes - all fail"];
     "Verify: ALL tests FAIL" -> "Dispatch RED subagents (./red-task-prompt.md)" [label="no - fix RED", style=dashed];
@@ -99,11 +87,11 @@ digraph process {
     "Verify: ALL tests PASS" -> "Dispatch GREEN subagents (./green-task-prompt.md)" [label="no - fix GREEN", style=dashed];
     "Dispatch REVIEW subagents (./adversarial-review-prompt.md)" -> "All verdicts PASS?";
     "All verdicts PASS?" -> "Mark layer complete" [label="PASS"];
-    "All verdicts PASS?" -> "Create fix triplets for FAILs" [label="FAIL"];
-    "Create fix triplets for FAILs" -> "Dispatch RED subagents (./red-task-prompt.md)" [label="fix cycle"];
+    "All verdicts PASS?" -> "Create fix tasks with TaskCreate" [label="FAIL"];
+    "Create fix tasks with TaskCreate" -> "Dispatch RED subagents (./red-task-prompt.md)" [label="fix cycle"];
 
     "Mark layer complete" -> "All layers done?";
-    "All layers done?" -> "Execute per chosen architecture" [label="no - next layer"];
+    "All layers done?" -> "Execute per-step parallel" [label="no - next layer"];
     "All layers done?" -> "Execute integration triplet" [label="yes"];
     "Execute integration triplet" -> "Done";
 }
@@ -163,57 +151,73 @@ Layer 1: [C, D]     ← depend on Layer 0
 Layer 2: [Integration] ← depends on all
 ```
 
-**Widest layer** = max triplets in any layer. This determines the architecture.
+## Step 2: Create Tasks
 
-## Step 2: Choose Architecture
+**Do NOT ask the user whether to proceed.** After analyzing the plan, immediately create tasks and begin execution.
 
-| Plan Shape | Mode | When |
-|---|---|---|
-| Linear chain | **Sequential** | Widest layer = 1 triplet |
-| Any parallelism | **Parallel** | Widest layer = 2+ triplets |
+Create a task for every step using **TaskCreate**:
 
-Present recommendation before executing:
+1. **Task 0 (if present):** One task for scaffolding
+2. **Per feature triplet:** Three tasks each:
+   - `RED: Write failing tests for [feature name]`
+   - `GREEN: Implement [feature name]`
+   - `REVIEW: Adversarial review of [feature name]`
+3. **Integration triplet:** Three tasks (RED/GREEN/REVIEW)
+
+Set up dependencies with **TaskUpdate** (`addBlockedBy`):
+- Each GREEN task is blockedBy its RED task
+- Each REVIEW task is blockedBy its GREEN task
+- All Layer N+1 RED tasks are blockedBy all Layer N REVIEW tasks
+- Integration RED is blockedBy all feature REVIEW tasks
+- If Task 0 exists, all Layer 0 RED tasks are blockedBy Task 0
+
+**Example for Features A (Layer 0), B (Layer 0), C (Layer 1, depends on A):**
 
 ```
-Plan analysis:
-- [N] feature triplets + Task 0 scaffolding + integration
-- Dependency layers: Layer 0 [A, B], Layer 1 [C, D], Layer 2 [Integration]
-- Widest layer: [M] independent triplets
-- Recommended architecture: [Sequential / Parallel]
-
-Proceed?
+TaskCreate: "Task 0: Scaffolding"                           → id: 1
+TaskCreate: "RED: Write failing tests for Feature A"        → id: 2, blockedBy: [1]
+TaskCreate: "GREEN: Implement Feature A"                     → id: 3, blockedBy: [2]
+TaskCreate: "REVIEW: Adversarial review of Feature A"        → id: 4, blockedBy: [3]
+TaskCreate: "RED: Write failing tests for Feature B"        → id: 5, blockedBy: [1]
+TaskCreate: "GREEN: Implement Feature B"                     → id: 6, blockedBy: [5]
+TaskCreate: "REVIEW: Adversarial review of Feature B"        → id: 7, blockedBy: [6]
+TaskCreate: "RED: Write failing tests for Feature C"        → id: 8, blockedBy: [4]
+TaskCreate: "GREEN: Implement Feature C"                     → id: 9, blockedBy: [8]
+TaskCreate: "REVIEW: Adversarial review of Feature C"        → id: 10, blockedBy: [9]
+TaskCreate: "RED: Write integration tests"                   → id: 11, blockedBy: [4, 7, 10]
+TaskCreate: "GREEN: Implement integration"                   → id: 12, blockedBy: [11]
+TaskCreate: "REVIEW: Adversarial review of integration"      → id: 13, blockedBy: [12]
 ```
+
+### Track Progress
+
+Update task status as execution proceeds:
+- When starting a step: **TaskUpdate** status → `in_progress`
+- When step completes successfully: **TaskUpdate** status → `completed`
+- When a review FAILs: **TaskCreate** for fix tasks with appropriate dependencies
 
 ## Step 3: Execute
 
 **Critical constraint:** Only the top-level controller has the Task tool for dispatching subagents. Subagents and team members cannot dispatch further subagents. Therefore, **all subagent dispatching is done by the controller directly**.
 
-### Sequential Mode
-
-Controller dispatches one subagent at a time. One triplet completes fully before the next starts.
-
-```
-Task 0 (if present)
-→ Triplet 1: RED subagent → verify → GREEN subagent → verify → REVIEW subagent
-→ Triplet 2: RED subagent → verify → GREEN subagent → verify → REVIEW subagent
-→ ...
-→ Integration triplet
-```
-
-### Parallel Mode (Per-Step Parallelism)
+### Per-Step Parallelism
 
 Controller processes dependency layers. Within each layer, dispatch **all subagents for the same step in parallel**, then verify, then move to the next step.
 
 ```
-Task 0 (if present)
+Task 0 (if present) → TaskUpdate completed
 → Layer 0:
-  Step 1: Dispatch RED-A, RED-B subagents in parallel → wait → verify ALL fail
-  Step 2: Dispatch GREEN-A, GREEN-B subagents in parallel → wait → verify ALL pass
-  Step 3: Dispatch REVIEW-A, REVIEW-B subagents in parallel → wait → check verdicts
+  Step 1: TaskUpdate RED tasks → in_progress
+          Dispatch RED-A, RED-B subagents in parallel → wait → verify ALL fail
+          TaskUpdate RED tasks → completed
+  Step 2: TaskUpdate GREEN tasks → in_progress
+          Dispatch GREEN-A, GREEN-B subagents in parallel → wait → verify ALL pass
+          TaskUpdate GREEN tasks → completed
+  Step 3: TaskUpdate REVIEW tasks → in_progress
+          Dispatch REVIEW-A, REVIEW-B subagents in parallel → wait → check verdicts
+          TaskUpdate REVIEW tasks → completed
 → Layer 1:
-  Step 1: Dispatch RED-C, RED-D in parallel → wait → verify
-  Step 2: Dispatch GREEN-C, GREEN-D in parallel → wait → verify
-  Step 3: Dispatch REVIEW-C, REVIEW-D in parallel → wait → check
+  [same pattern for C, D]
 → Integration triplet
 ```
 
@@ -228,7 +232,7 @@ Task("RED: write failing tests for feature B")   // red-task-prompt.md
 
 **Why per-step, not per-triplet?** Subagents cannot dispatch sub-subagents (they lack the Task tool). A "triplet runner" subagent would have to do all RED/GREEN/REVIEW work itself, losing fresh context per task. Per-step parallelism preserves the core principle: **one fresh subagent per task**.
 
-### Both Modes: Prompt Templates
+### Prompt Templates
 
 For each task, use the corresponding prompt template:
 - RED: `./red-task-prompt.md`
@@ -242,7 +246,7 @@ Include full task text from the plan in each subagent prompt. Don't make subagen
 When an adversarial review verdict is **FAIL:**
 
 1. Read the issues list from the review (Critical / Important / Minor)
-2. Critical or Important issues → create a **fix triplet:**
+2. Critical or Important issues → create a **fix triplet** using **TaskCreate**:
    - Fix.RED: Write tests targeting the specific issues found
    - Fix.GREEN: Implement fixes to pass the new tests AND existing tests
    - Fix.REVIEW: Re-review against original requirements + fix requirements
@@ -267,24 +271,25 @@ Quick reference for gates between each task in a triplet:
 
 | Mistake | Fix |
 |---|---|
-| Running everything sequentially when plan shows independence | Analyze dependency graph, compute layers, use parallel mode |
-| Skipping dependency analysis entirely | ALWAYS extract layers before choosing architecture |
+| Running triplets sequentially when plan shows independence | Always use parallel per-step execution across dependency layers |
+| Skipping dependency analysis entirely | ALWAYS extract layers before creating tasks |
 | Using per-triplet runners (they can't dispatch subagents) | Use per-step parallelism — controller dispatches all REDs, then GREENs, then REVIEWs |
+| Not creating tasks with TaskCreate | ALWAYS create tasks for every step and track with TaskUpdate |
+| Asking user whether to proceed | Do NOT ask — analyze plan, create tasks, and execute immediately |
 | Proceeding when RED tests pass | RED tests MUST fail — diagnose the issue |
 | Proceeding when GREEN tests fail | GREEN must make ALL tests pass before review |
 | Skipping review because "tests pass" | Review is mandatory — it's a separate tracked task |
-| Ignoring FAIL verdicts | Create fix triplet, don't hand-wave issues |
+| Ignoring FAIL verdicts | Create fix triplet with TaskCreate, don't hand-wave issues |
 | Running integration before all features done | Integration is always the last layer |
 | Making subagents read the plan file | Paste full task text into the subagent prompt |
 | Reading all feature files upfront for a multi-file plan | Read README.md first for the index and dep graph, then read feature files as needed per layer |
-| Not presenting architecture recommendation | Always get user confirmation before executing |
 | Dispatching a "triplet runner" to handle RED/GREEN/REVIEW | Subagents can't dispatch sub-subagents — controller must dispatch each step directly |
 | Dispatching parallel triplets that share files | Check file scopes — parallel triplets must touch different files |
 
 ## Red Flags
 
 **Never:**
-- Skip the architecture analysis (always analyze dependency graph first)
+- Skip the dependency analysis (always analyze dependency graph first)
 - Combine RED and GREEN into one subagent dispatch
 - Skip the REVIEW task ("tests pass, move on")
 - Proceed to next layer with FAIL verdicts in current layer
@@ -294,6 +299,8 @@ Quick reference for gates between each task in a triplet:
 - Dispatch parallel subagents that modify overlapping files
 - Let the controller execute tasks directly (always fresh subagent per task)
 - Dispatch a "triplet runner" subagent to manage RED/GREEN/REVIEW (subagents lack the Task tool — they can't dispatch sub-subagents)
+- Ask the user whether to proceed (analyze, create tasks, execute immediately)
+- Skip creating tasks with TaskCreate/TaskUpdate (all progress must be tracked)
 
 ## Integration
 
