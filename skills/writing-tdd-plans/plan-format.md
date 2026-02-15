@@ -7,7 +7,7 @@ Shared format for TDD implementation plans. Both writing-tdd-plans and debating-
 | Field | RED | GREEN | REVIEW |
 |-------|-----|-------|--------|
 | **Type** | RED (Test Writing) | GREEN (Implementation) | REVIEW (Adversarial) |
-| **Depends on** | Previous feature's REVIEW, or none | Same feature's RED | Same feature's GREEN |
+| **Depends on** | Previous feature's REVIEW, or none (also serialize if file overlap with parallel features) | Same feature's RED | Same feature's GREEN |
 | **Design requirements** | Verbatim from design | Reference RED task | Verbatim from design |
 | **Files** | Exact paths to create | Exact paths to create/modify | Files to review |
 | **Code** | Complete test code | Complete implementation | Review checklist + min 3 new tests |
@@ -285,8 +285,9 @@ For each task, dispatch a fresh subagent using the Task tool:
 
 **Execution order:**
 - Tasks within a triplet are strictly sequential: N.1 → N.2 → N.3
-- Independent triplets MAY run in parallel if they touch different files
+- Independent triplets MAY run in parallel ONLY if they have zero file overlap (no shared created/modified files)
 - Dependent triplets are sequential: complete triplet N before starting triplet M
+- If the dependency graph says two features are parallel, they MUST NOT modify any overlapping files — this was verified during planning
 
 **Never:**
 - Skip a test-writing task (N.1) — "I'll write tests with the implementation"

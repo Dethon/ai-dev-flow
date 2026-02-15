@@ -45,10 +45,10 @@ digraph when_to_use {
 
 | Role | Focus | Key Questions |
 |------|-------|---------------|
-| **Decomposer** | Feature decomposition, granularity, Task 0, PR boundaries | How should this split? Is each triplet 5-15 min? What shared infrastructure needs Task 0? Are there deferred items that define PR boundaries? |
+| **Decomposer** | Feature decomposition, granularity, Task 0, PR boundaries, parallel safety | How should this split? Is each triplet 5-15 min? What shared infrastructure needs Task 0? Do any "independent" features modify overlapping files (must serialize or extract to Task 0)? Are there deferred items that define PR boundaries? |
 | **Test Strategist** | Test coverage, integration-first testing, requirement verification, testing behavior not implementation | What does each feature need tested? Can it be tested with real services via fixtures/testcontainers? Are mocks truly unavoidable? Do tests verify behavior, not implementation details? |
 | **Devil's Advocate** | Challenge everything, alternative decompositions, gaps, PR scope | What's wrong with this plan? What features were missed? What assumptions are wrong? Are deferred items properly excluded? |
-| **Codebase Guardian** | Side effects, hidden dependencies, dead code, DRY | What existing code is affected? Hidden couplings? Dead code to remove? Are we duplicating logic? |
+| **Codebase Guardian** | Side effects, hidden dependencies, dead code, DRY, file overlap | What existing code is affected? Hidden couplings? Dead code to remove? Are we duplicating logic? Do proposed parallel features modify overlapping files (shared types, barrel exports, config)? |
 
 ## The Process
 
@@ -307,6 +307,7 @@ Rounds are coordinated via messages:
 | Panelists continue chatting after "done" | Broadcast "stop exchanging messages" — "done" means STOP |
 | Design mentions "PR 2" / deferred items but only one plan is written | The moderator MUST check the design doc for PR scope signals BEFORE writing any plan. If items are deferred to another PR, each PR gets its own plan file. Do NOT fold deferred items into footnotes of a single plan. |
 | Writing a monolithic plan file for 4+ features | Check feature count — 4+ features must use multi-file format in docs/plans/ subfolder |
+| Marking features as parallel without checking file overlap | Parallel subagents sharing a file cause merge conflicts — Codebase Guardian and Decomposer must flag overlapping files |
 | Forgetting to shut down the team | Broadcast notice, then shutdown_request each panelist |
 
 ## Red Flags

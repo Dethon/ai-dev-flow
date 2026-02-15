@@ -82,9 +82,26 @@ Key points (see `plan-format.md` for full templates):
 
 3. **Shared infrastructure** — If multiple features need the same base (database setup, config, types), create a Task 0 for scaffolding, then triplets for each feature.
 
+### Parallel Execution Safety (MANDATORY)
+
+Independent triplets execute as parallel subagents sharing the same workspace. Two agents editing the same file simultaneously cause merge conflicts, build failures, and spurious test failures.
+
+**Before marking features as independent, analyze file scope overlap:**
+
+1. List the files each feature will create or modify (from the design doc, or by exploring the codebase if the design doesn't list files)
+2. If two features modify ANY overlapping files, they are NOT independent — serialize them into different dependency layers
+3. Common overlap sources: shared type definitions, barrel exports (index files), config files, utility modules, shared middleware
+
+**Resolution options when overlap is found:**
+
+- **Extract to Task 0:** Move shared file changes into scaffolding (pre-create types, export stubs, config entries). This makes features independent again by eliminating overlap.
+- **Serialize:** Place overlapping features in different dependency layers. Feature A runs first, Feature B depends on Feature A's REVIEW completing.
+
+**Prefer Task 0 extraction** when the shared changes are small and mechanical (type additions, re-exports). **Prefer serialization** when the shared file changes are substantial or depend on each feature's implementation.
+
 **Granularity:** Each triplet should be 5-15 minutes of work. If a feature is too large, split it into sub-features, each with its own triplet.
 
-**Dependency graph:** Include a visual dependency graph at the end of the plan showing which triplets can run in parallel and which are sequential.
+**Dependency graph:** Include a visual dependency graph at the end of the plan showing which triplets can run in parallel and which are sequential. The graph must reflect both logical dependencies AND file-scope overlap — two features are parallel only if they have zero file overlap.
 
 ## Common Rationalizations
 
@@ -97,6 +114,7 @@ Key points (see `plan-format.md` for full templates):
 | "I'll write the tests in the implementation task" | That's tests-after with extra steps. The test task must exist separately. |
 | "The design is clear enough, I don't need to quote requirements" | Reviewers need verbatim requirements to catch misinterpretations. |
 | "Subagents are slow, I'll execute tasks myself" | Fresh subagent context prevents cross-task contamination and shortcuts. |
+| "These features are logically independent, so they can run in parallel" | Logical independence ≠ file independence. Check for shared files before marking as parallel. |
 
 ## Red Flags
 
@@ -111,5 +129,6 @@ Key points (see `plan-format.md` for full templates):
 - Write vague review tasks — review criteria must list specific design requirements
 - Write review tasks without minimum additional tests requirement
 - Put design requirements in the plan header only — each triplet needs its OWN requirements
+- Mark features as parallel without checking for file overlap — shared types, barrel exports, config files cause build conflicts between parallel agents
 
 **The triplet is atomic:** If you can't write all three tasks for a feature, the feature needs to be decomposed further.

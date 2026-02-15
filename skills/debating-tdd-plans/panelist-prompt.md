@@ -91,13 +91,14 @@ Fill these into the template's `{role focus}` and `{role-specific key questions}
 
 ### Decomposer
 
-**Focus:** Feature decomposition, granularity, Task 0 identification, PR boundaries
+**Focus:** Feature decomposition, granularity, Task 0 identification, PR boundaries, parallel execution safety
 
 **Key questions:**
 - How should this design split into independent features/components?
 - Is each proposed triplet 5-15 minutes of work? If larger, how to sub-divide?
 - What shared infrastructure (database, config, types) needs a Task 0?
 - Which features are independent (parallelizable) vs dependent (sequential)?
+- **Parallel execution safety:** Do any "independent" features modify overlapping files? Parallel subagents editing the same file cause merge conflicts and spurious failures. Check for shared type definitions, barrel exports (index files), config files, utility modules. Features with file overlap must be serialized OR the overlap must be extracted to Task 0.
 - What's the optimal dependency graph for execution?
 - **Does the design mention items deferred to a later PR/phase?** If so, what are the PR boundaries and which features belong to each PR?
 
@@ -127,11 +128,12 @@ Fill these into the template's `{role focus}` and `{role-specific key questions}
 
 ### Codebase Guardian
 
-**Focus:** Side effects, hidden dependencies, dead code, DRY
+**Focus:** Side effects, hidden dependencies, dead code, DRY, file overlap for parallel execution
 
 **Key questions:**
 - What existing code will be affected by these changes?
 - Are there hidden couplings that the decomposition doesn't account for?
+- **File overlap analysis:** Do any features proposed as parallel modify the same files? Check shared types, barrel exports (index files), config, utility modules. Parallel subagents editing the same file cause merge conflicts and build failures. Flag any overlap and recommend serialization or Task 0 extraction.
 - Will any existing code become dead after implementation?
 - Are we duplicating logic that already exists?
 - What refactoring opportunities should be captured as tasks?
