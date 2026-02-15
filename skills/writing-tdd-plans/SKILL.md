@@ -46,8 +46,6 @@ digraph process {
         "Create Task N.3: Adversarial review" [shape=box];
     }
 
-    "4+ features?" [shape=diamond];
-    "Save as single file next to design" [shape=box];
     "Save as subfolder in docs/plans/" [shape=box];
 
     "Read design document" -> "Identify goal, architecture, tech stack";
@@ -56,9 +54,7 @@ digraph process {
     "Order features by dependency" -> "Create Task N.1: Write failing tests (RED)";
     "Create Task N.1: Write failing tests (RED)" -> "Create Task N.2: Implement to pass tests (GREEN)";
     "Create Task N.2: Implement to pass tests (GREEN)" -> "Create Task N.3: Adversarial review";
-    "Create Task N.3: Adversarial review" -> "4+ features?";
-    "4+ features?" -> "Save as subfolder in docs/plans/" [label="yes"];
-    "4+ features?" -> "Save as single file next to design" [label="no"];
+    "Create Task N.3: Adversarial review" -> "Save as subfolder in docs/plans/";
 }
 ```
 

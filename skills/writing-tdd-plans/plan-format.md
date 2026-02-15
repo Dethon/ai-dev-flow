@@ -33,9 +33,7 @@ Every task ends with a git commit. The plan must specify the commit message:
 
 ## Save Location
 
-**Small plans (3 or fewer feature triplets):** Single file in the same directory as the design file, with `-implementation` appended. Example: `docs/design.md` → `docs/design-implementation.md`.
-
-**Large plans (4+ feature triplets):** Split into a subfolder under `docs/plans/`:
+**Always use multi-file format** — save as a subfolder under `docs/plans/`, regardless of plan size:
 
 ```
 docs/plans/{plan-name}/
@@ -62,34 +60,9 @@ Each feature file contains the complete triplet (N.1 RED, N.2 GREEN, N.3 REVIEW)
 | integration.md | End-to-end integration | All features |
 ```
 
-**Multiple PRs:** Apply the size rule independently per PR — a PR with ≤3 features gets a single file, a PR with 4+ gets a subfolder. Each plan must be self-contained and independently executable.
+**Multiple PRs:** Each PR gets its own subfolder: `docs/plans/{plan-name}-{pr-descriptor}/`. Each plan must be self-contained and independently executable.
 
-- Single file: `{design-basename}-implementation-{pr-descriptor}.md`
-- Subfolder: `docs/plans/{plan-name}-{pr-descriptor}/`
-
-## Header Template
-
-**Single-file plan:**
-
-```markdown
-# [Feature Name] Implementation Plan
-
-> **For Claude:** Execute this plan using subagents. Dispatch a fresh subagent per task
-> using the Task tool (subagent_type: "general-purpose"). Each task is self-contained.
-> NEVER skip test or review tasks. They are tracked separately and all must complete.
-
-**Goal:** [One sentence from design]
-
-**Architecture:** [2-3 sentences from design]
-
-**Tech Stack:** [Key technologies/libraries]
-
-**Design Document:** [path/to/design.md]
-
----
-```
-
-**Multi-file plan (README.md):**
+## Header Template (README.md)
 
 ```markdown
 # [Feature Name] Implementation Plan
