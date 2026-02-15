@@ -45,8 +45,9 @@ briefly but do not start new threads.
 ### Round 0: Research
 1. Read the design document at {design doc path}
 2. Explore the codebase through your specialized lens using Glob, Grep, Read
-3. Append your signed findings to the discussion log under "## Round 0: Research"
-4. Message the moderator: "Done with research"
+3. **PR scope check:** Note any items marked as "deferred", "PR 2", "phase 2", "future work", or "out of scope". Include these in your findings — they affect plan boundaries.
+4. Append your signed findings to the discussion log under "## Round 0: Research"
+5. Message the moderator: "Done with research"
 
 ### Round 1: Present
 (Wait for moderator's broadcast to start this round)
@@ -90,7 +91,7 @@ Fill these into the template's `{role focus}` and `{role-specific key questions}
 
 ### Decomposer
 
-**Focus:** Feature decomposition, granularity, Task 0 identification
+**Focus:** Feature decomposition, granularity, Task 0 identification, PR boundaries
 
 **Key questions:**
 - How should this design split into independent features/components?
@@ -98,6 +99,7 @@ Fill these into the template's `{role focus}` and `{role-specific key questions}
 - What shared infrastructure (database, config, types) needs a Task 0?
 - Which features are independent (parallelizable) vs dependent (sequential)?
 - What's the optimal dependency graph for execution?
+- **Does the design mention items deferred to a later PR/phase?** If so, what are the PR boundaries and which features belong to each PR?
 
 ### Test Strategist
 
@@ -120,6 +122,7 @@ Fill these into the template's `{role focus}` and `{role-specific key questions}
 - What assumptions about dependencies are wrong?
 - Could a completely different decomposition be better?
 - What requirements gaps and edge cases will the adversarial review need to catch?
+- **Are items marked "deferred" or "PR 2" properly excluded from the current plan?** Should the PR boundary be different?
 
 ### Codebase Guardian
 

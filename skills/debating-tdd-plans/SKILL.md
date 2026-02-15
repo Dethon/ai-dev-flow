@@ -45,9 +45,9 @@ digraph when_to_use {
 
 | Role | Focus | Key Questions |
 |------|-------|---------------|
-| **Decomposer** | Feature decomposition, granularity, Task 0 | How should this split? Is each triplet 5-15 min? What shared infrastructure needs Task 0? |
+| **Decomposer** | Feature decomposition, granularity, Task 0, PR boundaries | How should this split? Is each triplet 5-15 min? What shared infrastructure needs Task 0? Are there deferred items that define PR boundaries? |
 | **Test Strategist** | Test coverage, testing challenges, requirement verification | What does each feature need tested? Where are mocking challenges? Do tests truly verify requirements? |
-| **Devil's Advocate** | Challenge everything, alternative decompositions, gaps | What's wrong with this plan? What features were missed? What assumptions are wrong? |
+| **Devil's Advocate** | Challenge everything, alternative decompositions, gaps, PR scope | What's wrong with this plan? What features were missed? What assumptions are wrong? Are deferred items properly excluded? |
 | **Codebase Guardian** | Side effects, hidden dependencies, dead code, DRY | What existing code is affected? Hidden couplings? Dead code to remove? Are we duplicating logic? |
 
 ## The Process
@@ -92,7 +92,10 @@ digraph process {
     subgraph cluster_synthesis {
         label="Phase 4: Synthesis";
         "Read full discussion log" [shape=box];
-        "Write TDD plan (writing-tdd-plans format)" [shape=box];
+        "Determine PR scope" [shape=box];
+        "Multiple PRs needed?" [shape=diamond];
+        "Write one TDD plan" [shape=box];
+        "Write separate plan per PR" [shape=box];
         "Shutdown team" [shape=box];
     }
 
@@ -120,14 +123,18 @@ digraph process {
     "Convergence?" -> "Optional extra round" [label="no"];
     "Optional extra round" -> "Read full discussion log";
 
-    "Read full discussion log" -> "Write TDD plan (writing-tdd-plans format)";
-    "Write TDD plan (writing-tdd-plans format)" -> "Shutdown team";
+    "Read full discussion log" -> "Determine PR scope";
+    "Determine PR scope" -> "Multiple PRs needed?";
+    "Multiple PRs needed?" -> "Write one TDD plan" [label="no"];
+    "Multiple PRs needed?" -> "Write separate plan per PR" [label="yes"];
+    "Write one TDD plan" -> "Shutdown team";
+    "Write separate plan per PR" -> "Shutdown team";
 }
 ```
 
 ## Phase 0: Setup
 
-1. Read the design document thoroughly
+1. Read the design document thoroughly. **Scan for PR scope signals:** look for phrases like "deferred to PR 2", "phase 2", "out of scope for initial PR", "future work", or any indication that the design spans multiple PRs or delivery phases. Note these for the panelists.
 2. Create the discussion log directory and file:
 
 ```bash
@@ -146,6 +153,7 @@ mkdir -p temp/discussions
 **Participants:** Decomposer, Test Strategist, Devil's Advocate, Codebase Guardian
 **Design Document:** {path/to/design.md}
 **Question:** How should this design be decomposed into TDD triplets?
+**PR Scope Signals Found:** {list any "deferred to PR 2", "phase 2", "future work" etc. found in design doc, or "None detected"}
 
 ---
 
@@ -233,21 +241,30 @@ Moderator reads the full discussion log and:
 
 1. Identifies areas of consensus across all panelists
 2. Resolves remaining disagreements using evidence from the log
-3. Appends synthesis to the "## Consensus" section of the log
-4. Writes the final TDD plan following the **Plan Output Format** section below:
+3. **Determines PR scope (MANDATORY before writing any plan):**
+   - Re-read the design document for: "deferred to PR 2", "phase 2 scope", "future work", "out of scope for initial PR", or any phased delivery language
+   - Check the discussion log "PR Scope Signals" header and panelist findings for additional PR boundary recommendations
+   - **If ANY items are scoped to a different PR/phase** → you MUST produce a separate plan for each PR
+   - Append the PR scope determination to the "## Consensus" section of the log
+4. Writes TDD plan(s) following the **Plan Output Format** section below:
    - Header with goal, architecture, tech stack, design doc path
    - Task 0 (scaffolding) if identified by panelists
    - Triplets (RED/GREEN/REVIEW) for each feature — with complete code, verification, and commit per task
    - Integration triplet
    - Dependency graph
    - Execution instructions
-5. Saves the plan next to the design file with `-implementation` suffix
+5. Saves plan(s) next to the design file:
+   - **Single PR:** `{design-basename}-implementation.md`
+   - **Multiple PRs:** `{design-basename}-implementation-{pr-descriptor}.md` per PR (e.g., `auth-design-implementation-backend.md` and `auth-design-implementation-frontend.md`)
 6. Broadcasts "Synthesis complete, shutting down" to give panelists notice
 7. Sends `shutdown_request` to each panelist individually
 
 **The plan output is identical to writing-tdd-plans** — compatible with executing-tdd-plans.
 
-**Multiple PRs:** If the debate concludes that work should be split across multiple PRs (e.g., for cleaner review, independent deployability, or risk isolation), the moderator MUST create a **separate plan file for each PR**. Each plan must be self-contained, follow the full plan format, and be independently executable by executing-tdd-plans. Naming: `{design-basename}-implementation-{pr-descriptor}.md` — e.g., `auth-design.md` split into backend/frontend produces `auth-design-implementation-backend.md` and `auth-design-implementation-frontend.md`. A single plan that internally references "PR 1" and "PR 2" sections is NOT acceptable — each PR gets its own complete plan file.
+**Multiple PRs — CRITICAL:** Each PR gets its own **complete, self-contained plan file**, independently executable by executing-tdd-plans. A single plan that internally references "PR 1" and "PR 2" sections is NOT acceptable. Common triggers for multi-PR plans:
+- Design says "deferred to PR 2" or "phase 2 scope" for any feature
+- Panelists recommend splitting for cleaner review, independent deployability, or risk isolation
+- Design has clearly separable deliverables (e.g., backend API vs frontend UI)
 
 ## Plan Output Format
 
@@ -287,7 +304,7 @@ Rounds are coordinated via messages:
 | No commit messages in plan tasks | Every task ends with a commit — this enables incremental progress tracking |
 | Using Explore-type for panelists | Panelists need Edit for the log — use general-purpose |
 | Panelists continue chatting after "done" | Broadcast "stop exchanging messages" — "done" means STOP |
-| Debate recommends multiple PRs but only one plan is written | If panelists agree on splitting into multiple PRs, create a separate plan file per PR — each self-contained and independently executable |
+| Design mentions "PR 2" / deferred items but only one plan is written | The moderator MUST check the design doc for PR scope signals BEFORE writing any plan. If items are deferred to another PR, each PR gets its own plan file. Do NOT fold deferred items into footnotes of a single plan. |
 | Forgetting to shut down the team | Broadcast notice, then shutdown_request each panelist |
 
 ## Red Flags
@@ -302,7 +319,8 @@ Rounds are coordinated via messages:
 - Proceed with the plan if a panelist hasn't participated in all rounds
 - Produce tasks that describe what to do instead of specifying exactly what to build
 - Omit commit messages from tasks — every RED/GREEN/REVIEW task must commit
-- Write one plan when the debate concluded work should split across multiple PRs — each PR needs its own plan file
+- Write one plan when the design document or debate mentions deferred items / multiple PRs — each PR needs its own complete plan file
+- Skip the PR scope determination step in synthesis — this is MANDATORY before writing any plan
 
 ## Integration
 
