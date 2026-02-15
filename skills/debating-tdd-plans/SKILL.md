@@ -253,9 +253,10 @@ Moderator reads the full discussion log and:
    - Integration triplet
    - Dependency graph
    - Execution instructions
-5. Saves plan(s) next to the design file:
-   - **Single PR:** `{design-basename}-implementation.md`
-   - **Multiple PRs:** `{design-basename}-implementation-{pr-descriptor}.md` per PR (e.g., `auth-design-implementation-backend.md` and `auth-design-implementation-frontend.md`)
+5. Saves plan(s) following the size-based format from plan-format.md:
+   - **Small plans (≤3 features):** Single file next to the design: `{design-basename}-implementation.md`
+   - **Large plans (4+ features):** Subfolder `docs/plans/{plan-name}/` with README.md (index + dep graph) and one file per feature triplet
+   - **Multiple PRs:** Apply the size rule per PR. Each PR gets its own file or subfolder.
 6. Broadcasts "Synthesis complete, shutting down" to give panelists notice
 7. Sends `shutdown_request` to each panelist individually
 
@@ -305,6 +306,7 @@ Rounds are coordinated via messages:
 | Using Explore-type for panelists | Panelists need Edit for the log — use general-purpose |
 | Panelists continue chatting after "done" | Broadcast "stop exchanging messages" — "done" means STOP |
 | Design mentions "PR 2" / deferred items but only one plan is written | The moderator MUST check the design doc for PR scope signals BEFORE writing any plan. If items are deferred to another PR, each PR gets its own plan file. Do NOT fold deferred items into footnotes of a single plan. |
+| Writing a monolithic plan file for 4+ features | Check feature count — 4+ features must use multi-file format in docs/plans/ subfolder |
 | Forgetting to shut down the team | Broadcast notice, then shutdown_request each panelist |
 
 ## Red Flags

@@ -39,7 +39,10 @@ digraph when_to_use {
 digraph process {
     rankdir=TB;
 
-    "Read plan file" [shape=box];
+    "Plan is a directory?" [shape=diamond];
+    "Read single plan file" [shape=box];
+    "Read README.md for index + dep graph" [shape=box];
+    "Read feature files for triplets" [shape=box];
     "Extract triplets, dependency graph" [shape=box];
     "Compute dependency layers" [shape=box];
 
@@ -71,7 +74,11 @@ digraph process {
     "Execute integration triplet" [shape=box];
     "Done" [shape=box, style=filled, fillcolor=lightgreen];
 
-    "Read plan file" -> "Extract triplets, dependency graph";
+    "Plan is a directory?" -> "Read README.md for index + dep graph" [label="yes"];
+    "Plan is a directory?" -> "Read single plan file" [label="no"];
+    "Read README.md for index + dep graph" -> "Read feature files for triplets";
+    "Read feature files for triplets" -> "Extract triplets, dependency graph";
+    "Read single plan file" -> "Extract triplets, dependency graph";
     "Extract triplets, dependency graph" -> "Compute dependency layers";
     "Compute dependency layers" -> "Widest layer width?";
     "Widest layer width?" -> "Sequential" [label="1"];
@@ -104,12 +111,38 @@ digraph process {
 
 ## Step 1: Analyze the Plan
 
-Read the plan file and extract:
+Plans come in two formats. Detect which one you have:
+
+### Single-file plan (a `.md` file)
+
+Read the plan file and extract everything from it.
+
+### Multi-file plan (a directory)
+
+The directory follows this structure:
+
+```
+docs/plans/{plan-name}/
+  README.md                    # Header, dependency graph, file index, execution instructions
+  task-0-scaffolding.md        # Task 0 (if present)
+  feature-1-{name}.md          # Triplet: RED/GREEN/REVIEW for this feature
+  feature-2-{name}.md          # Triplet: RED/GREEN/REVIEW for this feature
+  ...
+  integration.md               # Integration triplet
+```
+
+**Reading order:**
+1. Read `README.md` first — it contains the **Plan Files** index table (mapping each file to its feature and dependencies) and the dependency graph
+2. Read `task-0-scaffolding.md` if listed in the index
+3. Read each `feature-N-*.md` file — each contains the complete triplet (N.1 RED, N.2 GREEN, N.3 REVIEW) for that feature
+4. Read `integration.md` for the final integration triplet
+
+### From either format, extract:
 
 1. **Task 0 (scaffolding)** — if present, must run first before any triplets
 2. **Feature triplets** — each group of N.1 (RED), N.2 (GREEN), N.3 (REVIEW)
 3. **Integration triplet** — final triplet, depends on all features
-4. **Dependency graph** — from the plan's "Execution Instructions" or explicit graph
+4. **Dependency graph** — from the plan's "Execution Instructions" or explicit graph (in multi-file plans, this is in README.md)
 
 ### Compute Dependency Layers
 
@@ -243,6 +276,7 @@ Quick reference for gates between each task in a triplet:
 | Ignoring FAIL verdicts | Create fix triplet, don't hand-wave issues |
 | Running integration before all features done | Integration is always the last layer |
 | Making subagents read the plan file | Paste full task text into the subagent prompt |
+| Reading all feature files upfront for a multi-file plan | Read README.md first for the index and dep graph, then read feature files as needed per layer |
 | Not presenting architecture recommendation | Always get user confirmation before executing |
 | Dispatching a "triplet runner" to handle RED/GREEN/REVIEW | Subagents can't dispatch sub-subagents — controller must dispatch each step directly |
 | Dispatching parallel triplets that share files | Check file scopes — parallel triplets must touch different files |

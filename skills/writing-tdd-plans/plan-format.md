@@ -33,11 +33,43 @@ Every task ends with a git commit. The plan must specify the commit message:
 
 ## Save Location
 
-Same directory as the design file, with `-implementation` appended to the filename. Example: `docs/design.md` produces `docs/design-implementation.md`.
+**Small plans (3 or fewer feature triplets):** Single file in the same directory as the design file, with `-implementation` appended. Example: `docs/design.md` → `docs/design-implementation.md`.
 
-**Multiple plans:** If work is split across multiple PRs, each plan gets a descriptive suffix: `docs/design-implementation-auth-backend.md`, `docs/design-implementation-auth-frontend.md`. Each plan must be self-contained and independently executable.
+**Large plans (4+ feature triplets):** Split into a subfolder under `docs/plans/`:
+
+```
+docs/plans/{plan-name}/
+  README.md                    # Header, dependency graph, file index, execution instructions
+  task-0-scaffolding.md        # Task 0 (if present)
+  feature-1-{name}.md          # Triplet 1: RED/GREEN/REVIEW
+  feature-2-{name}.md          # Triplet 2: RED/GREEN/REVIEW
+  ...
+  integration.md               # Integration triplet
+```
+
+Each feature file contains the complete triplet (N.1 RED, N.2 GREEN, N.3 REVIEW) for that feature. The README.md contains the plan header, a file index table mapping each file to its feature and dependencies, the dependency graph, and execution instructions.
+
+**README.md file index table:**
+
+```markdown
+## Plan Files
+
+| File | Feature | Depends On |
+|------|---------|------------|
+| task-0-scaffolding.md | Project scaffolding | None |
+| feature-1-auth.md | Authentication | Task 0 |
+| feature-2-users.md | User Management | Task 0 |
+| integration.md | End-to-end integration | All features |
+```
+
+**Multiple PRs:** Apply the size rule independently per PR — a PR with ≤3 features gets a single file, a PR with 4+ gets a subfolder. Each plan must be self-contained and independently executable.
+
+- Single file: `{design-basename}-implementation-{pr-descriptor}.md`
+- Subfolder: `docs/plans/{plan-name}-{pr-descriptor}/`
 
 ## Header Template
+
+**Single-file plan:**
 
 ```markdown
 # [Feature Name] Implementation Plan
@@ -53,6 +85,32 @@ Same directory as the design file, with `-implementation` appended to the filena
 **Tech Stack:** [Key technologies/libraries]
 
 **Design Document:** [path/to/design.md]
+
+---
+```
+
+**Multi-file plan (README.md):**
+
+```markdown
+# [Feature Name] Implementation Plan
+
+> **For Claude:** This plan is split across multiple files. Read this README for the
+> dependency graph and execution order, then read individual feature files for task details.
+> Dispatch a fresh subagent per task using the Task tool (subagent_type: "general-purpose").
+
+**Goal:** [One sentence from design]
+
+**Architecture:** [2-3 sentences from design]
+
+**Tech Stack:** [Key technologies/libraries]
+
+**Design Document:** [path/to/design.md]
+
+## Plan Files
+
+| File | Feature | Depends On |
+|------|---------|------------|
+| ... | ... | ... |
 
 ---
 ```
