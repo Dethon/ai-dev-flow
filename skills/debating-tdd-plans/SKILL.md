@@ -253,10 +253,20 @@ Moderator reads the full discussion log and:
    - Integration triplet
    - Dependency graph
    - Execution instructions
-5. Saves plan(s) following the size-based format from plan-format.md:
-   - **Small plans (≤3 features):** Single file next to the design: `{design-basename}-implementation.md`
-   - **Large plans (4+ features):** Subfolder `docs/plans/{plan-name}/` with README.md (index + dep graph) and one file per feature triplet
-   - **Multiple PRs:** Apply the size rule per PR. Each PR gets its own file or subfolder.
+5. Saves plan(s) as a subfolder under `docs/plans/` — **always use multi-file format regardless of plan size** (overrides the size-based rule in plan-format.md):
+
+   ```
+   docs/plans/{plan-name}/
+     README.md                    # Header, dependency graph, file index, execution instructions
+     task-0-scaffolding.md        # Task 0 (if present)
+     feature-1-{name}.md          # Triplet 1: RED/GREEN/REVIEW
+     feature-2-{name}.md          # Triplet 2: RED/GREEN/REVIEW
+     ...
+     integration.md               # Integration triplet
+   ```
+
+   Each feature file contains the complete triplet (N.1 RED, N.2 GREEN, N.3 REVIEW). The README.md contains the plan header, file index table, dependency graph, and execution instructions.
+   - **Multiple PRs:** Each PR gets its own subfolder: `docs/plans/{plan-name}-{pr-descriptor}/`
 6. Broadcasts "Synthesis complete, shutting down" to give panelists notice
 7. Sends `shutdown_request` to each panelist individually
 
@@ -306,7 +316,7 @@ Rounds are coordinated via messages:
 | Using Explore-type for panelists | Panelists need Edit for the log — use general-purpose |
 | Panelists continue chatting after "done" | Broadcast "stop exchanging messages" — "done" means STOP |
 | Design mentions "PR 2" / deferred items but only one plan is written | The moderator MUST check the design doc for PR scope signals BEFORE writing any plan. If items are deferred to another PR, each PR gets its own plan file. Do NOT fold deferred items into footnotes of a single plan. |
-| Writing a monolithic plan file for 4+ features | Check feature count — 4+ features must use multi-file format in docs/plans/ subfolder |
+| Writing a single-file plan instead of multi-file | Always use `docs/plans/` subfolder format — even for small plans with ≤3 features |
 | Marking features as parallel without checking file overlap | Parallel subagents sharing a file cause merge conflicts — Codebase Guardian and Decomposer must flag overlapping files |
 | Forgetting to shut down the team | Broadcast notice, then shutdown_request each panelist |
 
