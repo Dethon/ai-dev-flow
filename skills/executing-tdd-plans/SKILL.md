@@ -260,6 +260,7 @@ Each team member executes a complete triplet by dispatching fresh foreground sub
 **Team member workflow:**
 
 ```
+0. Collect context: read source files mentioned in task text, key imports, prior completed work
 1. TaskUpdate RED → in_progress
 2. Dispatch RED subagent (foreground) → blocks until done → get result
 3. Verify RED: scoped tests must ALL FAIL
@@ -290,7 +291,7 @@ For each task type, use the corresponding prompt template:
 - REVIEW subagent: `./adversarial-review-prompt.md`
 - Triplet runner (team member): `./triplet-runner-prompt.md`
 
-The team member reads the RED/GREEN/REVIEW templates to construct its subagent prompts. Include full task text from the plan in each team member prompt — don't make team members read the plan file.
+The team member reads the RED/GREEN/REVIEW templates to construct its subagent prompts. Include full task text from the plan in each team member prompt — don't make team members read the plan file. The controller does NOT provide codebase context — each team member collects its own context by reading the relevant source files before dispatching subagents (see Step 0 in triplet-runner-prompt.md).
 
 **Skill directory path:** Include the absolute path to this skill's directory in each team member prompt so it can find the prompt template files (red-task-prompt.md, green-task-prompt.md, adversarial-review-prompt.md). Use the path from which you loaded this skill.
 

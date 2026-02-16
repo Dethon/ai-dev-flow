@@ -28,10 +28,6 @@ Task tool:
 
     [FULL TEXT of REVIEW task from the plan]
 
-    ## Context
-
-    [Scene-setting: what was built before this, relevant architecture, where files live]
-
     ## Test Files
 
     Your scoped test file(s): [exact test file path(s)]
@@ -48,9 +44,19 @@ Task tool:
 
     ## Your Process
 
-    Execute RED → GREEN → REVIEW sequentially, dispatching a fresh foreground
-    subagent for each step. Each subagent call blocks until done and returns
-    the result directly. **One subagent per step, one step at a time.**
+    Execute context collection → RED → GREEN → REVIEW sequentially. Dispatch a
+    fresh foreground subagent for each TDD step. Each subagent call blocks until
+    done and returns the result directly. **One subagent per step, one step at a time.**
+
+    ### Step 0: Collect Context
+
+    Before dispatching any subagent, collect codebase context for this triplet:
+
+    1. Read the source files mentioned in the task descriptions above
+    2. Read key imports/dependencies those files reference
+    3. If prior triplets have completed, read their output files to understand what's already built
+
+    Summarize the collected context and include it in every subagent prompt you dispatch.
 
     ### Step 1: RED
 
