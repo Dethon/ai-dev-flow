@@ -7,9 +7,9 @@ description: Use when you have a TDD plan from writing-tdd-plans with triplet ta
 
 ## Overview
 
-Execute TDD plans using parallel per-step background subagent architecture with task tracking. Fresh background subagent per task, triplet structure enforced, progress tracked via TaskCreate/TaskUpdate/TaskList.
+Execute TDD plans using a team-based architecture: one team member per triplet, each dispatching fresh subagents for RED/GREEN/REVIEW tasks. Progress tracked via TaskCreate/TaskUpdate/TaskList.
 
-**Core principle:** Always dispatch background subagents (`run_in_background: true`). Independent triplets in a dependency layer execute in parallel per step. The triplet (RED → GREEN → REVIEW) is always sequential internally. Dispatch background agents → end turn → system wakes you → verify → next step. All progress is tracked with task tools.
+**Core principle:** Create a team and spawn one team member per triplet. Each team member autonomously executes RED → GREEN → REVIEW by dispatching fresh subagents (foreground, blocking). Independent triplets in a layer run in parallel via concurrent team members. The controller manages layer transitions and full-suite verification between layers.
 
 **Announce at start:** "I'm using the executing-tdd-plans skill to execute this plan."
 
@@ -45,25 +45,24 @@ digraph process {
     "Read feature files for triplets" [shape=box];
     "Extract triplets, dependency graph" [shape=box];
     "Compute dependency layers" [shape=box];
-    "Create tasks with TaskCreate + set dependencies" [shape=box];
+    "Create team + tasks with dependencies" [shape=box];
     "Execute Task 0 scaffolding?" [shape=diamond];
     "Dispatch scaffolding subagent" [shape=box];
-    "Execute per-step parallel" [shape=box];
 
     subgraph cluster_per_layer {
-        label="Per Layer (background subagents per step: dispatch → end turn → system wakes → verify)";
-        "Dispatch RED subagents (./red-task-prompt.md)" [shape=box];
-        "Verify: ALL tests FAIL" [shape=diamond];
-        "Dispatch GREEN subagents (./green-task-prompt.md)" [shape=box];
-        "Verify: ALL tests PASS" [shape=diamond];
-        "Dispatch REVIEW subagents (./adversarial-review-prompt.md)" [shape=box];
-        "All verdicts PASS?" [shape=diamond];
-        "Create fix tasks with TaskCreate" [shape=box];
+        label="Per Layer";
+        "Spawn team members (one per triplet, run_in_background)" [shape=box];
+        "Team members execute triplets autonomously" [shape=box];
+        "Wait for completion messages" [shape=box];
+        "Controller: full test suite + build" [shape=diamond];
+        "Diagnose and fix" [shape=box];
         "Mark layer complete" [shape=box];
     }
 
     "All layers done?" [shape=diamond];
-    "Execute integration triplet" [shape=box];
+    "Spawn integration team member" [shape=box];
+    "Controller: final full test suite + build" [shape=box];
+    "Shutdown team" [shape=box];
     "Done" [shape=box, style=filled, fillcolor=lightgreen];
 
     "Plan is a directory?" -> "Read README.md for index + dep graph" [label="yes"];
@@ -72,28 +71,25 @@ digraph process {
     "Read feature files for triplets" -> "Extract triplets, dependency graph";
     "Read single plan file" -> "Extract triplets, dependency graph";
     "Extract triplets, dependency graph" -> "Compute dependency layers";
-    "Compute dependency layers" -> "Create tasks with TaskCreate + set dependencies";
-    "Create tasks with TaskCreate + set dependencies" -> "Execute Task 0 scaffolding?";
+    "Compute dependency layers" -> "Create team + tasks with dependencies";
+    "Create team + tasks with dependencies" -> "Execute Task 0 scaffolding?";
     "Execute Task 0 scaffolding?" -> "Dispatch scaffolding subagent" [label="yes"];
-    "Execute Task 0 scaffolding?" -> "Execute per-step parallel" [label="no"];
-    "Dispatch scaffolding subagent" -> "Execute per-step parallel";
+    "Execute Task 0 scaffolding?" -> "Spawn team members (one per triplet, run_in_background)" [label="no"];
+    "Dispatch scaffolding subagent" -> "Spawn team members (one per triplet, run_in_background)";
 
-    "Execute per-step parallel" -> "Dispatch RED subagents (./red-task-prompt.md)";
-    "Dispatch RED subagents (./red-task-prompt.md)" -> "Verify: ALL tests FAIL";
-    "Verify: ALL tests FAIL" -> "Dispatch GREEN subagents (./green-task-prompt.md)" [label="yes - all fail"];
-    "Verify: ALL tests FAIL" -> "Dispatch RED subagents (./red-task-prompt.md)" [label="no - fix RED", style=dashed];
-    "Dispatch GREEN subagents (./green-task-prompt.md)" -> "Verify: ALL tests PASS";
-    "Verify: ALL tests PASS" -> "Dispatch REVIEW subagents (./adversarial-review-prompt.md)" [label="yes - all pass"];
-    "Verify: ALL tests PASS" -> "Dispatch GREEN subagents (./green-task-prompt.md)" [label="no - fix GREEN", style=dashed];
-    "Dispatch REVIEW subagents (./adversarial-review-prompt.md)" -> "All verdicts PASS?";
-    "All verdicts PASS?" -> "Mark layer complete" [label="PASS"];
-    "All verdicts PASS?" -> "Create fix tasks with TaskCreate" [label="FAIL"];
-    "Create fix tasks with TaskCreate" -> "Dispatch RED subagents (./red-task-prompt.md)" [label="fix cycle"];
+    "Spawn team members (one per triplet, run_in_background)" -> "Team members execute triplets autonomously";
+    "Team members execute triplets autonomously" -> "Wait for completion messages";
+    "Wait for completion messages" -> "Controller: full test suite + build";
+    "Controller: full test suite + build" -> "Mark layer complete" [label="pass"];
+    "Controller: full test suite + build" -> "Diagnose and fix" [label="fail"];
+    "Diagnose and fix" -> "Controller: full test suite + build" [style=dashed];
 
     "Mark layer complete" -> "All layers done?";
-    "All layers done?" -> "Execute per-step parallel" [label="no - next layer"];
-    "All layers done?" -> "Execute integration triplet" [label="yes"];
-    "Execute integration triplet" -> "Done";
+    "All layers done?" -> "Spawn team members (one per triplet, run_in_background)" [label="no - next layer"];
+    "All layers done?" -> "Spawn integration team member" [label="yes"];
+    "Spawn integration team member" -> "Controller: final full test suite + build";
+    "Controller: final full test suite + build" -> "Shutdown team";
+    "Shutdown team" -> "Done";
 }
 ```
 
@@ -151,9 +147,21 @@ Layer 1: [C, D]     ← depend on Layer 0
 Layer 2: [Integration] ← depends on all
 ```
 
-## Step 2: Create Tasks
+## Step 2: Create Tasks and Team
 
-**Do NOT ask the user whether to proceed.** After analyzing the plan, immediately create tasks and begin execution.
+**Do NOT ask the user whether to proceed.** After analyzing the plan, immediately create tasks, create the team, and begin execution.
+
+### Create Team
+
+```
+TeamCreate:
+  team_name: "tdd-{plan-name}"
+  description: "Executing TDD plan: {plan-name}"
+```
+
+After creating the team, read the team config (check `~/.claude/teams/tdd-{plan-name}/config.json` or `~/.claude/teams/tdd-{plan-name}.json`) to find your own member name. Include this name in team member prompts as the report-to recipient.
+
+### Create Tasks
 
 Create a task for every step using **TaskCreate**:
 
@@ -189,157 +197,188 @@ TaskCreate: "GREEN: Implement integration"                   → id: 12, blocked
 TaskCreate: "REVIEW: Adversarial review of integration"      → id: 13, blockedBy: [12]
 ```
 
-### Track Progress
-
-Update task status as execution proceeds:
-- When starting a step: **TaskUpdate** status → `in_progress`
-- When step completes successfully: **TaskUpdate** status → `completed`
-- When a review FAILs: **TaskCreate** for fix tasks with appropriate dependencies
-
 ## Step 3: Execute
 
-**Critical constraint:** Only the top-level controller has the Task tool for dispatching subagents. Subagents and team members cannot dispatch further subagents. Therefore, **all subagent dispatching is done by the controller directly**.
+### Task 0: Scaffolding (if present)
 
-### Background Subagent Dispatch
+Dispatch a regular background subagent (no team member needed):
+```
+Task(general-purpose, run_in_background: true):
+  "Execute scaffolding task: [task 0 text]"
+```
+Wait for completion, verify, TaskUpdate → completed.
 
-**Always dispatch subagents with `run_in_background: true`.** The controller yields after each dispatch and is woken by the system when agents complete.
+### Layer Execution
 
-**Execution loop per step:**
-1. **Dispatch:** TaskUpdate tasks → `in_progress`, dispatch all step's subagents with `run_in_background: true` in a single message
-2. **End turn:** Output status message and **end your turn** — do NOT continue working
-3. **Wake:** System wakes you when all background agents finish
-4. **Verify:** Check results against verification gates (see table below)
-5. **Advance:** TaskUpdate tasks → `completed`, proceed to next step (go to 1)
+For each layer, spawn one team member per triplet. All team members in a layer run in parallel.
+
+**Spawning team members:** In a single message, spawn all team members for the current layer:
 
 ```
-Task 0 (if present):
-  Dispatch scaffolding subagent (run_in_background: true) → end turn
-  → System wakes → verify → TaskUpdate completed
-→ Layer 0:
-  Step 1: TaskUpdate RED tasks → in_progress
-          Dispatch RED-A, RED-B (run_in_background: true) → end turn
-          → System wakes → verify ALL fail → TaskUpdate RED tasks → completed
-  Step 2: TaskUpdate GREEN tasks → in_progress
-          Dispatch GREEN-A, GREEN-B (run_in_background: true) → end turn
-          → System wakes → verify ALL pass → TaskUpdate GREEN tasks → completed
-  Step 3: TaskUpdate REVIEW tasks → in_progress
-          Dispatch REVIEW-A, REVIEW-B (run_in_background: true) → end turn
-          → System wakes → check verdicts → TaskUpdate REVIEW tasks → completed
-→ Layer 1:
-  [same pattern for C, D]
-→ Integration triplet
+// Layer 0: Features A and B are independent
+Task(general-purpose, team_name: "tdd-{plan}", name: "triplet-a", run_in_background: true):
+  [triplet runner prompt for Feature A — see ./triplet-runner-prompt.md]
+
+Task(general-purpose, team_name: "tdd-{plan}", name: "triplet-b", run_in_background: true):
+  [triplet runner prompt for Feature B — see ./triplet-runner-prompt.md]
+
+// End turn. Team members execute autonomously.
 ```
 
-**Dispatching background subagents:** In a single message, dispatch all independent subagents for the current step with `run_in_background: true`:
+**Controller workflow per layer:**
+1. **Spawn:** Dispatch all team members for this layer (one per triplet) with `run_in_background: true`
+2. **Wait:** End turn — team members execute triplets autonomously
+3. **Collect:** Team members send completion messages via SendMessage. Wait for all to report.
+4. **Verify:** Run full test suite + full project build
+5. **Advance:** If all pass, proceed to next layer. If failures, diagnose which feature.
+
+**Ignore team member idle notifications.** Team members may go idle briefly during execution — this is normal. Only act on explicit completion messages (SendMessage from team members).
+
+**Counting completions:** Track how many team members you spawned for the layer. Only proceed to full-suite verification after receiving completion messages from ALL of them.
+
+### Integration
+
+After all feature layers complete, spawn one team member for the integration triplet:
 
 ```
-// All RED subagents for this layer, dispatched in one message
-Task("RED: write failing tests for feature A", run_in_background: true)   // red-task-prompt.md
-Task("RED: write failing tests for feature B", run_in_background: true)   // red-task-prompt.md
-// End turn. System wakes you when both finish.
+Task(general-purpose, team_name: "tdd-{plan}", name: "triplet-integration", run_in_background: true):
+  [triplet runner prompt for Integration — see ./triplet-runner-prompt.md]
 ```
 
-**Why per-step, not per-triplet?** Subagents cannot dispatch sub-subagents (they lack the Task tool). A "triplet runner" subagent would have to do all RED/GREEN/REVIEW work itself, losing fresh context per task. Per-step parallelism preserves the core principle: **one fresh subagent per task**.
+After integration completes, run final full test suite + build.
 
-### Build Conflict Prevention
+### Shutdown
 
-When multiple subagents execute in parallel (same step within a layer), they share the workspace. Global commands — full test suite, project-wide build — pick up other agents' in-progress changes, causing spurious failures or corrupted build artifacts.
+After all work is complete:
+1. Send `shutdown_request` to all team members
+2. `TeamDelete` to clean up
 
-**Rules for parallel subagents:**
-1. **Scoped test runs only:** Run ONLY your own test file(s), never the full test suite (e.g., `npx jest tests/my-feature.test.ts` not `npm test`)
-2. **No global builds:** Do NOT run `npm run build`, `tsc`, or other workspace-wide compilation commands
-3. **Targeted commits:** Commit only your specific files — never `git add .` or `git add -A`
+## Team Member Workflow
 
-**Controller responsibilities at verification gates:**
-1. Run the **full test suite** after all parallel subagents in a step complete
-2. Run a **full project build** if the project requires compilation
-3. If the full suite/build fails, diagnose which feature caused the issue before proceeding
+Each team member executes a complete triplet by dispatching fresh foreground subagents (blocking calls). See `./triplet-runner-prompt.md` for the full prompt template.
 
-**Include in every parallel subagent prompt:** Specify the exact test file(s) the subagent should run and explicitly prohibit full test suite or global build commands.
+**Team member workflow:**
 
-### Prompt Templates
+```
+1. TaskUpdate RED → in_progress
+2. Dispatch RED subagent (foreground) → blocks until done → get result
+3. Verify RED: scoped tests must ALL FAIL
+4. TaskUpdate RED → completed
 
-For each task, use the corresponding prompt template:
-- RED: `./red-task-prompt.md`
-- GREEN: `./green-task-prompt.md`
-- REVIEW: `./adversarial-review-prompt.md`
+5. TaskUpdate GREEN → in_progress
+6. Dispatch GREEN subagent (foreground) → blocks until done → get result
+7. Verify GREEN: scoped tests must ALL PASS
+8. TaskUpdate GREEN → completed
 
-Include full task text from the plan in each subagent prompt. Don't make subagents read the plan file.
+9. TaskUpdate REVIEW → in_progress
+10. Dispatch REVIEW subagent (foreground) → blocks until done → get result
+11. Check verdict → if FAIL, handle fix cycle
+12. TaskUpdate REVIEW → completed
 
-### Subagent Response Format
+13. SendMessage to controller: result
+```
 
-Subagents return minimal responses to conserve controller context:
+Since subagents run foreground (blocking), the team member executes the entire triplet in a single continuous flow — no idle/wake cycles between steps.
+
+**Fix cycles:** If REVIEW fails, team member creates fix triplet tasks and dispatches fix subagents (same pattern). Max 2 fix cycles before reporting FAILURE to controller.
+
+## Prompt Templates
+
+For each task type, use the corresponding prompt template:
+- RED subagent: `./red-task-prompt.md`
+- GREEN subagent: `./green-task-prompt.md`
+- REVIEW subagent: `./adversarial-review-prompt.md`
+- Triplet runner (team member): `./triplet-runner-prompt.md`
+
+The team member reads the RED/GREEN/REVIEW templates to construct its subagent prompts. Include full task text from the plan in each team member prompt — don't make team members read the plan file.
+
+**Skill directory path:** Include the absolute path to this skill's directory in each team member prompt so it can find the prompt template files (red-task-prompt.md, green-task-prompt.md, adversarial-review-prompt.md). Use the path from which you loaded this skill.
+
+## Subagent Response Format
+
+Subagents return minimal responses to conserve context:
 - **RED / GREEN:** `SUCCESS` or `FAILURE <single-line reason>`
 - **REVIEW (pass):** `SUCCESS`
 - **REVIEW (fail):** `FAILURE` followed by one line per Critical/Important issue with file:line and suggested fix
 
-The controller uses these to drive verification gates. For REVIEW failures, the issue lines provide enough detail to create fix triplets.
+## Build Conflict Prevention
+
+When multiple team members execute in parallel (same layer), they share the workspace. Global commands — full test suite, project-wide build — pick up other team members' in-progress changes, causing spurious failures.
+
+**Rules for team members and their subagents:**
+1. **Scoped test runs only:** Run ONLY your own test file(s), never the full test suite (e.g., `npx jest tests/my-feature.test.ts` not `npm test`)
+2. **No global builds:** Do NOT run `npm run build`, `tsc`, or other workspace-wide compilation
+3. **Targeted commits:** Commit only your specific files — never `git add .` or `git add -A`
+
+**Controller responsibilities between layers:**
+1. Run the **full test suite** after all team members in a layer complete
+2. Run a **full project build** if the project requires compilation
+3. If the full suite/build fails, diagnose which feature caused the issue
 
 ## Handling FAILs
 
-When an adversarial review verdict is **FAIL:**
+The **team member** handles fix cycles autonomously:
 
 1. Read the issues from the FAILURE response (one line per Critical/Important issue)
 2. Create a **fix triplet** using **TaskCreate**:
    - Fix.RED: Write tests targeting the specific issues found
    - Fix.GREEN: Implement fixes to pass the new tests AND existing tests
    - Fix.REVIEW: Re-review against original requirements + fix requirements
-3. **Maximum 2 fix cycles per triplet.** If still FAIL after 2 cycles, escalate to user.
-4. Do NOT proceed to the next dependency layer until all triplets in the current layer PASS.
+3. Dispatch fix subagents (same pattern: RED → verify → GREEN → verify → REVIEW)
+4. **Maximum 2 fix cycles per triplet.** If still FAIL after 2 cycles, report FAILURE to controller via SendMessage.
+
+The controller does NOT handle fix cycles — team members are autonomous. The controller only intervenes if a team member reports FAILURE (escalate to user).
 
 ## Verification Gates
 
-Quick reference for gates between each task in a triplet:
-
-| After | Subagent verifies (scoped) | Controller verifies (after all parallel agents finish) | If fails |
+| After | Team member verifies (scoped) | Controller verifies (between layers) | If fails |
 |---|---|---|---|
-| RED (N.1) | Own test file(s) ALL FAIL | Full test suite still passes (new tests don't break existing code) | Fix: tests may be importing wrong module or testing existing code |
-| GREEN (N.2) | Own test file(s) ALL PASS | Full test suite passes + full project builds | Fix: implementation incomplete or breaks other features, dispatch new GREEN subagent |
-| REVIEW (N.3) | Own test file(s) ALL PASS (existing + new) | Full test suite passes, verdict = PASS | Fix: create fix triplet (see Handling FAILs) |
-| Fix cycle | Own test file(s) ALL PASS | Full test suite passes, review PASS | Escalate to user after 2 cycles |
+| RED (N.1) | Own test file(s) ALL FAIL | — | Fix: tests may be importing wrong module or testing existing code |
+| GREEN (N.2) | Own test file(s) ALL PASS | — | Fix: dispatch new GREEN subagent |
+| REVIEW (N.3) | Verdict = PASS, own tests pass | — | Fix: team member handles fix cycle |
+| Layer complete | — | Full test suite + full build | Diagnose which feature broke |
+| Integration | — | Full test suite + final build | Fix or escalate to user |
 
-**If RED tests pass immediately:** Something is wrong. Either the tests are testing existing code or importing from the wrong module. Do NOT proceed to GREEN. Diagnose first.
+**If RED tests pass immediately:** Something is wrong. Team member should diagnose before proceeding to GREEN.
 
 ## Common Mistakes
 
 | Mistake | Fix |
 |---|---|
-| Dispatching foreground subagents (without run_in_background) | Always use `run_in_background: true` — dispatch, end turn, system wakes you |
-| Continuing to work after dispatching background agents | End turn immediately — do NOT verify or dispatch more until system wakes you |
-| Running triplets sequentially when plan shows independence | Always use parallel per-step execution across dependency layers |
-| Skipping dependency analysis entirely | ALWAYS extract layers before creating tasks |
-| Using per-triplet runners (they can't dispatch subagents) | Use per-step parallelism — controller dispatches all REDs, then GREENs, then REVIEWs |
-| Not creating tasks with TaskCreate | ALWAYS create tasks for every step and track with TaskUpdate |
-| Asking user whether to proceed | Do NOT ask — analyze plan, create tasks, and execute immediately |
-| Proceeding when RED tests pass | RED tests MUST fail — diagnose the issue |
-| Proceeding when GREEN tests fail | GREEN must make ALL tests pass before review |
+| Spawning team members without creating a team first | Always create team with TeamCreate before spawning members |
+| Controller handling fix cycles | Team members handle fix cycles autonomously — controller only manages layers |
+| Acting on team member idle notifications | Only react to explicit SendMessage completion messages |
+| Spawning team members sequentially instead of parallel | Spawn all team members for a layer in a single message |
+| Skipping full test suite between layers | Controller MUST run full suite + build between layers |
+| Team member running full test suite | Team members and their subagents run ONLY scoped tests |
+| Team member running global builds | No global builds in team members or their subagents |
+| Using plain subagents instead of team members for triplets | Team members need the Task tool to dispatch subagents — plain subagents can't |
+| Asking user whether to proceed | Do NOT ask — analyze, create team + tasks, execute immediately |
+| Making team members read the plan file | Paste full task text into the team member prompt |
+| Proceeding when RED tests pass | RED tests MUST fail — team member diagnoses |
 | Skipping review because "tests pass" | Review is mandatory — it's a separate tracked task |
-| Ignoring FAIL verdicts | Create fix triplet with TaskCreate, don't hand-wave issues |
+| More than 2 fix cycles without reporting | Team member reports FAILURE after 2 fix cycles |
 | Running integration before all features done | Integration is always the last layer |
-| Making subagents read the plan file | Paste full task text into the subagent prompt |
-| Reading all feature files upfront for a multi-file plan | Read README.md first for the index and dep graph, then read feature files as needed per layer |
-| Dispatching a "triplet runner" to handle RED/GREEN/REVIEW | Subagents can't dispatch sub-subagents — controller must dispatch each step directly |
-| Dispatching parallel triplets that share files | Check file scopes — parallel triplets must touch different files |
-| Parallel subagent runs full test suite (npm test) | Each subagent runs ONLY its own test files; controller runs full suite at verification gate |
-| Parallel subagent runs global build (tsc, npm run build) | No global builds in parallel subagents; controller validates full build at verification gate |
-| Parallel subagent uses `git add .` or `git add -A` | Commit only specific files to avoid staging another agent's in-progress changes |
+| Dispatching parallel team members for triplets that share files | Check file scopes — parallel triplets must touch different files |
+| Not reading team config for controller name | Read config after TeamCreate to get your name for team member prompts |
+| Not including build conflict rules in team member prompts | Every team member prompt must include scoped-test and no-global-build constraints |
 
 ## Red Flags
 
 **Never:**
-- Dispatch foreground subagents — always use `run_in_background: true`
-- Continue working after dispatching background agents — end turn and wait for system wake
-- Skip the dependency analysis (always analyze dependency graph first)
-- Combine RED and GREEN into one subagent dispatch
+- Skip creating a team (team members need the Task tool to dispatch subagents)
+- Handle fix cycles in the controller (team members are autonomous)
+- React to team member idle notifications (only react to SendMessage)
+- Spawn team members without `run_in_background: true`
+- Skip full test suite between layers
+- Let team members or their subagents run the full test suite or global builds
+- Combine RED and GREEN into one subagent
 - Skip the REVIEW task ("tests pass, move on")
 - Proceed to next layer with FAIL verdicts in current layer
 - Run integration before ALL feature triplets complete
-- More than 2 fix cycles without escalating to user
 - Start implementation on main/master without explicit user consent
-- Dispatch parallel subagents that modify overlapping files
-- Let parallel subagents run the full test suite or global build commands (scoped runs only)
-- Let the controller execute tasks directly (always fresh subagent per task)
-- Dispatch a "triplet runner" subagent to manage RED/GREEN/REVIEW (subagents lack the Task tool — they can't dispatch sub-subagents)
+- Dispatch parallel team members for triplets that modify overlapping files
+- Let the controller execute tasks directly (always team member + fresh subagent)
 - Ask the user whether to proceed (analyze, create tasks, execute immediately)
 - Skip creating tasks with TaskCreate/TaskUpdate (all progress must be tracked)
 
