@@ -47,11 +47,11 @@ Task tool (general-purpose):
 
     **Every test must fail.** That's the point of RED.
 
-    ## Report Format
+    ## Response Format
 
-    When done, report:
-    - Tests written (file paths)
-    - Test run output showing ALL FAILURES
-    - Number of tests: X failing, 0 passing
-    - Any concerns about the requirements
+    Respond with EXACTLY one of the following lines and nothing else:
+    - `SUCCESS` — all tests written and all fail as expected
+    - `FAILURE <reason>` — single line explaining what went wrong (e.g., "3 of 5 tests pass unexpectedly", "import error prevents tests from running")
+
+    No preamble, no explanation, no summary. Just the single line above.
 ```

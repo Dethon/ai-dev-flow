@@ -68,7 +68,7 @@ Each feature file contains the complete triplet (N.1 RED, N.2 GREEN, N.3 REVIEW)
 | integration.md | End-to-end integration | All features |
 ```
 
-**Multiple PRs:** Each PR gets its own subfolder: `docs/plans/{plan-name}-{pr-descriptor}/`. Each plan must be self-contained and independently executable.
+**Multiple PRs:** Each PR gets its own numbered subfolder: `docs/plans/{NN}-{plan-name}-{pr-descriptor}/` where `{NN}` is the zero-padded PR number (01, 02, ...). The number indicates execution order — PRs must be executed in numerical sequence. Each plan must be self-contained and independently executable.
 
 ## Header Template (README.md)
 

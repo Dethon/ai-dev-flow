@@ -83,28 +83,22 @@ Task tool (general-purpose):
     Do NOT run the full test suite or global build commands —
     other agents may be working in parallel. The controller verifies the full suite after.
 
-    ## Verdict
-
-    **PASS** — All requirements implemented correctly, no critical or important issues,
-    additional tests all pass.
-    **FAIL** — Requirements missing/misimplemented OR critical/important bugs found.
-    List each with:
-    - Severity (Critical / Important / Minor)
-    - Description
-    - File and line reference
-    - Suggested fix
-
     ## Commit Additional Tests (if any written)
 
     If you wrote additional tests, commit ONLY your test files (do NOT use `git add .`):
     `git add [test file paths] && git commit -m "test: add adversarial tests for [feature]"`
 
-    ## Report Format
+    ## Response Format
 
-    When done, report:
-    - Issues found (severity, description, file:line)
-    - Additional tests written and their results (if gaps were found)
-    - If no tests written: explanation of why existing coverage is sufficient
-    - Verdict: PASS or FAIL
-    - If FAIL: specific issues that must be fixed
+    Respond with EXACTLY the following and nothing else:
+
+    **PASS:** Just the word `SUCCESS`
+
+    **FAIL:** `FAILURE` followed by one line per issue (Critical and Important only):
+
+        FAILURE
+        - [Critical] description (file:line) — suggested fix
+        - [Important] description (file:line) — suggested fix
+
+    No preamble, no explanation, no summary. Keep each issue to ONE line. Skip Minor issues.
 ```

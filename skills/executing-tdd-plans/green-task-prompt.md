@@ -58,12 +58,11 @@ Task tool (general-purpose):
     - Code follows existing patterns in the codebase
     - No obvious bugs or security issues
 
-    ## Report Format
+    ## Response Format
 
-    When done, report:
-    - What you implemented (files created/modified)
-    - Test run output showing ALL PASSING
-    - Number of tests: 0 failing, X passing
-    - Self-review findings (if any)
-    - Any concerns
+    Respond with EXACTLY one of the following lines and nothing else:
+    - `SUCCESS` — all tests pass
+    - `FAILURE <reason>` — single line explaining what went wrong (e.g., "2 tests still failing in auth module", "cannot resolve dependency X")
+
+    No preamble, no explanation, no summary. Just the single line above.
 ```

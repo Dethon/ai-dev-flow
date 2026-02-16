@@ -242,11 +242,12 @@ Moderator reads the full discussion log and:
 3. **Enumerates PRs (MANDATORY before writing any plan):**
    - Re-read the design document for: "deferred to PR 2", "phase 2 scope", "future work", "out of scope for initial PR", or any phased delivery language
    - Check the discussion log "PR Scope Signals" header and panelist findings for additional PR boundary recommendations
-   - **Write a numbered PR list** with features belonging to each. Example:
+   - **Write a numbered PR list** with features belonging to each. The number defines execution order and maps to folder prefixes. Example:
      ```
      PR 1 (core auth): login, signup, session management
      PR 2 (admin dashboard): user admin, audit logs
      ```
+     → produces folders: `docs/plans/01-myapp-core-auth/`, `docs/plans/02-myapp-admin-dashboard/`
    - Append the numbered PR list to the "## Consensus" section of the log
    - **This list is your contract.** Every PR in this list MUST get its own complete plan before shutdown.
 4. **For EACH PR in the numbered list from step 3, repeat steps 4a–4c:**
@@ -257,7 +258,7 @@ Moderator reads the full discussion log and:
      - Integration triplet
      - Dependency graph
      - Execution instructions
-   - **4b.** Save to `docs/plans/{plan-name}-{pr-descriptor}/` subfolder
+   - **4b.** Save to `docs/plans/{NN}-{plan-name}-{pr-descriptor}/` subfolder, where `{NN}` is the zero-padded PR number from the list (01, 02, ...)
    - **4c. Check:** Re-read your numbered PR list from step 3. Have you written plans for ALL PRs? If NO → return to 4a for the next PR. If YES → proceed to step 5.
 5. **Always use multi-file format** regardless of plan size (overrides the size-based rule in plan-format.md):
 
@@ -272,14 +273,14 @@ Moderator reads the full discussion log and:
    ```
 
    Each feature file contains the complete triplet (N.1 RED, N.2 GREEN, N.3 REVIEW). The README.md contains the plan header, file index table, dependency graph, and execution instructions.
-   - **Multiple PRs:** Each PR gets its own subfolder: `docs/plans/{plan-name}-{pr-descriptor}/`
-6. **Verify all plans exist (MANDATORY before shutdown):** Run `ls docs/plans/` and confirm the number of plan folders matches the number of PRs from step 3. If any PR is missing a plan, **write it now** — do NOT skip it. This is the single most common failure mode of this skill.
+   - **Multiple PRs:** Each PR gets its own numbered subfolder: `docs/plans/{NN}-{plan-name}-{pr-descriptor}/` where `{NN}` is the zero-padded PR number (01, 02, ...). This ensures `ls` sorts folders in execution order.
+6. **Verify all plans exist (MANDATORY before shutdown):** Run `ls docs/plans/` and confirm: (a) the number of plan folders matches the number of PRs from step 3, and (b) each folder is prefixed with its PR number (01-, 02-, ...). If any PR is missing a plan, **write it now** — do NOT skip it. This is the single most common failure mode of this skill.
 7. Broadcasts "Synthesis complete, shutting down" to give panelists notice
 8. Sends `shutdown_request` to each panelist individually
 
 **The plan output is identical to writing-tdd-plans** — compatible with executing-tdd-plans.
 
-**Multiple PRs — CRITICAL:** Each PR gets its own **complete, self-contained plan folder**, independently executable by executing-tdd-plans. A single plan that internally references "PR 1" and "PR 2" sections is NOT acceptable. The numbered PR list from step 3 is your contract — every PR in that list MUST have a plan folder before you shut down the team. **Verify with `ls docs/plans/` in step 6.** Common triggers for multi-PR plans:
+**Multiple PRs — CRITICAL:** Each PR gets its own **complete, self-contained, numbered plan folder** (e.g., `01-app-core-auth/`, `02-app-admin-dashboard/`), independently executable by executing-tdd-plans **in numerical order**. A single plan that internally references "PR 1" and "PR 2" sections is NOT acceptable. The numbered PR list from step 3 is your contract — every PR in that list MUST have a numbered plan folder before you shut down the team. **Verify with `ls docs/plans/` in step 6 — folders must be numbered and count must match PR count.** Common triggers for multi-PR plans:
 - Design says "deferred to PR 2" or "phase 2 scope" for any feature
 - Panelists recommend splitting for cleaner review, independent deployability, or risk isolation
 - Design has clearly separable deliverables (e.g., backend API vs frontend UI)
@@ -322,7 +323,8 @@ Rounds are coordinated via messages:
 | No commit messages in plan tasks | Every task ends with a commit — this enables incremental progress tracking |
 | Using Explore-type for panelists | Panelists need Edit for the log — use general-purpose |
 | Panelists continue chatting after "done" | Broadcast "stop exchanging messages" — "done" means STOP |
-| Design mentions "PR 2" / deferred items but only one plan is written | The moderator MUST enumerate all PRs BEFORE writing any plan, then write a complete plan for EACH PR, then verify all plan folders exist before shutdown. Writing one plan and moving on is the #1 failure mode. |
+| Design mentions "PR 2" / deferred items but only one plan is written | The moderator MUST enumerate all PRs BEFORE writing any plan, then write a complete plan for EACH PR, then verify all numbered plan folders exist before shutdown. Writing one plan and moving on is the #1 failure mode. |
+| Plan folders not numbered | Multi-PR folders MUST be prefixed with zero-padded PR number (01-, 02-, ...) to indicate execution order. |
 | Wrote plan for PR 1, then proceeded to shutdown without writing PR 2's plan | After writing each plan, check: "Have I written plans for ALL PRs in my numbered list?" If not, write the next one. The verification step (step 6) catches this. |
 | Writing a single-file plan instead of multi-file | Always use `docs/plans/` subfolder format — even for small plans with ≤3 features |
 | Marking features as parallel without checking file overlap | Parallel subagents sharing a file cause merge conflicts — Codebase Guardian and Decomposer must flag overlapping files |

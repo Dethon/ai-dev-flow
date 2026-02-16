@@ -266,18 +266,26 @@ For each task, use the corresponding prompt template:
 
 Include full task text from the plan in each subagent prompt. Don't make subagents read the plan file.
 
+### Subagent Response Format
+
+Subagents return minimal responses to conserve controller context:
+- **RED / GREEN:** `SUCCESS` or `FAILURE <single-line reason>`
+- **REVIEW (pass):** `SUCCESS`
+- **REVIEW (fail):** `FAILURE` followed by one line per Critical/Important issue with file:line and suggested fix
+
+The controller uses these to drive verification gates. For REVIEW failures, the issue lines provide enough detail to create fix triplets.
+
 ## Handling FAILs
 
 When an adversarial review verdict is **FAIL:**
 
-1. Read the issues list from the review (Critical / Important / Minor)
-2. Critical or Important issues → create a **fix triplet** using **TaskCreate**:
+1. Read the issues from the FAILURE response (one line per Critical/Important issue)
+2. Create a **fix triplet** using **TaskCreate**:
    - Fix.RED: Write tests targeting the specific issues found
    - Fix.GREEN: Implement fixes to pass the new tests AND existing tests
    - Fix.REVIEW: Re-review against original requirements + fix requirements
-3. Minor issues only → implementer fixes directly, no full fix triplet needed
-4. **Maximum 2 fix cycles per triplet.** If still FAIL after 2 cycles, escalate to user.
-5. Do NOT proceed to the next dependency layer until all triplets in the current layer PASS.
+3. **Maximum 2 fix cycles per triplet.** If still FAIL after 2 cycles, escalate to user.
+4. Do NOT proceed to the next dependency layer until all triplets in the current layer PASS.
 
 ## Verification Gates
 
