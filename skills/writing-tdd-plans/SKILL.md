@@ -123,7 +123,7 @@ Independent triplets execute as parallel subagents sharing the same workspace. T
 - Allow a feature to have only 2 of the 3 triplet tasks
 - Write vague test tasks ("add tests for feature X") — tests must list specific test cases with scenarios and expected behavior
 - Write vague review tasks — review criteria must list specific design requirements
-- Write review tasks without minimum additional tests requirement
+- Write review tasks that skip the adversarial testing mindset (reviewer must actively try to break it)
 - Put design requirements in the plan header only — each triplet needs its OWN requirements
 - Mark features as parallel without checking for file overlap — shared types, barrel exports, config files cause build conflicts between parallel agents
 

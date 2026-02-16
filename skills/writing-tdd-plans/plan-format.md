@@ -10,7 +10,7 @@ Shared format for TDD implementation plans. Both writing-tdd-plans and debating-
 | **Depends on** | Previous feature's REVIEW, or none (also serialize if file overlap with parallel features) | Same feature's RED | Same feature's GREEN |
 | **Design requirements** | Verbatim from design | Reference RED task | Verbatim from design |
 | **Files** | Exact paths to create | Exact paths to create/modify | Files to review |
-| **Spec** | Test cases table + key assertions | Implementation spec (what to build, behaviors, API) | Review checklist + min 3 new tests |
+| **Spec** | Test cases table + key assertions | Implementation spec (what to build, behaviors, API) | Review checklist + tests for any gaps found |
 | **Verification** | Command + "ALL tests FAIL" | Command + "ALL tests PASS" | Verdict: PASS/FAIL |
 | **Commit** | `test: add failing tests for [feature]` | `feat: implement [feature]` | `test: add adversarial tests for [feature]` |
 
