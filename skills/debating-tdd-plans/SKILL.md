@@ -45,9 +45,9 @@ digraph when_to_use {
 
 | Role | Focus | Key Questions |
 |------|-------|---------------|
-| **Decomposer** | Feature decomposition, granularity, Task 0, PR boundaries, parallel safety | How should this split? Is each triplet 5-15 min? What shared infrastructure needs Task 0? Do any "independent" features modify overlapping files (must serialize or extract to Task 0)? Are there deferred items that define PR boundaries? |
+| **Decomposer** | Feature decomposition, granularity (both splitting AND consolidating), Task 0, PR boundaries, parallel safety | What's the right granularity? Would merging related sub-features into one cohesive triplet be cleaner than splitting? Only split when a feature has genuinely independent test/implementation concerns. What shared infrastructure needs Task 0? Do any "independent" features modify overlapping files (must serialize or extract to Task 0)? Are there deferred items that define PR boundaries? |
 | **Test Strategist** | Test coverage, integration-first testing, requirement verification, testing behavior not implementation | What does each feature need tested? Can it be tested with real services via fixtures/testcontainers? Are mocks truly unavoidable? Do tests verify behavior, not implementation details? |
-| **Devil's Advocate** | Challenge everything, alternative decompositions, gaps, PR scope | What's wrong with this plan? What features were missed? What assumptions are wrong? Are deferred items properly excluded? |
+| **Devil's Advocate** | Challenge everything, alternative decompositions, **challenge over-decomposition**, gaps, PR scope | What's wrong with this plan? **Is the decomposition too granular?** Would fewer, coarser triplets work better? Features that share the same model/module/concern should usually be ONE triplet, not multiple. What features were missed? What assumptions are wrong? Are deferred items properly excluded? |
 | **Codebase Guardian** | Side effects, hidden dependencies, dead code, DRY, file overlap | What existing code is affected? Hidden couplings? Dead code to remove? Are we duplicating logic? Do proposed parallel features modify overlapping files (shared types, barrel exports, config)? |
 
 ## The Process
@@ -237,6 +237,8 @@ Moderator waits until all 4 report done, then reads the log to assess convergenc
 
 Moderator reads the full discussion log and:
 
+**Consolidation check (MANDATORY):** Before writing any plan, review the proposed triplet count. Debates have a structural bias toward splitting — 4 agents discussing naturally find more sub-divisions. Ask: "Would merging related sub-features into fewer triplets produce a cleaner plan?" Merge when sub-features share the same model, module, or test fixture and can't be tested independently in a meaningful way. A CRUD feature is usually 1 triplet, not 4.
+
 1. Identifies areas of consensus across all panelists
 2. Resolves remaining disagreements using evidence from the log
 3. **Enumerates PRs (MANDATORY before writing any plan):**
@@ -328,6 +330,7 @@ Rounds are coordinated via messages:
 | Wrote plan for PR 1, then proceeded to shutdown without writing PR 2's plan | After writing each plan, check: "Have I written plans for ALL PRs in my numbered list?" If not, write the next one. The verification step (step 6) catches this. |
 | Writing a single-file plan instead of multi-file | Always use `docs/plans/` subfolder format — even for small plans with ≤3 features |
 | Marking features as parallel without checking file overlap | Parallel subagents sharing a file cause merge conflicts — Codebase Guardian and Decomposer must flag overlapping files |
+| Over-decomposing into trivially small triplets | Debates bias toward splitting — 4 agents find more sub-divisions. During synthesis, consolidate: features sharing the same model/module/fixture should usually be ONE triplet. A CRUD feature is 1 triplet, not 4. |
 | Forgetting to shut down the team | Broadcast notice, then shutdown_request each panelist |
 
 ## Red Flags
@@ -345,6 +348,7 @@ Rounds are coordinated via messages:
 - Write one plan when the design document or debate mentions deferred items / multiple PRs — each PR needs its own complete plan file. **This is the #1 failure mode: writing PR 1's plan and proceeding to shutdown without writing PR 2's plan.**
 - Skip the PR enumeration step in synthesis — this is MANDATORY before writing any plan
 - Skip the verification step (step 6) — you MUST `ls docs/plans/` and confirm folder count matches PR count before shutdown
+- Accept over-decomposition from the debate without consolidating — debates structurally bias toward splitting. Features sharing the same model/module/concern should usually be ONE triplet. If the plan has 10+ triplets, seriously question whether consolidation is needed.
 
 ## Integration
 

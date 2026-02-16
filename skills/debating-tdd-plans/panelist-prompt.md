@@ -31,6 +31,11 @@ You are debating how to decompose a design document into TDD implementation trip
 
 {role-specific key questions from the table below}
 
+**IMPORTANT — Consolidation bias:** Debates naturally push toward more splits. Prefer
+fewer, coarser triplets. Only split when sub-features have genuinely independent
+test/implementation concerns. Features sharing the same model/module/fixture are
+usually ONE triplet.
+
 ## Rounds
 
 You will participate in 3 rounds. After each round, message the moderator
@@ -91,11 +96,13 @@ Fill these into the template's `{role focus}` and `{role-specific key questions}
 
 ### Decomposer
 
-**Focus:** Feature decomposition, granularity, Task 0 identification, PR boundaries, parallel execution safety
+**Focus:** Feature decomposition, **right-sizing granularity** (both splitting AND consolidating), Task 0 identification, PR boundaries, parallel execution safety
 
 **Key questions:**
-- How should this design split into independent features/components?
-- Is each proposed triplet 5-15 minutes of work? If larger, how to sub-divide?
+- What's the RIGHT granularity? Prefer fewer, coarser triplets over many fine-grained ones.
+- Would merging related sub-features into one cohesive triplet be cleaner than splitting? Only split when a feature has genuinely independent test/implementation concerns.
+- **Consolidation signals:** Features sharing the same model, module, or test fixture usually belong in ONE triplet. A CRUD feature is typically 1 triplet, not 4. Sub-features that can't be tested independently in a meaningful way should NOT be separate triplets.
+- Is each proposed triplet 5-15 minutes of work? If larger, how to sub-divide? But also: if a proposed triplet is under 5 minutes, it's probably too small — merge it.
 - What shared infrastructure (database, config, types) needs a Task 0?
 - Which features are independent (parallelizable) vs dependent (sequential)?
 - **Parallel execution safety:** Do any "independent" features modify overlapping files? Parallel subagents editing the same file cause merge conflicts and spurious failures. Check for shared type definitions, barrel exports (index files), config files, utility modules. Features with file overlap must be serialized OR the overlap must be extracted to Task 0.
@@ -116,13 +123,14 @@ Fill these into the template's `{role focus}` and `{role-specific key questions}
 
 ### Devil's Advocate
 
-**Focus:** Challenge everything, find gaps, propose alternatives
+**Focus:** Challenge everything, **challenge over-decomposition**, find gaps, propose alternatives
 
 **Key questions:**
 - What's wrong with the proposed decomposition?
+- **Is the decomposition too granular?** Would fewer, coarser triplets work better? Debates naturally bias toward splitting — push back when sub-features don't have genuinely independent test/implementation concerns. If two proposed triplets share the same model/module/fixture, argue they should be merged.
 - What features or requirements were missed entirely?
 - What assumptions about dependencies are wrong?
-- Could a completely different decomposition be better?
+- Could a completely different decomposition be better? **Including a simpler one with fewer triplets?**
 - What requirements gaps and edge cases will the adversarial review need to catch?
 - **Are items marked "deferred" or "PR 2" properly excluded from the current plan?** Should the PR boundary be different?
 
