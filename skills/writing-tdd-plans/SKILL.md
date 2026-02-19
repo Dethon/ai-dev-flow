@@ -78,6 +78,8 @@ Key points (see `plan-format.md` for full templates):
 
 3. **Shared infrastructure** — If multiple features need the same base (database setup, config, types), create a Task 0 for scaffolding, then triplets for each feature.
 
+4. **Mock boundaries** — When a feature will be tested with mocks (e.g., mocking `IProvider` to test a service that depends on it), that mock boundary represents a real connection that feature tests will NOT verify. List every mock boundary — these become mandatory integration test targets in the integration triplet. See plan-format.md "Integration Triplet" for the Mock Boundary Table format.
+
 ### Parallel Execution Safety (MANDATORY)
 
 Independent triplets execute as parallel subagents sharing the same workspace. Two agents editing the same file simultaneously cause merge conflicts, build failures, and spurious test failures.
@@ -112,6 +114,7 @@ Independent triplets execute as parallel subagents sharing the same workspace. T
 | "Subagents are slow, I'll execute tasks myself" | Fresh subagent context prevents cross-task contamination and shortcuts. |
 | "These features are logically independent, so they can run in parallel" | Logical independence ≠ file independence. Check for shared files before marking as parallel. |
 | "Store/action tests cover the UI feature" | Store tests verify state logic, not that the component exists or renders. The GREEN step (YAGNI) won't create a component no test requires. Add a rendering test that imports and renders the component. |
+| "The integration triplet will catch wiring issues" | Only if the integration task SPECIFICALLY tests wiring. A vague "test features together" integration task won't catch missing DI registrations, unapplied decorators, or stub implementations. Build the Mock Boundary Table (see plan-format.md). |
 
 ## Red Flags
 
@@ -128,5 +131,6 @@ Independent triplets execute as parallel subagents sharing the same workspace. T
 - Put design requirements in the plan header only — each triplet needs its OWN requirements
 - Write only state management/DI tests for a feature whose primary deliverable is a UI component — the GREEN step will produce only state/DI code, never the component itself. At least one test must render the component.
 - Mark features as parallel without checking for file overlap — shared types, barrel exports, config files cause build conflicts between parallel agents
+- Write a vague integration triplet ("test features together") without a Mock Boundary Table — every mock used in feature tests is a real connection that must be verified in integration. No table = no assurance the wiring works.
 
 **The triplet is atomic:** If you can't write all three tasks for a feature, the feature needs to be decomposed further.

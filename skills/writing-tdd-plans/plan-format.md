@@ -240,10 +240,38 @@ If features share infrastructure (database setup, config, project structure, dep
 
 ### Integration Triplet (final)
 
-After all feature triplets pass, add one final triplet for end-to-end integration:
-- **N.1:** Write integration tests that exercise multiple features together
-- **N.2:** Fix any integration failures (may be a no-op if everything works)
-- **N.3:** Final adversarial review against ALL design requirements as a checklist
+After all feature triplets pass, add one final triplet for end-to-end integration.
+
+**Why this matters:** Feature triplets test components in isolation with mocks. Every mock is a lie — it asserts two components work together without proving it. The integration triplet verifies what mocks hide.
+
+**The Mock Trap:** When every feature is tested with mocks, all feature tests pass even when:
+- A service is registered in DI but the implementation is a stub (`NotImplementedException`)
+- A decorator/middleware exists in code but is never applied to the pipeline
+- A project reference is missing so the app can't compile with its real dependencies
+- A DI registration is missing so the app crashes at startup resolving a service
+
+**The integration triplet MUST cover these categories:**
+
+1. **Startup/DI verification** — Can each application/host actually start and resolve all registered services? Build the real DI container (or start the real app) and verify key interfaces resolve to real implementations (not stubs). This catches: missing DI registrations, missing project references, misconfigured service lifetimes, stub implementations that survived mock-based feature testing.
+
+2. **Mock boundary verification** — Every mock used in a feature test represents a real connection that was NOT tested. For each mock used in feature tests, the integration test must exercise the REAL connection. Example: if Feature A mocked `ITokenExchangeService`, integration must test the real `MsalTokenExchangeService` in the actual OAuth callback flow.
+
+3. **Pipeline/middleware hookup** — Decorators, middleware, filters, and interceptors tested in isolation must be verified as actually applied in the real pipeline. Example: if a feature tested `TokenInjectingMcpTool` as a standalone decorator, integration must verify it's actually wrapping tool calls in the real pipeline.
+
+4. **End-to-end data flows** — Trace each primary user-facing flow from entry point to final effect, using real implementations for internal components. Only mock truly external services (third-party APIs with no local alternative).
+
+**To build the integration task list, create a Mock Boundary Table** during planning. For every feature, list each mock used and what real connection it hides. Each row becomes an integration test requirement:
+
+| Feature | Mock Used | Real Connection Hidden | Integration Test |
+|---------|-----------|----------------------|-----------------|
+| *Example:* F2 (MCP Tools) | `Mock<ICalendarProvider>` | MCP server DI can't resolve real provider | Start MCP server, resolve `ICalendarProvider` |
+| *Example:* F1 (Decorator) | Tested decorator standalone | Decorator isn't applied in pipeline | Make real MCP call, verify decorator intercepts |
+| *Example:* F7 (OAuth) | `Mock<ITokenExchangeService>` | Real MSAL impl is a stub | Real OAuth callback exchanges code for tokens |
+
+**Template:**
+- **N.1:** Write integration tests covering all four categories. Include the Mock Boundary Table in the task spec listing every mock from feature tests and the corresponding real-connection test.
+- **N.2:** Fix integration failures. Expect: missing DI registrations, project references, stub replacements, pipeline hook-ups. This is often NOT a no-op.
+- **N.3:** Final adversarial review against ALL design requirements as a checklist, plus full build and full test suite verification across ALL features.
 
 ## Execution Instructions
 

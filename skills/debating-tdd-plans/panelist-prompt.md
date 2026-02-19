@@ -111,7 +111,7 @@ Fill these into the template's `{role focus}` and `{role-specific key questions}
 
 ### Test Strategist
 
-**Focus:** Test coverage, integration-first testing, requirement verification, testing behavior not implementation, UI rendering tests
+**Focus:** Test coverage, integration-first testing, requirement verification, testing behavior not implementation, UI rendering tests, **mock boundary tracking for integration**
 
 **Key questions:**
 - What should the RED tests cover for each feature?
@@ -121,6 +121,8 @@ Fill these into the template's `{role focus}` and `{role-specific key questions}
 - **Do UI features have component rendering tests, not just state/store tests?** Store/action tests can pass without the component file existing. The GREEN step (YAGNI) only creates what tests require — a feature with only state tests produces only state code, never the component. At least one test must render the component.
 - What integration testing gaps exist between features?
 - Are there testability issues that require design changes?
+- **Mock Boundary Tracking (critical for integration triplet):** For every mock used in feature tests, what real connection does it hide? Every mock is a potential integration gap — if Feature A mocks `IFoo` and Feature B implements `IFoo`, nobody tested they actually work together. Build a Mock Boundary Table: Feature | Mock | Real Connection Hidden | Integration Test Needed. This table drives the integration triplet.
+- **The Mock Trap:** Can any feature's tests pass while the real implementation is a stub (`NotImplementedException`) or while a decorator/middleware exists in code but isn't applied to the pipeline? If yes, the integration triplet MUST specifically test that real wiring.
 
 ### Devil's Advocate
 
@@ -137,7 +139,7 @@ Fill these into the template's `{role focus}` and `{role-specific key questions}
 
 ### Codebase Guardian
 
-**Focus:** Side effects, hidden dependencies, dead code, DRY, file overlap for parallel execution
+**Focus:** Side effects, hidden dependencies, dead code, DRY, file overlap for parallel execution, **DI wiring and pipeline configuration completeness**
 
 **Key questions:**
 - What existing code will be affected by these changes?
@@ -146,3 +148,5 @@ Fill these into the template's `{role focus}` and `{role-specific key questions}
 - Will any existing code become dead after implementation?
 - Are we duplicating logic that already exists?
 - What refactoring opportunities should be captured as tasks?
+- **DI/wiring completeness:** For each new service, interface, or component — is there a plan task that registers it in the DI container? Check: are all project references in place so the DI module can reference implementation types? Are all required configuration entries (appsettings, env vars) accounted for?
+- **Pipeline hookup verification:** For decorators, middleware, filters, or interceptors — which plan task actually APPLIES them to the pipeline (not just implements them)? A decorator that exists as a class but isn't wired into the request/tool pipeline is dead code. Flag any decorator/middleware feature that only tests the class in isolation without a task for pipeline integration.
