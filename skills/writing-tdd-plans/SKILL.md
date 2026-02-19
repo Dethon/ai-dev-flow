@@ -111,6 +111,7 @@ Independent triplets execute as parallel subagents sharing the same workspace. T
 | "The design is clear enough, I don't need to quote requirements" | Reviewers need verbatim requirements to catch misinterpretations. |
 | "Subagents are slow, I'll execute tasks myself" | Fresh subagent context prevents cross-task contamination and shortcuts. |
 | "These features are logically independent, so they can run in parallel" | Logical independence ≠ file independence. Check for shared files before marking as parallel. |
+| "Store/action tests cover the UI feature" | Store tests verify state logic, not that the component exists or renders. The GREEN step (YAGNI) won't create a component no test requires. Add a rendering test that imports and renders the component. |
 
 ## Red Flags
 
@@ -125,6 +126,7 @@ Independent triplets execute as parallel subagents sharing the same workspace. T
 - Write vague review tasks — review criteria must list specific design requirements
 - Write review tasks that skip the adversarial testing mindset (reviewer must actively try to break it)
 - Put design requirements in the plan header only — each triplet needs its OWN requirements
+- Write only state management/DI tests for a feature whose primary deliverable is a UI component — the GREEN step will produce only state/DI code, never the component itself. At least one test must render the component.
 - Mark features as parallel without checking for file overlap — shared types, barrel exports, config files cause build conflicts between parallel agents
 
 **The triplet is atomic:** If you can't write all three tasks for a feature, the feature needs to be decomposed further.

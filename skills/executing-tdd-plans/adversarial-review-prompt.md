@@ -55,6 +55,13 @@ Task tool (general-purpose):
        Does any requirement lack corresponding implementation? Does the implementation
        deliver something different from what was asked, even if technically correct?
 
+    **Deliverable completeness:**
+
+    3. **File existence** — Does every file listed in the task's "Files to create/modify"
+       actually exist? If a file was specified in the GREEN task but never created, that's
+       a FAIL — even if all tests pass. Tests that pass without a required deliverable
+       mean the RED tests were insufficient, which is itself a finding.
+
     **Breaking the implementation (does it work correctly?):**
 
     4. **Test adequacy** — could the tests pass with a WRONG implementation?

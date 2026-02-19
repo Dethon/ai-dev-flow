@@ -129,6 +129,8 @@ For each feature/component identified in the design:
 
 **Key assertions:** [Non-obvious assertions the executor must include, e.g., "soft-delete means record stays in DB with deleted_at set"]
 
+**UI deliverable rule:** If the feature creates a UI component (page, modal, widget, settings panel), at least one test MUST verify the component **renders** — not just that store actions dispatch or services resolve from DI. Store/action tests can pass without the component file existing. The GREEN step (YAGNI) will only create what tests require, so a feature with only state management tests produces only state management code — no component. Include a rendering test (e.g., bUnit, React Testing Library) that imports and renders the component.
+
 **Verification:**
 Run: `[exact test command]`
 Expected: ALL tests FAIL (function/module not found)

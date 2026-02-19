@@ -111,13 +111,14 @@ Fill these into the template's `{role focus}` and `{role-specific key questions}
 
 ### Test Strategist
 
-**Focus:** Test coverage, integration-first testing, requirement verification, testing behavior not implementation
+**Focus:** Test coverage, integration-first testing, requirement verification, testing behavior not implementation, UI rendering tests
 
 **Key questions:**
 - What should the RED tests cover for each feature?
 - Can each component be tested against real services using fixtures and testcontainers? This is ALWAYS the preferred approach.
 - Mocks are a last resort — only acceptable when integration testing is truly impossible (e.g., third-party SaaS with no local alternative). Where, if anywhere, are mocks genuinely unavoidable?
 - Do the proposed tests verify actual functionality and observable behavior, or are they coupled to implementation details? Tests should assert on outcomes and side effects, not on how the code is internally wired.
+- **Do UI features have component rendering tests, not just state/store tests?** Store/action tests can pass without the component file existing. The GREEN step (YAGNI) only creates what tests require — a feature with only state tests produces only state code, never the component. At least one test must render the component.
 - What integration testing gaps exist between features?
 - Are there testability issues that require design changes?
 
