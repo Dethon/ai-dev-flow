@@ -66,6 +66,7 @@ Key points (see `plan-format.md` for full templates):
 - Every feature gets three tasks: RED (tests) → GREEN (implementation) → REVIEW (adversarial)
 - Every task ends with a git commit (incremental progress)
 - Tasks must include detailed specifications (what to build, what to test, acceptance criteria), exact file paths, verification commands, and verbatim design requirements — but NOT full implementation code
+- **The plan locks down design decisions; the executor makes implementation decisions.** If the executor needs to decide function signatures, data types, error conditions, or API contracts — the plan wasn't detailed enough. RED tasks need concrete input values and expected outputs. GREEN tasks need typed signatures, error handling tables, and behavioral rules.
 - A plan that summarizes what to do instead of specifying what to build is too short
 
 ## Decomposition Guidelines
@@ -114,6 +115,7 @@ Independent triplets execute as parallel subagents sharing the same workspace. T
 | "Subagents are slow, I'll execute tasks myself" | Fresh subagent context prevents cross-task contamination and shortcuts. |
 | "These features are logically independent, so they can run in parallel" | Logical independence ≠ file independence. Check for shared files before marking as parallel. |
 | "Store/action tests cover the UI feature" | Store tests verify state logic, not that the component exists or renders. The GREEN step (YAGNI) won't create a component no test requires. Add a rendering test that imports and renders the component. |
+| "The executor can figure out the types/signatures" | The executor has only the task spec, not the design doc or debate log. If the plan says "create UserService with CRUD operations", 10 executors produce 10 different APIs. Specify signatures, types, error conditions — lock down design decisions. |
 | "The integration triplet will catch wiring issues" | Only if the integration task SPECIFICALLY tests wiring. A vague "test features together" integration task won't catch missing DI registrations, unapplied decorators, or stub implementations. Build the Mock Boundary Table (see plan-format.md). |
 
 ## Red Flags

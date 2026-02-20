@@ -57,10 +57,18 @@ Task tool (general-purpose):
 
     **Deliverable completeness:**
 
-    3. **File existence** — Does every file listed in the task's "Files to create/modify"
-       actually exist? If a file was specified in the GREEN task but never created, that's
-       a FAIL — even if all tests pass. Tests that pass without a required deliverable
-       mean the RED tests were insufficient, which is itself a finding.
+    3. **File existence AND modification** — For every file in the GREEN task's "Files" section:
+       - **"Create" files:** Does the file exist? If not → CRITICAL.
+       - **"Modify" files:** Was the file actually changed with the specified modifications?
+         Check the git diff or read the file to verify the planned changes are present.
+         A file that EXISTS but was NOT MODIFIED is a CRITICAL issue — it means wiring
+         was skipped and the component is dead code. This is the #1 cause of "all tests
+         pass but nothing works end-to-end." Tests passing without a required wiring
+         change means the RED tests only tested the component in isolation.
+
+       **How to check:** For each "Modify" file, search for the new code the GREEN task
+       specified (e.g., decorator application, DI registration, pipeline hookup). If you
+       can't find it, the modification was skipped.
 
     **Breaking the implementation (does it work correctly?):**
 

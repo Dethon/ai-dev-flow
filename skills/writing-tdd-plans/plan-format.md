@@ -24,20 +24,70 @@ Every task ends with a git commit. The plan must specify the commit message:
 
 ## Detail Level
 
+**Core principle: The plan locks down design decisions. The executor makes implementation decisions.**
+
+If the executor needs to decide function signatures, data types, error conditions, or API contracts — the plan wasn't detailed enough. The plan author has full context (design doc, codebase, debate log); the executor subagent has only the task spec.
+
 **A plan that vaguely summarizes what to do is too short. A plan that pre-writes the full code is too verbose.**
 
 The sweet spot: detailed specifications that tell the executor exactly WHAT to build, without writing the code for them. The executor (a capable subagent) writes the actual code from the spec.
 
-**Too short:** "Write tests for the delete endpoint" (no specifics)
-**Too verbose:** Full function bodies with fixtures, setup, complete assertions
-**Just right:** Test case table with scenario + expected behavior per test, key assertions to check, setup notes
+### Design Decisions vs Implementation Decisions
 
-- Specify **what to test**: test names, scenario, expected behavior — not full test function bodies
-- Specify **what to implement**: functions/classes, signatures, behaviors, constraints — not full implementation code
+| Decided by Plan (design decisions) | Decided by Executor (implementation decisions) |
+|-------------------------------------|------------------------------------------------|
+| Function/method signatures with types | Variable names, internal control flow |
+| Data structures and interfaces | Private helper methods |
+| Error conditions and error types returned | Try/catch placement, logging format |
+| Validation rules and business logic rules | Code organization within a file |
+| API contracts (inputs, outputs, status codes) | Framework-specific syntax, import order |
+| Which edge cases to handle and how | Test assertion style, fixture setup mechanics |
+| Concrete test inputs and expected outputs | Test helper utilities, setup/teardown code |
+
+### Before/After Examples
+
+**RED task — too abstract vs detailed enough:**
+
+Too abstract:
+```
+| test_create_user | Creates a user | User is created |
+| test_invalid_email | Bad email | Returns error |
+```
+
+Detailed enough:
+```
+| test_create_user_success | POST /users with {"name": "Alice", "email": "alice@example.com"} | 201, body has id (uuid), name="Alice", email="alice@example.com", created_at (ISO 8601) |
+| test_create_user_duplicate_email | POST /users with email "existing@example.com" (already in DB) | 409 Conflict, body: {"error": "email_taken", "message": "..."} |
+| test_create_user_invalid_email | POST /users with email "not-an-email" | 422, body: {"error": "validation_error", "fields": {"email": "invalid format"}} |
+```
+
+**GREEN task — too abstract vs detailed enough:**
+
+Too abstract:
+```
+- Create UserService that handles CRUD operations
+- Add proper validation and error handling
+```
+
+Detailed enough:
+```
+- Create `UserService` class:
+  - `create_user(name: str, email: str) -> User` — validates email format (regex: `^[^@]+@[^@]+\.[^@]+$`), checks uniqueness against DB, returns User or raises `DuplicateEmailError` / `ValidationError`
+  - `get_user(user_id: UUID) -> User | None` — returns None if not found (caller decides 404 vs skip)
+- Interfaces/types: `User(id: UUID, name: str, email: str, created_at: datetime)`
+- Error types: `DuplicateEmailError(email: str)`, `ValidationError(fields: dict[str, str])`
+```
+
+### Detail Checklist
+
+- Specify **what to test**: test names, scenario, **concrete input values and expected outputs** — not full test function bodies
+- Specify **what to implement**: functions/classes, **signatures with types**, behaviors, constraints — not full implementation code
 - Specify **exact file paths** — not "create a test file for the feature"
 - Include **verification commands** with expected outcomes — not "run the tests"
 - Quote **design requirements verbatim** in each task — don't reference the design doc
 - Include **key assertions/edge cases** the executor must not miss — not every assertion line
+- Specify **error conditions** with concrete error types and responses — not "add proper error handling"
+- Specify **validation rules** concretely — not "validate input"
 
 ## Save Location
 
@@ -119,11 +169,15 @@ For each feature/component identified in the design:
 
 **Test cases:**
 
+Inputs and outputs must be concrete values, not placeholders. The executor should be able to write assertions directly from this table without inventing test data.
+
 | Test | Scenario | Expected |
 |------|----------|----------|
-| test_requirement_a | [Setup/input] | [Expected outcome. Verifies: Requirement A] |
-| test_requirement_b | [Setup/input] | [Expected outcome. Verifies: Requirement B] |
-| test_edge_case_x | [Edge input] | [Expected behavior. Verifies: Edge case X] |
+| test_requirement_a | [Concrete setup/input values] | [Concrete expected outcome with specific values. Verifies: Requirement A] |
+| test_requirement_b | [Concrete setup/input values] | [Concrete expected outcome with specific values. Verifies: Requirement B] |
+| test_edge_case_x | [Concrete edge input values] | [Concrete expected behavior. Verifies: Edge case X] |
+
+**Data structures referenced:** [Optional — types/interfaces the tests reference, with fields and types. Include when tests use domain objects that the executor might define differently without guidance.]
 
 **Setup:** [Fixtures or test data needed — describe what, not how]
 
@@ -156,10 +210,22 @@ Do NOT add functionality beyond what the tests require. YAGNI.
 
 **What to implement:**
 
-- [Function/class to create, its signature, and key behavior]
+Function/class signatures must include types. The executor should know exactly what to create without inventing APIs.
+
+- [Function/class to create with typed signature: `func_name(param: Type) -> ReturnType` — and key behavior]
 - [How it connects to existing code — imports, integrations]
 - [Constraints: what it must/must not do]
 - [Any non-obvious implementation detail the executor needs to know]
+
+**Interfaces/types to create:** [Types, interfaces, or data classes this task introduces — with fields and types. Omit if no new types.]
+
+**Error handling:**
+
+| Condition | Error Type | Response |
+|-----------|-----------|----------|
+| [Specific error condition] | [Concrete exception/error class] | [What happens: return value, HTTP status, error body, etc.] |
+
+**Behavioral rules:** [Validation logic, business rules, ordering guarantees, idempotency requirements — anything the tests assert that the implementation must satisfy. Omit if fully covered by the test cases table.]
 
 **Verification:**
 Run: `[exact test command]`

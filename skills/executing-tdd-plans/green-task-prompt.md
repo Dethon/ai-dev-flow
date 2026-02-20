@@ -50,6 +50,23 @@ Task tool (general-purpose):
     - Don't refactor or optimize prematurely
     - If the tests are wrong, report it — don't silently change them
 
+    ## Critical: Plan-Specified Wiring Is Mandatory
+
+    After making tests pass, implement ALL file modifications listed in the task's
+    **"Files"** section — even if no unit test directly exercises them.
+
+    Unit tests verify components in isolation. The plan also specifies **wiring**:
+    DI registrations, pipeline hookups, config entries, decorator application.
+    These modifications are part of the task deliverable. Skipping them because
+    "tests pass without it" produces dead code — a component that works in
+    isolation but is never activated in the real system.
+
+    **Checklist before committing:**
+    - Every file listed under "Create" → exists
+    - Every file listed under "Modify" → has the specified changes applied
+    - If a "Modify" file doesn't need changes for tests to pass, implement
+      the wiring changes anyway — the integration triplet verifies them later
+
     ## Self-Review Before Reporting
 
     Before reporting back, check:

@@ -239,6 +239,8 @@ Moderator reads the full discussion log and:
 
 **Consolidation check (MANDATORY):** Before writing any plan, review the proposed triplet count. Debates have a structural bias toward splitting — 4 agents discussing naturally find more sub-divisions. Ask: "Would merging related sub-features into fewer triplets produce a cleaner plan?" Merge when sub-features share the same model, module, or test fixture and can't be tested independently in a meaningful way. A CRUD feature is usually 1 triplet, not 4.
 
+**Detail-level check (MANDATORY):** Before writing each task, verify the spec includes concrete types, function signatures with parameter and return types, specific error conditions with error types, and concrete test input/output values — not just behavioral summaries. The plan locks down design decisions; the executor makes implementation decisions. If a task says "create UserService with CRUD" or "write tests for the auth endpoint" without specifying signatures, types, and error conditions, it's too abstract — the executor will have to make design decisions that should have been made during debate.
+
 1. Identifies areas of consensus across all panelists
 2. Resolves remaining disagreements using evidence from the log
 3. **Enumerates PRs (MANDATORY before writing any plan):**
@@ -322,6 +324,7 @@ Rounds are coordinated via messages:
 | Not waiting for all panelists | Wait for all 4 "done" messages before advancing rounds |
 | Output differs from writing-tdd-plans format | Plan must be identical format for executing-tdd-plans compatibility |
 | Plan tasks are vague summaries | Each task must include detailed specs (test cases, behaviors, constraints), exact file paths, verification command, and commit — but NOT pre-written code |
+| Plan tasks describe behaviors abstractly without concrete types, signatures, or error conditions | Every RED task needs concrete input values and expected outputs in the test cases table. Every GREEN task needs typed function signatures, error handling tables, and behavioral rules. "Create UserService with CRUD" is not a spec — it's a summary. |
 | No commit messages in plan tasks | Every task ends with a commit — this enables incremental progress tracking |
 | Using Explore-type for panelists | Panelists need Edit for the log — use general-purpose |
 | Panelists continue chatting after "done" | Broadcast "stop exchanging messages" — "done" means STOP |
