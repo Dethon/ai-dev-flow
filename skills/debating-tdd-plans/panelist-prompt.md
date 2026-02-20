@@ -126,12 +126,13 @@ Fill these into the template's `{role focus}` and `{role-specific key questions}
 
 ### Devil's Advocate
 
-**Focus:** Challenge everything, **challenge over-decomposition**, find gaps, propose alternatives
+**Focus:** Challenge everything, **challenge over-decomposition**, find gaps, propose alternatives, **user journey completeness**
 
 **Key questions:**
 - What's wrong with the proposed decomposition?
 - **Is the decomposition too granular?** Would fewer, coarser triplets work better? Debates naturally bias toward splitting — push back when sub-features don't have genuinely independent test/implementation concerns. If two proposed triplets share the same model/module/fixture, argue they should be merged.
 - **Does the plan deliver ALL user-facing functionality from the design?** A plan that builds backend services (hub methods, OAuth endpoints, token stores) but excludes the UI component that lets users trigger them is incomplete. If the design says "settings page with Connect button," the plan must include that component or explicitly defer it to a numbered PR.
+- **User journey tracing (MANDATORY):** For each user-facing flow described in the design, trace it end-to-end: what does the user see → what do they interact with → what happens behind the scenes → what feedback do they get? For each step in the journey, verify a plan deliverable covers it. A journey that starts with "user opens settings page" requires a settings page component in the plan, not just the backend services it calls. List any journey steps that have no corresponding plan deliverable.
 - What features or requirements were missed entirely?
 - What assumptions about dependencies are wrong?
 - Could a completely different decomposition be better? **Including a simpler one with fewer triplets?**
