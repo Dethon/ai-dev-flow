@@ -114,7 +114,7 @@ Independent triplets execute as parallel subagents sharing the same workspace. T
 | "The design is clear enough, I don't need to quote requirements" | Reviewers need verbatim requirements to catch misinterpretations. |
 | "Subagents are slow, I'll execute tasks myself" | Fresh subagent context prevents cross-task contamination and shortcuts. |
 | "These features are logically independent, so they can run in parallel" | Logical independence ≠ file independence. Check for shared files before marking as parallel. |
-| "Store/action tests cover the UI feature" | Store tests verify state logic, not that the component exists or renders. The GREEN step (YAGNI) won't create a component no test requires. Add a rendering test that imports and renders the component. |
+| "Store/action tests cover the UI feature" | Store tests verify state logic, not that the component exists or renders. The GREEN step (YAGNI) won't create a component no test requires. Add a rendering test that imports and renders the component. If no rendering test infrastructure exists, establishing it (bUnit, React Testing Library) is a Task 0 item — not a reason to exclude the component. |
 | "The executor can figure out the types/signatures" | The executor has only the task spec, not the design doc or debate log. If the plan says "create UserService with CRUD operations", 10 executors produce 10 different APIs. Specify signatures, types, error conditions — lock down design decisions. |
 | "The integration triplet will catch wiring issues" | Only if the integration task SPECIFICALLY tests wiring. A vague "test features together" integration task won't catch missing DI registrations, unapplied decorators, or stub implementations. Build the Mock Boundary Table (see plan-format.md). |
 
@@ -131,7 +131,7 @@ Independent triplets execute as parallel subagents sharing the same workspace. T
 - Write vague review tasks — review criteria must list specific design requirements
 - Write review tasks that skip the adversarial testing mindset (reviewer must actively try to break it)
 - Put design requirements in the plan header only — each triplet needs its OWN requirements
-- Write only state management/DI tests for a feature whose primary deliverable is a UI component — the GREEN step will produce only state/DI code, never the component itself. At least one test must render the component.
+- Write only state management/DI tests for a feature whose primary deliverable is a UI component — the GREEN step will produce only state/DI code, never the component itself. At least one test must render the component. If no component test infrastructure exists (no bUnit, no React Testing Library), that's a Task 0 prerequisite — not a reason to drop the component from the plan.
 - Mark features as parallel without checking for file overlap — shared types, barrel exports, config files cause build conflicts between parallel agents
 - Write a vague integration triplet ("test features together") without a Mock Boundary Table — every mock used in feature tests is a real connection that must be verified in integration. No table = no assurance the wiring works.
 

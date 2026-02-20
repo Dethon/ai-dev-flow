@@ -118,7 +118,7 @@ Fill these into the template's `{role focus}` and `{role-specific key questions}
 - Can each component be tested against real services using fixtures and testcontainers? This is ALWAYS the preferred approach.
 - Mocks are a last resort — only acceptable when integration testing is truly impossible (e.g., third-party SaaS with no local alternative). Where, if anywhere, are mocks genuinely unavoidable?
 - Do the proposed tests verify actual functionality and observable behavior, or are they coupled to implementation details? Tests should assert on outcomes and side effects, not on how the code is internally wired.
-- **Do UI features have component rendering tests, not just state/store tests?** Store/action tests can pass without the component file existing. The GREEN step (YAGNI) only creates what tests require — a feature with only state tests produces only state code, never the component. At least one test must render the component.
+- **Do UI features have component rendering tests, not just state/store tests?** Store/action tests can pass without the component file existing. The GREEN step (YAGNI) only creates what tests require — a feature with only state tests produces only state code, never the component. At least one test must render the component. **If the codebase lacks component rendering test infrastructure** (no bUnit, no React Testing Library, etc.), flag this as a Task 0 prerequisite — not as a reason to exclude UI deliverables. Establishing test infrastructure for a design-required deliverable is in-scope work.
 - What integration testing gaps exist between features?
 - Are there testability issues that require design changes?
 - **Mock Boundary Tracking (critical for integration triplet):** For every mock used in feature tests, what real connection does it hide? Every mock is a potential integration gap — if Feature A mocks `IFoo` and Feature B implements `IFoo`, nobody tested they actually work together. Build a Mock Boundary Table: Feature | Mock | Real Connection Hidden | Integration Test Needed. This table drives the integration triplet.
@@ -131,6 +131,7 @@ Fill these into the template's `{role focus}` and `{role-specific key questions}
 **Key questions:**
 - What's wrong with the proposed decomposition?
 - **Is the decomposition too granular?** Would fewer, coarser triplets work better? Debates naturally bias toward splitting — push back when sub-features don't have genuinely independent test/implementation concerns. If two proposed triplets share the same model/module/fixture, argue they should be merged.
+- **Does the plan deliver ALL user-facing functionality from the design?** A plan that builds backend services (hub methods, OAuth endpoints, token stores) but excludes the UI component that lets users trigger them is incomplete. If the design says "settings page with Connect button," the plan must include that component or explicitly defer it to a numbered PR.
 - What features or requirements were missed entirely?
 - What assumptions about dependencies are wrong?
 - Could a completely different decomposition be better? **Including a simpler one with fewer triplets?**

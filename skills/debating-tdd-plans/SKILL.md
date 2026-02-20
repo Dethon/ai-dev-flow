@@ -46,8 +46,8 @@ digraph when_to_use {
 | Role | Focus | Key Questions |
 |------|-------|---------------|
 | **Decomposer** | Feature decomposition, granularity (both splitting AND consolidating), Task 0, PR boundaries, parallel safety | What's the right granularity? Would merging related sub-features into one cohesive triplet be cleaner than splitting? Only split when a feature has genuinely independent test/implementation concerns. What shared infrastructure needs Task 0? Do any "independent" features modify overlapping files (must serialize or extract to Task 0)? Are there deferred items that define PR boundaries? |
-| **Test Strategist** | Test coverage, integration-first testing, requirement verification, testing behavior not implementation, UI rendering tests, **mock boundary tracking** | What does each feature need tested? Can it be tested with real services via fixtures/testcontainers? Are mocks truly unavoidable? Do tests verify behavior, not implementation details? Do UI features have component rendering tests, not just state/store tests? **For every mock in feature tests: what real connection does it hide? Build a Mock Boundary Table for the integration triplet.** |
-| **Devil's Advocate** | Challenge everything, alternative decompositions, **challenge over-decomposition**, gaps, PR scope | What's wrong with this plan? **Is the decomposition too granular?** Would fewer, coarser triplets work better? Features that share the same model/module/concern should usually be ONE triplet, not multiple. What features were missed? What assumptions are wrong? Are deferred items properly excluded? |
+| **Test Strategist** | Test coverage, integration-first testing, requirement verification, testing behavior not implementation, UI rendering tests, **mock boundary tracking** | What does each feature need tested? Can it be tested with real services via fixtures/testcontainers? Are mocks truly unavoidable? Do tests verify behavior, not implementation details? Do UI features have component rendering tests, not just state/store tests? **If no component test infrastructure exists, flag it as Task 0 — not a reason to exclude the deliverable.** For every mock in feature tests: what real connection does it hide? Build a Mock Boundary Table for the integration triplet. |
+| **Devil's Advocate** | Challenge everything, alternative decompositions, **challenge over-decomposition**, gaps, PR scope, **design completeness** | What's wrong with this plan? **Is the decomposition too granular?** Would fewer, coarser triplets work better? Features that share the same model/module/concern should usually be ONE triplet, not multiple. **Does the plan deliver ALL user-facing functionality from the design?** A backend with no UI to access it is incomplete. What features were missed? What assumptions are wrong? Are deferred items properly excluded? |
 | **Codebase Guardian** | Side effects, hidden dependencies, dead code, DRY, file overlap, **DI wiring and pipeline hookup** | What existing code is affected? Hidden couplings? Dead code to remove? Are we duplicating logic? Do proposed parallel features modify overlapping files? **For each new service/decorator: is there a task that registers it in DI and applies it to the pipeline? A decorator that exists but isn't wired is dead code.** |
 
 ## The Process
@@ -241,6 +241,8 @@ Moderator reads the full discussion log and:
 
 **Detail-level check (MANDATORY):** Before writing each task, verify the spec includes concrete types, function signatures with parameter and return types, specific error conditions with error types, and concrete test input/output values — not just behavioral summaries. The plan locks down design decisions; the executor makes implementation decisions. If a task says "create UserService with CRUD" or "write tests for the auth endpoint" without specifying signatures, types, and error conditions, it's too abstract — the executor will have to make design decisions that should have been made during debate.
 
+**Completeness check (MANDATORY):** Compare the plan's deliverables against the design document's features. Every user-facing deliverable in the design (UI components, API endpoints, settings pages) must appear in the plan as either: (a) a triplet in the current plan, or (b) an explicit item in a separate numbered PR with justification. A deliverable excluded because "no test infrastructure exists" is not a valid exclusion — establishing test infrastructure is a Task 0 concern. A plan that builds backend plumbing (hub methods, OAuth endpoints, token stores) without the UI component that makes them accessible to users is incomplete.
+
 1. Identifies areas of consensus across all panelists
 2. Resolves remaining disagreements using evidence from the log
 3. **Enumerates PRs (MANDATORY before writing any plan):**
@@ -334,6 +336,7 @@ Rounds are coordinated via messages:
 | Writing a single-file plan instead of multi-file | Always use `docs/plans/` subfolder format — even for small plans with ≤3 features |
 | Marking features as parallel without checking file overlap | Parallel subagents sharing a file cause merge conflicts — Codebase Guardian and Decomposer must flag overlapping files |
 | Over-decomposing into trivially small triplets | Debates bias toward splitting — 4 agents find more sub-divisions. During synthesis, consolidate: features sharing the same model/module/fixture should usually be ONE triplet. A CRUD feature is 1 triplet, not 4. |
+| Excluding UI deliverables because no component test infrastructure exists | If the design requires a UI component, establishing test infrastructure (bUnit, React Testing Library) is a Task 0 concern — not a reason to defer the deliverable. The plan must include the component or explicitly create a separate numbered PR for it. A backend with no UI to access it is incomplete. |
 | Forgetting to shut down the team | Broadcast notice, then shutdown_request each panelist |
 
 ## Red Flags
@@ -352,6 +355,7 @@ Rounds are coordinated via messages:
 - Skip the PR enumeration step in synthesis — this is MANDATORY before writing any plan
 - Skip the verification step (step 6) — you MUST `ls docs/plans/` and confirm folder count matches PR count before shutdown
 - Accept over-decomposition from the debate without consolidating — debates structurally bias toward splitting. Features sharing the same model/module/concern should usually be ONE triplet. If the plan has 10+ triplets, seriously question whether consolidation is needed.
+- Exclude a design deliverable because "no test infrastructure exists for it" — establishing test infrastructure is a valid Task 0 item. If you can't TDD a required component, add the tooling so you CAN; don't silently drop the deliverable.
 
 ## Integration
 

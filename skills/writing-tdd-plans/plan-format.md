@@ -183,7 +183,7 @@ Inputs and outputs must be concrete values, not placeholders. The executor shoul
 
 **Key assertions:** [Non-obvious assertions the executor must include, e.g., "soft-delete means record stays in DB with deleted_at set"]
 
-**UI deliverable rule:** If the feature creates a UI component (page, modal, widget, settings panel), at least one test MUST verify the component **renders** — not just that store actions dispatch or services resolve from DI. Store/action tests can pass without the component file existing. The GREEN step (YAGNI) will only create what tests require, so a feature with only state management tests produces only state management code — no component. Include a rendering test (e.g., bUnit, React Testing Library) that imports and renders the component.
+**UI deliverable rule:** If the feature creates a UI component (page, modal, widget, settings panel), at least one test MUST verify the component **renders** — not just that store actions dispatch or services resolve from DI. Store/action tests can pass without the component file existing. The GREEN step (YAGNI) will only create what tests require, so a feature with only state management tests produces only state management code — no component. Include a rendering test (e.g., bUnit, React Testing Library) that imports and renders the component. **If the codebase lacks component rendering test infrastructure** (no bUnit, no React Testing Library, etc.), establishing it is a Task 0 or feature prerequisite — NOT a reason to exclude the component from the plan. A design that specifies "settings page with Connect/Disconnect" requires the component to exist, not just the state management behind it.
 
 **Verification:**
 Run: `[exact test command]`
