@@ -326,16 +326,19 @@ After all feature triplets pass, add one final triplet for end-to-end integratio
 
 4. **End-to-end data flows** — Trace each primary user-facing flow from entry point to final effect, using real implementations for internal components. Only mock truly external services (third-party APIs with no local alternative).
 
-**To build the integration task list, create a Mock Boundary Table** during planning. For every feature, list each mock used and what real connection it hides. Each row becomes an integration test requirement:
+**To build the integration task list, create a Mock Boundary Table** during planning. **The table MUST have one row per feature** — not just features that use `Mock<>`. UI features tested at the store/state level hide real connections too: store effects that call backend APIs, hub methods never invoked against a running server, components that may not exist because no rendering test required them. List the untested boundary even when the "Mock Used" column is "None (store-level tests only)."
 
 | Feature | Mock Used | Real Connection Hidden | Integration Test |
 |---------|-----------|----------------------|-----------------|
 | *Example:* F2 (MCP Tools) | `Mock<ICalendarProvider>` | MCP server DI can't resolve real provider | Start MCP server, resolve `ICalendarProvider` |
 | *Example:* F1 (Decorator) | Tested decorator standalone | Decorator isn't applied in pipeline | Make real MCP call, verify decorator intercepts |
 | *Example:* F7 (OAuth) | `Mock<ITokenExchangeService>` | Real MSAL impl is a stub | Real OAuth callback exchanges code for tokens |
+| *Example:* F5 (Settings UI) | None (store-level tests only) | Store effects → real hub methods never tested; component may not exist | Connect store to real hub, invoke effect, verify hub method called; verify component file exists |
+
+**The UI Integration Trap:** UI features tested only at the store/state level (Redux stores, Fluxor, Vuex) are the most commonly missed integration gap. Store tests pass without: the component file existing, effects connecting to a real backend, or hub/API methods accepting the expected parameters. **Every UI feature MUST have at least one integration test that connects store effects to a real backend endpoint** (SignalR hub, REST API, WebSocket) and verifies the round-trip.
 
 **Template:**
-- **N.1:** Write integration tests covering all four categories. Include the Mock Boundary Table in the task spec listing every mock from feature tests and the corresponding real-connection test.
+- **N.1:** Write integration tests covering all four categories. Include the Mock Boundary Table in the task spec with **one row per feature** listing each mock or untested boundary and the corresponding real-connection test.
 - **N.2:** Fix integration failures. Expect: missing DI registrations, project references, stub replacements, pipeline hook-ups. This is often NOT a no-op.
 - **N.3:** Final adversarial review against ALL design requirements as a checklist, plus full build and full test suite verification across ALL features.
 
