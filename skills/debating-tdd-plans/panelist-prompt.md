@@ -87,6 +87,7 @@ Sign every entry:
 - **Challenge, don't agree** — attempt to disprove before accepting
 - **Evidence required** — reference specific files, lines, or design requirements
 - **No speculation** — every claim must cite code or design doc
+- **Testing doesn't dictate architecture** — reject arguments that change technology choices (SDK vs raw API, library vs custom) because something is "easier to test." The test strategy adapts to the architecture, not the reverse.
 - **Be constructive** — propose alternatives when challenging
 ```
 
@@ -117,6 +118,7 @@ Fill these into the template's `{role focus}` and `{role-specific key questions}
 - What should the RED tests cover for each feature?
 - Can each component be tested against real services using fixtures and testcontainers? This is ALWAYS the preferred approach.
 - Mocks are a last resort — only acceptable when integration testing is truly impossible (e.g., third-party SaaS with no local alternative). Where, if anywhere, are mocks genuinely unavoidable?
+- **When mocks ARE needed, mock at the boundary your code consumes** — not at a lower level. If the code calls SDK methods, mock the SDK's public interface. If the code makes raw HTTP calls, mock at HTTP. Mocking beneath the SDK (e.g., intercepting its HTTP traffic) tests the SDK's internal serialization — which you don't own and shouldn't couple your tests to. A lower-level mock is not "more real"; it's testing someone else's implementation details.
 - Do the proposed tests verify actual functionality and observable behavior, or are they coupled to implementation details? Tests should assert on outcomes and side effects, not on how the code is internally wired.
 - **UI test infrastructure check (MANDATORY during research):** If the design includes ANY UI component, you MUST check during Round 0 whether the project has component rendering test packages installed. **How to check:** search project files for package references — `bunit` or `bunit.web` in .csproj files, `@testing-library/react` in package.json, `@vue/test-utils` in package.json. **Report your finding explicitly** in your research entry: "Component test infrastructure: [PRESENT/MISSING] — found [package] in [file]" or "Component test infrastructure: MISSING — no bUnit/RTL/VTU package found. Task 0 must install it." If MISSING, this is a Task 0 prerequisite — NOT a reason to exclude UI deliverables or fall back to store-only tests. Without rendering test infrastructure, RED tasks cannot write rendering tests → agents fall back to store/state-only tests → GREEN never creates the component → UI deliverable silently dropped.
 - **Do UI features have component rendering tests, not just state/store tests?** Store/action tests can pass without the component file existing. The GREEN step (YAGNI) only creates what tests require — a feature with only state tests produces only state code, never the component. At least one test must render the component.
@@ -125,6 +127,7 @@ Fill these into the template's `{role focus}` and `{role-specific key questions}
 - **Mock Boundary Tracking (critical for integration triplet):** Build a Mock Boundary Table with **one row per feature** — not just features that use `Mock<>`. For each feature, identify what real connection is untested. Traditional mocks (`Mock<IFoo>`) are obvious boundaries. But UI features tested at the store/state level hide boundaries too: store effects that call hub/API methods are never tested against a running backend; components may not exist because no rendering test required them. **The table must cover ALL features.** Format: Feature | Mock or Untested Boundary | Real Connection Hidden | Integration Test Needed. This table drives the integration triplet.
 - **The Mock Trap:** Can any feature's tests pass while the real implementation is a stub (`NotImplementedException`), while a decorator/middleware exists but isn't applied, **or while a UI component doesn't exist because only store/state tests were written**? If yes, the integration triplet MUST specifically test that real wiring.
 - **Integration test prerequisites:** For each mock boundary where integration tests will use real services (databases, message brokers, caches) — does the project already have the infrastructure? Check: is the testcontainers/docker-compose package installed? Do container definitions or fixture files exist? Is there seed data? **Flag every missing prerequisite as a Task 0 item.** An integration test that says "test against real PostgreSQL" but has no task to install testcontainers or create a container definition is a plan bug that will fail at execution time.
+- **Scope boundary (CRITICAL):** Your job is to determine how to TEST the architecture the design specifies — NOT to recommend changing the architecture for testing convenience. If the design uses an SDK, figure out how to test SDK integration effectively (stub the SDK, use SDK test utilities, integration-test against a sandbox). Do NOT argue for replacing an SDK with raw HTTP calls because HTTP-level mocking is "easier." SDK vs raw API is a design decision, not a testing decision. Adapt your testing strategy to the architecture — never the reverse.
 
 ### Devil's Advocate
 
@@ -140,6 +143,7 @@ Fill these into the template's `{role focus}` and `{role-specific key questions}
 - Could a completely different decomposition be better? **Including a simpler one with fewer triplets?**
 - What requirements gaps and edge cases will the adversarial review need to catch?
 - **Are items marked "deferred" or "PR 2" properly excluded from the current plan?** Should the PR boundary be different?
+- **Challenge testing-driven architecture changes:** If any panelist argues for changing the design's technology choices (SDK vs raw API, library vs roll-your-own) because it's "easier to test" — challenge this immediately. Testing convenience is not a valid reason to change architecture. The test strategy must adapt to the architecture, not the reverse.
 
 ### Codebase Guardian
 
