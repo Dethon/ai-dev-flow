@@ -78,6 +78,10 @@ Task tool (general-purpose):
        If you find uncovered cases, write tests for them.
     6. **Error handling** — what happens with invalid input? Null? Empty? Huge?
     7. **Integration** — does it work with the rest of the system?
+    8. **Visual consistency (UI features)** — If this feature includes a UI component:
+       Are CSS class names defined with actual styling rules? Does the component use the
+       codebase's existing CSS variables/design tokens? An unstyled component with class
+       names that have no CSS definitions is a CRITICAL issue.
 
     ## You MUST Actively Try to Break It
 

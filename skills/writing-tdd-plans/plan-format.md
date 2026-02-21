@@ -204,6 +204,8 @@ Expected: ALL tests FAIL (function/module not found)
 **Goal:** Write the minimal code to make ALL tests from Task N.1 pass.
 Do NOT add functionality beyond what the tests require. YAGNI.
 
+**UI styling rule:** If this task creates a user-facing UI component (page, modal, panel, widget), the component MUST be styled to match the codebase's existing visual patterns. Examine existing styled components and the CSS/design system (variables, themes, component conventions) — then apply consistent styling. Unstyled HTML with CSS class names that have no corresponding CSS rules is not a deliverable. Matching the codebase's visual language is part of the minimum implementation, not "extra functionality."
+
 **Files:**
 - Create/Modify: `src/exact/path/to/feature.py`
 - Reference: `tests/exact/path/to/test_feature.py` (already exists from N.1)
@@ -278,6 +280,12 @@ Expected: ALL tests PASS
 
 6. **Integration** — Does it work with the rest of the system? Any assumptions that
    could break when connected to real code?
+
+7. **Visual consistency (UI features only)** — If this feature includes a UI component:
+   Does it use the codebase's existing CSS variables/design tokens? Are all CSS class
+   names defined with actual styling rules? Does it look visually consistent with existing
+   components? An unstyled component that relies on class names with no CSS definitions
+   is a FAIL — it means the GREEN step skipped styling.
 
 **You MUST actively try to break the implementation and find gaps.** If you find coverage
 gaps, edge cases, or ways the existing tests could pass with a wrong implementation,

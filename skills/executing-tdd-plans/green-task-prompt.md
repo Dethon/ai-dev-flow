@@ -50,6 +50,17 @@ Task tool (general-purpose):
     - Don't refactor or optimize prematurely
     - If the tests are wrong, report it — don't silently change them
 
+    ## Critical: UI Components Must Be Styled
+
+    If this task creates a user-facing UI component (page, modal, panel, widget),
+    you MUST style it to match the codebase's existing visual patterns:
+    1. Find the codebase's CSS/design system (CSS variables, theme tokens, existing styles)
+    2. Examine 2-3 existing styled components for patterns (spacing, colors, shadows)
+    3. Apply consistent styling — use the same CSS variables and visual language
+
+    Unstyled HTML with class names that have no CSS rules is NOT a valid deliverable.
+    Matching the codebase's visual language is part of minimum implementation, not "extra."
+
     ## Critical: Plan-Specified Wiring Is Mandatory
 
     After making tests pass, implement ALL file modifications listed in the task's
