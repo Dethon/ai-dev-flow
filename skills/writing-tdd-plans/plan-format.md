@@ -312,6 +312,10 @@ re-review). Append them to the plan.
 
 If features share infrastructure (database setup, config, project structure, dependency installation), create a **Task 0** before any triplets. This is the only task that doesn't follow the triplet pattern. Keep it minimal — just enough for the first triplet to run.
 
+**Integration test infrastructure is a Task 0 concern.** If the plan's integration triplet needs real services (databases, message brokers, caches) and the project lacks the infrastructure to run them in tests — the plan MUST include setup in Task 0: package installation (e.g., testcontainers, docker-compose), container/fixture definitions, seed data scripts. An integration test that assumes testcontainers exist but no task installs the package will fail at execution time.
+
+**UI component test infrastructure is a Task 0 concern.** If the design includes ANY UI component (page, modal, panel, widget), you MUST check whether the project has component rendering test packages installed (bUnit for Blazor, React Testing Library for React, Vue Test Utils for Vue, etc.). **How to check:** search project files for package references (e.g., `bunit` in .csproj, `@testing-library/react` in package.json). If the package is not installed, Task 0 MUST install it and create a minimal test scaffold (test project, configuration, example test that renders a trivial component). Without this, RED tasks for UI features cannot write rendering tests, agents will fall back to store/state-only tests, and the GREEN step will never create the actual component. This is the #1 cause of UI components being silently dropped from plans.
+
 ### Integration Triplet (final)
 
 After all feature triplets pass, add one final triplet for end-to-end integration.
@@ -343,11 +347,13 @@ After all feature triplets pass, add one final triplet for end-to-end integratio
 | *Example:* F7 (OAuth) | `Mock<ITokenExchangeService>` | Real MSAL impl is a stub | Real OAuth callback exchanges code for tokens |
 | *Example:* F5 (Settings UI) | None (store-level tests only) | Store effects → real hub methods never tested; component may not exist | Connect store to real hub, invoke effect, verify hub method called; verify component file exists |
 
+**Integration Test Prerequisites Check (MANDATORY):** For each row in the Mock Boundary Table where the real connection can be tested with fixtures, testcontainers, or local service emulators — verify the plan includes a task (Task 0 or feature prerequisite) that: (1) installs required packages (testcontainers library, docker-compose, test SDK), (2) creates container/fixture definitions (docker-compose.yml, testcontainer configs, database migration scripts for test), and (3) provides seed data or factory methods if tests need realistic data. If the project already has this infrastructure, note "existing" — don't duplicate. If a prerequisite is missing and no task creates it, the integration test is unrunnable.
+
 **The UI Integration Trap:** UI features tested only at the store/state level (Redux stores, Fluxor, Vuex) are the most commonly missed integration gap. Store tests pass without: the component file existing, effects connecting to a real backend, or hub/API methods accepting the expected parameters. **Every UI feature MUST have at least one integration test that connects store effects to a real backend endpoint** (SignalR hub, REST API, WebSocket) and verifies the round-trip.
 
 **Template:**
-- **N.1:** Write integration tests covering all four categories. Include the Mock Boundary Table in the task spec with **one row per feature** listing each mock or untested boundary and the corresponding real-connection test.
-- **N.2:** Fix integration failures. Expect: missing DI registrations, project references, stub replacements, pipeline hook-ups. This is often NOT a no-op.
+- **N.1:** Write integration tests covering all four categories. Include the Mock Boundary Table in the task spec with **one row per feature** listing each mock or untested boundary and the corresponding real-connection test. **Prerequisites:** List any packages, containers, or fixtures that must exist for these tests to run — and verify Task 0 or a prior feature task creates them. If prerequisites are missing from the plan, flag this as a blocker before writing tests.
+- **N.2:** Fix integration failures. Expect: missing DI registrations, project references, stub replacements, pipeline hook-ups, **missing test infrastructure (packages not installed, containers not configured)**. This is often NOT a no-op.
 - **N.3:** Final adversarial review against ALL design requirements as a checklist, plus full build and full test suite verification across ALL features.
 
 ## Execution Instructions

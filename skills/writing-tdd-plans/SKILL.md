@@ -81,6 +81,10 @@ Key points (see `plan-format.md` for full templates):
 
 4. **Mock boundaries** — When a feature will be tested with mocks (e.g., mocking `IProvider` to test a service that depends on it), that mock boundary represents a real connection that feature tests will NOT verify. List every mock boundary — these become mandatory integration test targets in the integration triplet. See plan-format.md "Integration Triplet" for the Mock Boundary Table format.
 
+5. **Integration test prerequisites (MANDATORY)** — For each mock boundary where the integration triplet will use real services instead of mocks, check: does the project already have the infrastructure to run those real services in tests? If not, Task 0 must install packages (testcontainers, docker-compose), create container/fixture definitions, and provide seed data. An integration test that references testcontainers without a task to install the package is a plan bug.
+
+6. **UI test infrastructure (MANDATORY)** — If the design includes ANY UI component, check whether the project has component rendering test packages (bUnit for Blazor, React Testing Library for React, Vue Test Utils for Vue). Search project files for package references. If not installed, Task 0 MUST install the package and create a minimal test scaffold. Without this, RED tasks cannot write rendering tests, agents fall back to store/state-only tests, and GREEN never creates the component.
+
 ### Parallel Execution Safety (MANDATORY)
 
 Independent triplets execute as parallel subagents sharing the same workspace. Two agents editing the same file simultaneously cause merge conflicts, build failures, and spurious test failures.
@@ -115,9 +119,11 @@ Independent triplets execute as parallel subagents sharing the same workspace. T
 | "Subagents are slow, I'll execute tasks myself" | Fresh subagent context prevents cross-task contamination and shortcuts. |
 | "These features are logically independent, so they can run in parallel" | Logical independence ≠ file independence. Check for shared files before marking as parallel. |
 | "Store/action tests cover the UI feature" | Store tests verify state logic, not that the component exists or renders. The GREEN step (YAGNI) won't create a component no test requires. Add a rendering test that imports and renders the component. If no rendering test infrastructure exists, establishing it (bUnit, React Testing Library) is a Task 0 item — not a reason to exclude the component. |
+| "No bUnit/RTL installed, so we can't write rendering tests" | Missing test infrastructure is a Task 0 prerequisite, not a reason to drop rendering tests. Task 0 MUST install the package and create a test scaffold. Check project files during decomposition (point 6) — don't discover this at RED task time. |
 | "CSS/styling is beyond what tests require (YAGNI)" | Tests verify behavior, not appearance — but unstyled HTML is not a deliverable. The GREEN step must style UI components to match the codebase's existing visual patterns. YAGNI applies to features, not to basic visual quality. A component with CSS class names that have no CSS rules is a broken deliverable. |
 | "The executor can figure out the types/signatures" | The executor has only the task spec, not the design doc or debate log. If the plan says "create UserService with CRUD operations", 10 executors produce 10 different APIs. Specify signatures, types, error conditions — lock down design decisions. |
 | "The integration triplet will catch wiring issues" | Only if the integration task SPECIFICALLY tests wiring. A vague "test features together" integration task won't catch missing DI registrations, unapplied decorators, or stub implementations. Build the Mock Boundary Table (see plan-format.md). |
+| "Integration tests will use real services" (but no task installs the infrastructure) | Integration tests need runnable infrastructure. If the plan says "test against real PostgreSQL via testcontainers" but no Task 0 installs testcontainers or creates container definitions, the test is unrunnable at execution time. Prerequisites must be explicit plan tasks. |
 
 ## Red Flags
 
@@ -136,5 +142,6 @@ Independent triplets execute as parallel subagents sharing the same workspace. T
 - Create UI components with CSS class names that have no corresponding CSS rules — the component renders as unstyled HTML. The GREEN task must include styling that matches the codebase's existing design system.
 - Mark features as parallel without checking for file overlap — shared types, barrel exports, config files cause build conflicts between parallel agents
 - Write a vague integration triplet ("test features together") without a Mock Boundary Table — every mock used in feature tests is a real connection that must be verified in integration. No table = no assurance the wiring works.
+- Write integration tests that require infrastructure the project doesn't have (testcontainers, docker-compose, test databases) without a Task 0 that installs and configures it — the executor will hit missing-package errors on the first test run.
 
 **The triplet is atomic:** If you can't write all three tasks for a feature, the feature needs to be decomposed further.
