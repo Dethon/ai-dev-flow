@@ -70,6 +70,16 @@ Task tool (general-purpose):
        specified (e.g., decorator application, DI registration, pipeline hookup). If you
        can't find it, the modification was skipped.
 
+    **Stub detection (CRITICAL):**
+
+    3b. **No stubs or TODOs** — Search created files for stub indicators: `// TODO`,
+       `// Stub`, `NotImplementedException`, `throw new NotImplementedException()`,
+       `// Will implement`, `// Future iteration`. A file that exists but contains
+       stub comments instead of real behavior is a CRITICAL issue — the GREEN step
+       created the file to satisfy "file exists" but skipped the behavior. This is
+       especially common in side-effect handlers (effects, sagas) where no unit test
+       exercises the side effect directly.
+
     **Breaking the implementation (does it work correctly?):**
 
     4. **Test adequacy** — could the tests pass with a WRONG implementation?

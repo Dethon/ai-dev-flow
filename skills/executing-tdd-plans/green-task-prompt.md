@@ -74,6 +74,10 @@ Task tool (general-purpose):
 
     **Checklist before committing:**
     - Every file listed under "Create" → exists
+    - Every file listed under "Create" → implements described behaviors from the task
+      spec, not stubbed with TODO/placeholder comments. A file that exists but contains
+      `// TODO: implement later` or `// Stub: will do X in a future iteration` is NOT
+      a completed deliverable — it means you created the file but skipped the behavior.
     - Every file listed under "Modify" → has the specified changes applied
     - If a "Modify" file doesn't need changes for tests to pass, implement
       the wiring changes anyway — the integration triplet verifies them later
