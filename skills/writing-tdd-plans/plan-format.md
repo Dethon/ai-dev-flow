@@ -118,7 +118,7 @@ Each feature file contains the complete triplet (N.1 RED, N.2 GREEN, N.3 REVIEW)
 | integration.md | End-to-end integration | All features |
 ```
 
-**Multiple PRs:** Each PR gets its own numbered subfolder: `docs/plans/{NN}-{plan-name}-{pr-descriptor}/` where `{NN}` is the zero-padded PR number (01, 02, ...). The number indicates execution order — PRs must be executed in numerical sequence. Each plan must be self-contained and independently executable.
+**Multiple PRs (only when user explicitly requests):** If the user asks to split execution into multiple PRs, each PR gets its own numbered subfolder: `docs/plans/{NN}-{plan-name}-{pr-descriptor}/` where `{NN}` is the zero-padded PR number (01, 02, ...). The number indicates execution order — PRs must be executed in numerical sequence. Each plan must be self-contained and independently executable. **CRITICAL: The plan MUST still cover the ENTIRE design document.** Never omit features from the plan because "they belong in a different PR." Plan everything first, then split into PRs if requested. If not requested, produce a single plan covering all features.
 
 ## Header Template (README.md)
 
