@@ -10,7 +10,7 @@ Shared format for TDD implementation plans. Both writing-tdd-plans and debating-
 | **Depends on** | Previous feature's REVIEW, or none (also serialize if file overlap with parallel features) | Same feature's RED | Same feature's GREEN |
 | **Design requirements** | Verbatim from design | Reference RED task | Verbatim from design |
 | **Files** | Exact paths to create | Exact paths to create/modify | Files to review |
-| **Spec** | Test cases table + key assertions | Implementation spec (what to build, behaviors, API) | Review checklist + tests for any gaps found |
+| **Spec** | Test cases table + key assertions | Implementation spec + DI registration table + endpoint bindings | Review checklist + startup verification + tests for any gaps found |
 | **Verification** | Command + "ALL tests FAIL" | Command + "ALL tests PASS" | Verdict: PASS/FAIL |
 | **Commit** | `test: add failing tests for [feature]` | `feat: implement [feature]` | `test: add adversarial tests for [feature]` |
 
@@ -88,6 +88,8 @@ Detailed enough:
 - Include **key assertions/edge cases** the executor must not miss — not every assertion line
 - Specify **error conditions** with concrete error types and responses — not "add proper error handling"
 - Specify **validation rules** concretely — not "validate input"
+- Specify **DI registrations** for every constructor dependency of new classes — not "register the service in DI"
+- Specify **parameter binding sources** for web endpoint parameters — not "create a GET endpoint with these parameters"
 
 ## Save Location
 
@@ -231,6 +233,20 @@ Function/class signatures must include types. The executor should know exactly w
 
 **Behavioral rules:** [Validation logic, business rules, ordering guarantees, idempotency requirements — anything the tests assert that the implementation must satisfy. Omit if fully covered by the test cases table.]
 
+**DI registration table (MANDATORY):** List ALL constructor dependencies for each new class this task creates. For each dependency, state whether it's already registered in the correct host's DI container, or must be registered by this task. If not registered, specify the exact registration call and which file to add it to. The executor has no context beyond this task — an unlisted dependency becomes a missing DI registration at runtime.
+
+| Class | Dependency | Registered? | Registration |
+|-------|-----------|------------|--------------|
+| [NewClass] | [IDependency] | Yes (Task X) / No | `services.AddSingleton<IDep, Impl>()` in [File.cs] |
+
+Common gaps: `TimeProvider` (not auto-registered — use `services.AddSingleton(TimeProvider.System)`), `IHttpClientFactory` (needs `AddHttpClient()`), services in one host needed in another (Agent DI ≠ MCP server DI ≠ WASM DI).
+
+**Endpoint parameter bindings (web endpoint tasks only):** If this task creates HTTP endpoints (Minimal API, MVC, etc.), specify the parameter binding source for EVERY parameter. Framework-inferred binding often guesses wrong — especially for GET endpoints where complex types are inferred as `[FromBody]` (which is invalid for GET). Be explicit with attributes.
+
+| Endpoint | Parameter | Source |
+|----------|-----------|--------|
+| [GET /path] | [param] | `[FromQuery]` / `[FromServices]` / `[FromRoute]` |
+
 **Verification:**
 Run: `[exact test command]`
 Expected: ALL tests PASS
@@ -288,6 +304,12 @@ Expected: ALL tests PASS
    names defined with actual styling rules? Does it look visually consistent with existing
    components? An unstyled component that relies on class names with no CSS definitions
    is a FAIL — it means the GREEN step skipped styling.
+
+8. **Startup verification** — Build the solution and start the application(s) this
+   feature modifies. If the app fails to start (DI resolution errors, endpoint mapping
+   errors, missing service registrations), this is a CRITICAL FAIL. Unit tests mock DI
+   and pass even when the real container can't build the dependency graph. Don't wait
+   for the integration triplet to catch what a simple `dotnet run` / `npm start` reveals.
 
 **You MUST actively try to break the implementation and find gaps.** If you find coverage
 gaps, edge cases, or ways the existing tests could pass with a wrong implementation,

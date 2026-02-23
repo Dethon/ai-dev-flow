@@ -94,6 +94,8 @@ Key points (see `plan-format.md` for full templates):
 
 6. **UI test infrastructure (MANDATORY)** — If the design includes ANY UI component, check whether the project has component rendering test packages (bUnit for Blazor, React Testing Library for React, Vue Test Utils for Vue). Search project files for package references. If not installed, Task 0 MUST install the package and create a minimal test scaffold. Without this, RED tasks cannot write rendering tests, agents fall back to store/state-only tests, and GREEN never creates the component.
 
+7. **DI registration tracking (MANDATORY)** — For each new class the plan creates, trace its constructor dependencies across the plan. Every dependency must be registered in the correct host's DI container by some task. Build a running ledger: Task 0 registers X, Feature 2 registers Y. If a class takes `TimeProvider`, `IHttpClientFactory`, or any framework type not auto-registered — a task must register it. If a service is registered in one host (e.g., Agent) but needed in another (e.g., MCP server, Blazor WASM) — the plan must register it in each host separately. Cross-host DI is the #1 source of "works in unit tests, crashes at startup" errors.
+
 ### Parallel Execution Safety (MANDATORY)
 
 Independent triplets execute as parallel subagents sharing the same workspace. Two agents editing the same file simultaneously cause merge conflicts, build failures, and spurious test failures.
@@ -119,6 +121,8 @@ Independent triplets execute as parallel subagents sharing the same workspace. T
 - UI components created but never wired into a layout or page (no task adds the component to the app's navigation or main page)
 - Interfaces created in Task 0 but no task creates the real implementation class (DI can't resolve the service at runtime)
 - Backend services with no UI making them accessible to users
+- Constructor dependencies with no DI registration — trace each new class's constructor: can the DI container build it? Every parameter must map to a registered service in the correct host.
+- Web endpoint parameters with no binding source attribute — will the framework infer `[FromBody]` on a GET endpoint?
 
 ## Common Rationalizations
 
@@ -141,6 +145,9 @@ Independent triplets execute as parallel subagents sharing the same workspace. T
 | "This design is too large for one PR — I'll split into PR 01 and PR 02" | The plan covers the ENTIRE design. Scope decisions (what ships in which PR) happen AFTER the plan exists, not during planning. A plan that omits sections of the design is incomplete — even if you intend to "plan the rest later." Plan everything, then let the executor or user decide PR boundaries. |
 | "I'll defer the UI/auth/infrastructure to a separate plan" | Deferring = omitting. If the design describes it, the plan must include it. The plan is a decomposition of the design, not a subset. |
 | "The coverage check passed, so the plan is complete" | Coverage maps design sections to triplets. It doesn't verify that every step in a user flow has a task. A component can have a triplet but never be wired into the layout. An interface can exist in Task 0 but have no implementation class. The flow trace catches what the coverage check misses. |
+| "Unit tests pass, so the DI wiring is correct" | Unit tests mock DI containers. A class can pass all unit tests while its real DI container can't resolve it — because a transitive dependency (like `TimeProvider`) was never registered. Every GREEN task must include a DI registration table. |
+| "The framework infers parameter binding correctly" | Minimal API, MVC, and other frameworks have inference rules that surprise. A GET endpoint with an unattributed complex parameter is inferred as `[FromBody]` and throws `InvalidOperationException`. GREEN tasks for web endpoints must specify binding sources explicitly. |
+| "The executor can figure out DI registrations" | The executor has only the task spec. If the plan says "create `TokenInjector(ITokenStore, TimeProvider)`" but doesn't say "register `TimeProvider.System` in DI", the executor creates the class, unit tests pass (mocked), and the app crashes at startup. DI registrations are design decisions — lock them down. |
 
 ## Red Flags
 
@@ -163,5 +170,8 @@ Independent triplets execute as parallel subagents sharing the same workspace. T
 - Omit features from the plan because "they'll be in a separate PR" — the plan covers the ENTIRE design document. Every section, every component, every endpoint. PR scope decisions happen after planning, not during.
 - Add a "Scope" section to the README that excludes parts of the design — if you're tempted to write "deferred to PR 02," the plan is incomplete.
 - Save the plan without running the flow trace check — trace every user-facing flow through the plan's tasks before saving. A component with a triplet but no layout wiring, or an interface with no implementation task, is a plan gap.
+- Specify a constructor dependency in a GREEN task without stating whether it's registered in DI — every constructor parameter must map to a DI registration. If the plan doesn't say who registers it, nobody will.
+- Create web endpoint handler signatures without specifying parameter binding attributes — ASP.NET Minimal API, Spring, Express parameter inference silently breaks when it guesses wrong. Always specify `[FromQuery]`, `[FromServices]`, `[FromBody]`, etc.
+- Let the GREEN executor introduce new interfaces or abstractions not in the plan — YAGNI means don't create `IFooHubService` when the plan says to inject `IChatConnectionService`. New abstractions = new DI registrations the plan didn't account for = runtime crashes.
 
 **The triplet is atomic:** If you can't write all three tasks for a feature, the feature needs to be decomposed further.
