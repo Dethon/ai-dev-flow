@@ -46,8 +46,6 @@ digraph process {
         "Create Task N.3: Adversarial review" [shape=box];
     }
 
-    "Run Pre-Save Checklist" [shape=diamond];
-    "Fix plan gaps" [shape=box];
     "Save as subfolder in docs/plans/" [shape=box];
 
     "Read design document" -> "Identify goal, architecture, tech stack";
@@ -56,10 +54,12 @@ digraph process {
     "Order features by dependency" -> "Create Task N.1: Write failing tests (RED)";
     "Create Task N.1: Write failing tests (RED)" -> "Create Task N.2: Implement to pass tests (GREEN)";
     "Create Task N.2: Implement to pass tests (GREEN)" -> "Create Task N.3: Adversarial review";
-    "Create Task N.3: Adversarial review" -> "Run Pre-Save Checklist";
-    "Run Pre-Save Checklist" -> "Save as subfolder in docs/plans/" [label="all pass"];
-    "Run Pre-Save Checklist" -> "Fix plan gaps" [label="gaps found"];
-    "Fix plan gaps" -> "Run Pre-Save Checklist";
+    "Create Task N.3: Adversarial review" -> "Flow trace check";
+    "Flow trace check" [shape=diamond];
+    "Fix plan gaps" [shape=box];
+    "Flow trace check" -> "Save as subfolder in docs/plans/" [label="all steps covered"];
+    "Flow trace check" -> "Fix plan gaps" [label="gaps found"];
+    "Fix plan gaps" -> "Flow trace check";
 }
 ```
 
@@ -115,19 +115,10 @@ Independent triplets execute as parallel subagents sharing the same workspace. T
 
 **Dependency graph:** Include a visual dependency graph at the end of the plan showing which triplets can run in parallel and which are sequential. The graph must reflect both logical dependencies AND file-scope overlap — two features are parallel only if they have zero file overlap.
 
-## Pre-Save Checklist
-
-After writing all triplets including the integration triplet, complete every item below before saving. If any check reveals a gap, fix the plan and re-run the checklist from the top.
-
-**1. Design coverage matrix.** List every top-level section/component/endpoint from the design document. Next to each, write the triplet number that covers it. Any unmapped item means the plan is incomplete — add the missing triplet before continuing.
-
-**2. User-facing flow trace.** For each user-facing flow in the design (user does X → sees Y → gets Z), trace it through the plan's triplets. Every step in the flow must have a triplet. A backend endpoint with no UI triplet to access it is a gap. A UI component with no backend triplet to serve it is a gap.
-
-**3. Mock Boundary Table audit.** Open the integration triplet's Mock Boundary Table. Count rows. Count feature triplets. The numbers must match — one row per feature. For each feature, the row answers: "What real connection do this feature's unit tests NOT exercise?" UI features tested at store/state level hide untested connections (hub methods, API calls, components that may not exist because no rendering test required them). If rows are missing, add them.
-
-**4. Side-effect handler audit.** For each feature with side-effect handlers (effects, sagas, thunks) that perform external operations (JS interop, HTTP calls, hub/WebSocket methods), check its RED task. It must have a dedicated effect unit test — not just store/state tests or component rendering tests. If missing, add the test case to the RED task.
-
-**5. Infrastructure prerequisites.** For every package or tool the plan's tests assume exists (bUnit, testcontainers, React Testing Library, docker-compose, test databases), verify either: (a) the project already has it installed (search project files), or (b) Task 0 installs it. If neither, update Task 0.
+**Flow trace check (MANDATORY):** After writing ALL triplets (including integration), trace each user-facing flow from the design end-to-end through the plan. For each step in the flow (user sees X → clicks Y → gets Z), identify which task creates or modifies the code for that step. A step with no corresponding task is a plan gap — add the missing task before saving. Common gaps this catches:
+- UI components created but never wired into a layout or page (no task adds the component to the app's navigation or main page)
+- Interfaces created in Task 0 but no task creates the real implementation class (DI can't resolve the service at runtime)
+- Backend services with no UI making them accessible to users
 
 ## Common Rationalizations
 
@@ -149,8 +140,7 @@ After writing all triplets including the integration triplet, complete every ite
 | "Integration tests will use real services" (but no task installs the infrastructure) | Integration tests need runnable infrastructure. If the plan says "test against real PostgreSQL via testcontainers" but no Task 0 installs testcontainers or creates container definitions, the test is unrunnable at execution time. Prerequisites must be explicit plan tasks. |
 | "This design is too large for one PR — I'll split into PR 01 and PR 02" | The plan covers the ENTIRE design. Scope decisions (what ships in which PR) happen AFTER the plan exists, not during planning. A plan that omits sections of the design is incomplete — even if you intend to "plan the rest later." Plan everything, then let the executor or user decide PR boundaries. |
 | "I'll defer the UI/auth/infrastructure to a separate plan" | Deferring = omitting. If the design describes it, the plan must include it. The plan is a decomposition of the design, not a subset. |
-| "I checked these during decomposition, no need to run the Pre-Save Checklist" | Decomposition checks happen while building. Pre-save checks verify the finished product. Writing tests while coding doesn't replace running the test suite. |
-| "The checklist is overkill for a small plan" | Small plans have the same gap types. The checklist takes 5 minutes. Discovering a missing integration row during execution takes hours. |
+| "The coverage check passed, so the plan is complete" | Coverage maps design sections to triplets. It doesn't verify that every step in a user flow has a task. A component can have a triplet but never be wired into the layout. An interface can exist in Task 0 but have no implementation class. The flow trace catches what the coverage check misses. |
 
 ## Red Flags
 
@@ -172,8 +162,6 @@ After writing all triplets including the integration triplet, complete every ite
 - Write integration tests that require infrastructure the project doesn't have (testcontainers, docker-compose, test databases) without a Task 0 that installs and configures it — the executor will hit missing-package errors on the first test run.
 - Omit features from the plan because "they'll be in a separate PR" — the plan covers the ENTIRE design document. Every section, every component, every endpoint. PR scope decisions happen after planning, not during.
 - Add a "Scope" section to the README that excludes parts of the design — if you're tempted to write "deferred to PR 02," the plan is incomplete.
-- Save the plan without completing the Pre-Save Checklist — every item, every time
-- Run the checklist "mentally" without producing the coverage matrix or flow trace — if it's not written down, it wasn't checked
-- Skip the Mock Boundary Table row count because "I wrote the table carefully during decomposition" — verify the finished product, not your memory of writing it
+- Save the plan without running the flow trace check — trace every user-facing flow through the plan's tasks before saving. A component with a triplet but no layout wiring, or an interface with no implementation task, is a plan gap.
 
 **The triplet is atomic:** If you can't write all three tasks for a feature, the feature needs to be decomposed further.
