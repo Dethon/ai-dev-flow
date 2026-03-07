@@ -11,6 +11,7 @@ Shared format for TDD implementation plans. Both writing-tdd-plans and debating-
 | **Design requirements** | Verbatim from design | Reference RED task | Verbatim from design |
 | **Files** | Exact paths to create | Exact paths to create/modify | Files to review |
 | **Spec** | Test cases table + wiring tests + key assertions | Implementation spec + DI registration table + endpoint bindings | Review checklist + startup verification + tests for any gaps found |
+| **Visual (UI only)** | — | Visual acceptance criteria + styling rule | Visual quality assessment (design compliance, hierarchy, polish, screenshot if possible) |
 | **Verification** | Command + "ALL tests FAIL" | Command + "ALL tests PASS" | Verdict: PASS/FAIL |
 | **Commit** | `test: add failing tests for [feature]` | `feat: implement [feature]` | `test: add adversarial tests for [feature]` |
 
@@ -224,7 +225,9 @@ Expected: ALL tests FAIL (function/module not found)
 **Goal:** Write the minimal code to make ALL tests from Task N.1 pass.
 Do NOT add functionality beyond what the tests require. YAGNI.
 
-**UI styling rule:** If this task creates a user-facing UI component (page, modal, panel, widget), the component MUST be styled to match the codebase's existing visual patterns. Examine existing styled components and the CSS/design system (variables, themes, component conventions) — then apply consistent styling. Unstyled HTML with CSS class names that have no corresponding CSS rules is not a deliverable. Matching the codebase's visual language is part of the minimum implementation, not "extra functionality."
+**UI styling rule:** If this task creates a user-facing UI component (page, modal, panel, widget), the component MUST be styled following the visual design direction established in the design document and design tokens (Task 0). For existing apps, examine existing styled components and the CSS/design system — then apply consistent styling. For new apps, use the design tokens and visual direction from Task 0. Unstyled HTML with CSS class names that have no corresponding CSS rules is not a deliverable. Visual quality is part of the minimum implementation, not "extra functionality."
+
+**Visual acceptance criteria (UI features only):** [Non-testable but reviewable criteria describing the expected visual result. Specific enough for the reviewer to evaluate — not "looks nice" but concrete expectations about layout, hierarchy, component style, colors, spacing, and overall impression. Example: "Card layout with subtle shadow, priority badges color-coded, hover state with lift effect, consistent spacing using design tokens." These criteria carry forward the design document's visual intent into each task.]
 
 **Files:**
 - Create/Modify: `src/exact/path/to/feature.py`
@@ -315,11 +318,21 @@ Expected: ALL tests PASS
 6. **Integration** — Does it work with the rest of the system? Any assumptions that
    could break when connected to real code?
 
-7. **Visual consistency (UI features only)** — If this feature includes a UI component:
-   Does it use the codebase's existing CSS variables/design tokens? Are all CSS class
-   names defined with actual styling rules? Does it look visually consistent with existing
-   components? An unstyled component that relies on class names with no CSS definitions
-   is a FAIL — it means the GREEN step skipped styling.
+7. **Visual quality (UI features only)** — If this feature includes a UI component:
+   - **Mechanical checks:** Are all CSS class names defined with actual styling rules?
+     Does the CSS reference design tokens — not hardcoded colors, spacing, or font sizes?
+   - **Design compliance:** Does the component follow the visual direction from the design
+     document? (color palette, typography, spacing, component style, mood)
+   - **Visual hierarchy:** Is the most important content/action visually prominent?
+   - **Spacing and alignment:** Consistent padding/margins, nothing crammed or floating?
+   - **State completeness:** Are all visual states handled (hover, focus, disabled, empty,
+     loading, error) — or at minimum the states that apply to this component?
+   - **Overall impression:** Does it look like a finished, polished component — or a
+     wireframe with CSS class names?
+   - **Screenshot review (if possible):** Render the component (via dev server, Playwright,
+     or Storybook) and visually evaluate the result. This catches issues that code review
+     alone misses — misaligned elements, poor color contrast, awkward proportions.
+   An unstyled component or one that doesn't match the design direction is a FAIL.
 
 8. **Startup verification** — Build the solution and start the application(s) this
    feature modifies. If the app fails to start (DI resolution errors, endpoint mapping
@@ -355,6 +368,8 @@ If features share infrastructure (database setup, config, project structure, dep
 **Integration test infrastructure is a Task 0 concern.** If the plan's integration triplet needs real services (databases, message brokers, caches) and the project lacks the infrastructure to run them in tests — the plan MUST include setup in Task 0: package installation (e.g., testcontainers, docker-compose), container/fixture definitions, seed data scripts. An integration test that assumes testcontainers exist but no task installs the package will fail at execution time.
 
 **UI component test infrastructure is a Task 0 concern.** If the design includes ANY UI component (page, modal, panel, widget), you MUST check whether the project has component rendering test packages installed (bUnit for Blazor, React Testing Library for React, Vue Test Utils for Vue, etc.). **How to check:** search project files for package references (e.g., `bunit` in .csproj, `@testing-library/react` in package.json). If the package is not installed, Task 0 MUST install it and create a minimal test scaffold (test project, configuration, example test that renders a trivial component). Without this, RED tasks for UI features cannot write rendering tests, agents will fall back to store/state-only tests, and the GREEN step will never create the actual component. This is the #1 cause of UI components being silently dropped from plans.
+
+**Visual design foundation is a Task 0 concern.** For new apps or features in a new visual area, Task 0 MUST bootstrap a design system from the design document's visual direction: CSS variables/design tokens (color palette, spacing scale, typography, shadows, border radii, transitions), base styles (reset, body defaults), and any CSS framework configuration. For existing apps, Task 0 should document which existing components to reference for visual patterns (name them explicitly). Without this, each feature subagent invents its own visual style, producing a visually incoherent app.
 
 ### Integration Triplet (final)
 
@@ -394,7 +409,7 @@ After all feature triplets pass, add one final triplet for end-to-end integratio
 **Template:**
 - **N.1:** Write integration tests covering all four categories. Include the Mock Boundary Table in the task spec with **one row per feature** listing each mock or untested boundary and the corresponding real-connection test. **Prerequisites:** List any packages, containers, or fixtures that must exist for these tests to run — and verify Task 0 or a prior feature task creates them. If prerequisites are missing from the plan, flag this as a blocker before writing tests.
 - **N.2:** Fix integration failures. Expect: missing DI registrations, project references, stub replacements, pipeline hook-ups, **missing test infrastructure (packages not installed, containers not configured)**. This is often NOT a no-op.
-- **N.3:** Final adversarial review against ALL design requirements as a checklist, plus full build and full test suite verification across ALL features.
+- **N.3:** Final adversarial review against ALL design requirements as a checklist, plus full build and full test suite verification across ALL features. For apps with UI: verify visual coherence across all features — consistent use of design tokens, no jarring style differences between components built by different subagents, all components look like they belong to the same app. If possible, render the full app and take a screenshot to evaluate the overall visual impression.
 
 ## Flow Trace Artifact (MANDATORY)
 

@@ -88,10 +88,21 @@ Task tool (general-purpose):
        If you find uncovered cases, write tests for them.
     6. **Error handling** — what happens with invalid input? Null? Empty? Huge?
     7. **Integration** — does it work with the rest of the system?
-    8. **Visual consistency (UI features)** — If this feature includes a UI component:
-       Are CSS class names defined with actual styling rules? Does the component use the
-       codebase's existing CSS variables/design tokens? An unstyled component with class
-       names that have no CSS definitions is a CRITICAL issue.
+    8. **Visual quality (UI features)** — If this feature includes a UI component:
+       - **Mechanical:** Are ALL CSS class names defined with actual styling rules? Does
+         the CSS reference design tokens — not hardcoded colors, spacing, or font sizes?
+       - **Design compliance:** Does it follow the visual direction from the design
+         document and the visual acceptance criteria in the task spec?
+       - **Visual hierarchy:** Is the most important content/action visually prominent?
+       - **Spacing and alignment:** Consistent padding/margins, nothing crammed or floating?
+       - **State completeness:** Are visual states handled (hover, focus, disabled, empty)?
+       - **Overall impression:** Does it look polished and production-ready, or like a
+         wireframe with CSS class names?
+       - **Screenshot review (if possible):** If you can render the component (via dev
+         server, Playwright, or Storybook), take a screenshot and visually evaluate the
+         result — this catches misalignment, poor contrast, and awkward proportions that
+         code review alone misses.
+       An unstyled component or one that ignores the design direction is a CRITICAL issue.
 
     ## You MUST Actively Try to Break It
 

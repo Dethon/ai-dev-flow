@@ -35,11 +35,18 @@ Start by understanding the current project context, then ask questions one at a 
 - Use `AskUserQuestion` to present options with your recommendation first (add "(Recommended)" to its label) and reasoning in the descriptions
 - Lead with your recommended option and explain why
 
+**Visual design (for features with UI):**
+- Ask about the desired visual style/mood (minimal, bold, corporate, playful, dark, etc.)
+- Ask for reference sites, apps, or design systems to draw inspiration from
+- For new apps: establish a visual direction — color palette, typography feel, spacing density, component style (flat, shadowed, outlined, glassmorphic, etc.)
+- For existing apps: identify existing design patterns and ask whether to follow or evolve them
+- Include a **Visual Design** section in the design document with concrete decisions: primary/accent colors, typography scale, spacing system, component style, light/dark mode, and any reference screenshots or sites
+
 **Presenting the design:**
 - Once you believe you understand what you're building, present the design
 - Break it into sections of 200-300 words
 - Use `AskUserQuestion` after each section to check whether it looks right so far (options: "Looks good" / "Needs changes")
-- Cover: architecture, components, data flow, error handling, testing
+- Cover: architecture, components, data flow, error handling, testing, visual design (if UI)
 - Be ready to go back and clarify if something doesn't make sense
 
 ## After the Design

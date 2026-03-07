@@ -62,13 +62,22 @@ Task tool (general-purpose):
     ## Critical: UI Components Must Be Styled
 
     If this task creates a user-facing UI component (page, modal, panel, widget),
-    you MUST style it to match the codebase's existing visual patterns:
+    you MUST style it to be visually polished and production-ready:
+
+    **For existing apps:**
     1. Find the codebase's CSS/design system (CSS variables, theme tokens, existing styles)
     2. Examine 2-3 existing styled components for patterns (spacing, colors, shadows)
     3. Apply consistent styling — use the same CSS variables and visual language
 
-    Unstyled HTML with class names that have no CSS rules is NOT a valid deliverable.
-    Matching the codebase's visual language is part of minimum implementation, not "extra."
+    **For new apps (no existing patterns):**
+    1. Use the design tokens/CSS variables from Task 0 (colors, spacing, typography, shadows)
+    2. Follow the visual acceptance criteria in this task's spec
+    3. Create components that look finished and polished — not wireframes with class names
+
+    **For both:**
+    - Unstyled HTML with class names that have no CSS rules is NOT a valid deliverable
+    - Every visual state that applies must be handled (hover, focus, disabled, empty, error)
+    - Visual quality is part of minimum implementation, not "extra"
 
     ## Checklist Before Committing
 
