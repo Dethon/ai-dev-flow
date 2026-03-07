@@ -55,6 +55,7 @@ digraph process {
         "Team members execute triplets autonomously" [shape=box];
         "Wait for completion messages" [shape=box];
         "Controller: full test suite + build" [shape=diamond];
+        "Controller: wiring smoke test" [shape=diamond];
         "Diagnose and fix" [shape=box];
         "Mark layer complete" [shape=box];
     }
@@ -80,8 +81,10 @@ digraph process {
     "Spawn team members (one per triplet, run_in_background)" -> "Team members execute triplets autonomously";
     "Team members execute triplets autonomously" -> "Wait for completion messages";
     "Wait for completion messages" -> "Controller: full test suite + build";
-    "Controller: full test suite + build" -> "Mark layer complete" [label="pass"];
+    "Controller: full test suite + build" -> "Controller: wiring smoke test" [label="pass"];
     "Controller: full test suite + build" -> "Diagnose and fix" [label="fail"];
+    "Controller: wiring smoke test" -> "Mark layer complete" [label="pass"];
+    "Controller: wiring smoke test" -> "Diagnose and fix" [label="fail"];
     "Diagnose and fix" -> "Controller: full test suite + build" [style=dashed];
 
     "Mark layer complete" -> "All layers done?";
@@ -127,6 +130,8 @@ docs/plans/{plan-name}/
 2. **Feature triplets** — each group of N.1 (RED), N.2 (GREEN), N.3 (REVIEW)
 3. **Integration triplet** — final triplet, depends on all features
 4. **Dependency graph** — from the plan's "Execution Instructions" or explicit graph (in multi-file plans, this is in README.md)
+5. **Wiring ledger** — `wiring-ledger.md` (used for per-layer wiring smoke tests)
+6. **Flow trace** — `flow-trace.md` (used to verify user-facing flows are wired end-to-end)
 
 ### Compute Dependency Layers
 
@@ -230,7 +235,19 @@ Task(general-purpose, team_name: "tdd-{plan}", name: "triplet-b", run_in_backgro
 2. **Wait:** End turn — team members execute triplets autonomously
 3. **Collect:** Team members send completion messages via SendMessage. Wait for all to report.
 4. **Verify:** Run full test suite + full project build
-5. **Advance:** If all pass, proceed to next layer. If failures, diagnose which feature.
+5. **Wiring smoke test:** Verify wiring from the plan's `wiring-ledger.md` (see below)
+6. **Advance:** If all pass, proceed to next layer. If failures, diagnose which feature.
+
+**Wiring smoke test (per layer):**
+
+After tests and build pass, verify that wiring changes for this layer's tasks actually landed. Read `wiring-ledger.md` from the plan directory and check entries whose "Registered By Task" matches a task in the current layer:
+
+1. **App startup** — Can the application start without DI resolution errors? Run the app briefly (or the startup verification command from the plan). A class that passes all unit tests but crashes at startup due to missing DI registration is a wiring gap.
+2. **DI ledger entries** — For each DI registration in the ledger assigned to this layer: does the registration exist in the specified file? Read the file and search for the registration call.
+3. **Route ledger entries** — For each route assigned to this layer: does the route registration exist?
+4. **Layout/navigation entries** — For each layout wiring assigned to this layer: is the component referenced in its parent?
+
+If any ledger entry is missing, dispatch a fix subagent to implement the missing wiring. This is a lightweight file-read check, not a full integration test.
 
 **Ignore team member idle notifications.** Team members may go idle briefly during execution — this is normal. Only act on explicit completion messages (SendMessage from team members).
 
@@ -338,6 +355,7 @@ The controller does NOT handle fix cycles — team members are autonomous. The c
 | GREEN (N.2) | Own test file(s) ALL PASS | — | Fix: dispatch new GREEN subagent |
 | REVIEW (N.3) | Verdict = PASS, own tests pass | — | Fix: team member handles fix cycle |
 | Layer complete | — | Full test suite + full build | Diagnose which feature broke |
+| Layer wiring | — | Wiring smoke test against ledger + app startup | Dispatch fix subagent for missing wiring |
 | Integration | — | Full test suite + final build | Fix or escalate to user |
 
 **If RED tests pass immediately:** Something is wrong. Team member should diagnose before proceeding to GREEN.
@@ -363,6 +381,8 @@ The controller does NOT handle fix cycles — team members are autonomous. The c
 | Dispatching parallel team members for triplets that share files | Check file scopes — parallel triplets must touch different files |
 | Not reading team config for controller name | Read config after TeamCreate to get your name for team member prompts |
 | Not including build conflict rules in team member prompts | Every team member prompt must include scoped-test and no-global-build constraints |
+| Skipping wiring smoke test between layers | Full test suite passing does NOT mean wiring exists — check ledger entries against actual files |
+| Not reading wiring-ledger.md and flow-trace.md from the plan | These artifacts are mandatory inputs for per-layer verification |
 
 ## Red Flags
 
@@ -382,6 +402,8 @@ The controller does NOT handle fix cycles — team members are autonomous. The c
 - Let the controller execute tasks directly (always team member + fresh subagent)
 - Ask the user whether to proceed (analyze, create tasks, execute immediately)
 - Skip creating tasks with TaskCreate/TaskUpdate (all progress must be tracked)
+- Skip the wiring smoke test between layers ("tests pass, build passes, that's enough")
+- Ignore wiring-ledger.md or flow-trace.md from the plan — these are mandatory verification inputs
 
 ## Integration
 

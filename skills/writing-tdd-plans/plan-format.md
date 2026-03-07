@@ -10,7 +10,7 @@ Shared format for TDD implementation plans. Both writing-tdd-plans and debating-
 | **Depends on** | Previous feature's REVIEW, or none (also serialize if file overlap with parallel features) | Same feature's RED | Same feature's GREEN |
 | **Design requirements** | Verbatim from design | Reference RED task | Verbatim from design |
 | **Files** | Exact paths to create | Exact paths to create/modify | Files to review |
-| **Spec** | Test cases table + key assertions | Implementation spec + DI registration table + endpoint bindings | Review checklist + startup verification + tests for any gaps found |
+| **Spec** | Test cases table + wiring tests + key assertions | Implementation spec + DI registration table + endpoint bindings | Review checklist + startup verification + tests for any gaps found |
 | **Verification** | Command + "ALL tests FAIL" | Command + "ALL tests PASS" | Verdict: PASS/FAIL |
 | **Commit** | `test: add failing tests for [feature]` | `feat: implement [feature]` | `test: add adversarial tests for [feature]` |
 
@@ -103,6 +103,8 @@ docs/plans/{plan-name}/
   feature-2-{name}.md          # Triplet 2: RED/GREEN/REVIEW
   ...
   integration.md               # Integration triplet
+  flow-trace.md                # User-facing flow traces (see Flow Trace Artifact)
+  wiring-ledger.md             # DI, routes, layout wiring ledger (see Wiring Ledger)
 ```
 
 Each feature file contains the complete triplet (N.1 RED, N.2 GREEN, N.3 REVIEW) for that feature. The README.md contains the plan header, a file index table mapping each file to its feature and dependencies, the dependency graph, and execution instructions.
@@ -118,6 +120,8 @@ Each feature file contains the complete triplet (N.1 RED, N.2 GREEN, N.3 REVIEW)
 | feature-1-auth.md | Authentication | Task 0 |
 | feature-2-users.md | User Management | Task 0 |
 | integration.md | End-to-end integration | All features |
+| flow-trace.md | User flow verification | — |
+| wiring-ledger.md | DI/route/layout wiring ledger | — |
 ```
 
 **Multiple PRs (only when user explicitly requests):** If the user asks to split execution into multiple PRs, each PR gets its own numbered subfolder: `docs/plans/{NN}-{plan-name}-{pr-descriptor}/` where `{NN}` is the zero-padded PR number (01, 02, ...). The number indicates execution order — PRs must be executed in numerical sequence. Each plan must be self-contained and independently executable. **CRITICAL: The plan MUST still cover the ENTIRE design document.** Never omit features from the plan because "they belong in a different PR." Plan everything first, then split into PRs if requested. If not requested, produce a single plan covering all features.
@@ -185,7 +189,19 @@ Inputs and outputs must be concrete values, not placeholders. The executor shoul
 
 **Key assertions:** [Non-obvious assertions the executor must include, e.g., "soft-delete means record stays in DB with deleted_at set"]
 
-**UI deliverable rule:** If the feature creates a UI component (page, modal, widget, settings panel), at least one test MUST verify the component **renders** — not just that store actions dispatch or services resolve from DI. Store/action tests can pass without the component file existing. The GREEN step (YAGNI) will only create what tests require, so a feature with only state management tests produces only state management code — no component. Include a rendering test (e.g., bUnit, React Testing Library) that imports and renders the component. **If the codebase lacks component rendering test infrastructure** (no bUnit, no React Testing Library, etc.), establishing it is a Task 0 or feature prerequisite — NOT a reason to exclude the component from the plan. A design that specifies "settings page with Connect/Disconnect" requires the component to exist, not just the state management behind it.
+**Wiring tests (MANDATORY when task lists "Modify" files):** If the GREEN task specifies files under "Modify" (DI registrations, route additions, layout composition, pipeline hookups), the RED task MUST include tests that verify wiring — not just feature logic. Without wiring tests, GREEN has no test-driven reason to implement wiring changes, and they get skipped.
+
+| Wiring Type | Example Test |
+|-------------|-------------|
+| DI registration | Resolve `IMyService` from real DI container → not null, correct implementation type |
+| Route registration | Request `GET /my-route` → non-404 response |
+| Layout/navigation | Render parent layout → child component present |
+| Middleware/pipeline | Make request through pipeline → middleware intercepts |
+| Config entry | Read config key → expected value present |
+
+Include wiring tests in the test cases table alongside feature tests. Each wiring test should reference the specific "Modify" file it verifies.
+
+**UI deliverable rule:** If the feature creates a UI component (page, modal, widget, settings panel), at least one test MUST verify the component **renders** — not just that store actions dispatch or services resolve from DI. Store/action tests can pass without the component file existing. The GREEN step will only create what tests require, so a feature with only state management tests produces only state management code — no component. Include a rendering test (e.g., bUnit, React Testing Library) that imports and renders the component. **If the codebase lacks component rendering test infrastructure** (no bUnit, no React Testing Library, etc.), establishing it is a Task 0 or feature prerequisite — NOT a reason to exclude the component from the plan. A design that specifies "settings page with Connect/Disconnect" requires the component to exist, not just the state management behind it.
 
 **Side-effect handler rule:** If the feature includes side-effect handlers (Fluxor effects, Redux thunks/sagas, MobX reactions) that perform external operations (JS interop, HTTP calls, hub methods, WebSocket sends), at least one test MUST verify each handler's side effect fires — independent of any component rendering test. Mock the external dependency, dispatch the triggering action, assert the handler called the dependency. Store/state tests verify reducers update state but do NOT exercise effects. Component rendering tests (bUnit, React Testing Library) CAN exercise effects but may be skipped due to infrastructure friction. Without standalone effect tests, the GREEN step creates the handler file as a stub — "file exists" passes but delivers no functionality.
 
@@ -379,6 +395,69 @@ After all feature triplets pass, add one final triplet for end-to-end integratio
 - **N.1:** Write integration tests covering all four categories. Include the Mock Boundary Table in the task spec with **one row per feature** listing each mock or untested boundary and the corresponding real-connection test. **Prerequisites:** List any packages, containers, or fixtures that must exist for these tests to run — and verify Task 0 or a prior feature task creates them. If prerequisites are missing from the plan, flag this as a blocker before writing tests.
 - **N.2:** Fix integration failures. Expect: missing DI registrations, project references, stub replacements, pipeline hook-ups, **missing test infrastructure (packages not installed, containers not configured)**. This is often NOT a no-op.
 - **N.3:** Final adversarial review against ALL design requirements as a checklist, plus full build and full test suite verification across ALL features.
+
+## Flow Trace Artifact (MANDATORY)
+
+The flow trace check from writing-tdd-plans MUST produce a saved document, not just a mental exercise. Save as `flow-trace.md` in the plan directory.
+
+For each user-facing flow in the design, trace every step through the plan's tasks:
+
+```markdown
+# Flow Traces
+
+## Flow: [User Flow Name]
+
+| Step | User Action / System Event | Code Location | Created By Task | Wiring Task |
+|------|---------------------------|---------------|-----------------|-------------|
+| 1 | User opens settings page | /settings route → SettingsPage | Feature 3 GREEN | Feature 3 GREEN (adds route to router) |
+| 2 | User clicks "Connect" | SettingsPage button → dispatches ConnectAction | Feature 3 GREEN | Feature 3 GREEN (adds component to layout) |
+| 3 | OAuth redirect completes | /auth/callback → TokenExchangeHandler | Feature 5 GREEN | Task 0 (registers middleware) |
+
+**Gaps found:** None / [description of gap and which task was added to fix it]
+```
+
+**Every step must map to a task.** A step with no "Created By Task" is a plan gap — add the missing task before saving. The executor reads this file to verify wiring between layers.
+
+## Wiring Ledger (MANDATORY)
+
+Save as `wiring-ledger.md` in the plan directory. The plan author builds this ledger while writing triplets. The executor uses it to verify wiring during per-layer checks.
+
+```markdown
+# Wiring Ledger
+
+## DI Registrations
+
+| Service | Implementation | Host/Container | Registered By Task | File |
+|---------|---------------|----------------|-------------------|------|
+| ITokenStore | MsalTokenStore | Agent DI | Feature 2 GREEN | Program.cs |
+| TimeProvider | TimeProvider.System | Agent DI | Task 0 | Program.cs |
+
+## Routes
+
+| Path | Method | Handler | Registered By Task | File |
+|------|--------|---------|-------------------|------|
+| /settings | GET | SettingsPage | Feature 3 GREEN | App.razor |
+| /auth/callback | POST | TokenExchangeHandler | Feature 5 GREEN | Program.cs |
+
+## Layout / Navigation Wiring
+
+| Component | Parent | Registered By Task | File |
+|-----------|--------|-------------------|------|
+| SettingsPanel | MainLayout | Feature 3 GREEN | MainLayout.razor |
+| NavItem("Settings") | NavMenu | Feature 3 GREEN | NavMenu.razor |
+
+## Middleware / Pipeline
+
+| Middleware | Pipeline | Order | Registered By Task | File |
+|-----------|----------|-------|-------------------|------|
+| TokenInjectingDecorator | MCP tool pipeline | Before tool execution | Feature 2 GREEN | Program.cs |
+```
+
+**Rules:**
+- Add an entry for every new class constructor dependency, route, layout change, or pipeline hookup
+- The "Registered By Task" column must match a real task in the plan
+- Cross-reference with RED task wiring tests: every ledger entry should have a corresponding wiring test
+- The executor verifies ledger entries after each layer completes
 
 ## Execution Instructions
 

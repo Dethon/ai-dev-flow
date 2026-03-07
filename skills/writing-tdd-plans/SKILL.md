@@ -46,6 +46,7 @@ digraph process {
         "Create Task N.3: Adversarial review" [shape=box];
     }
 
+    "Build wiring ledger" [shape=box];
     "Save as subfolder in docs/plans/" [shape=box];
 
     "Read design document" -> "Identify goal, architecture, tech stack";
@@ -54,7 +55,8 @@ digraph process {
     "Order features by dependency" -> "Create Task N.1: Write failing tests (RED)";
     "Create Task N.1: Write failing tests (RED)" -> "Create Task N.2: Implement to pass tests (GREEN)";
     "Create Task N.2: Implement to pass tests (GREEN)" -> "Create Task N.3: Adversarial review";
-    "Create Task N.3: Adversarial review" -> "Flow trace check";
+    "Create Task N.3: Adversarial review" -> "Build wiring ledger";
+    "Build wiring ledger" -> "Flow trace check";
     "Flow trace check" [shape=diamond];
     "Fix plan gaps" [shape=box];
     "Flow trace check" -> "Save as subfolder in docs/plans/" [label="all steps covered"];
@@ -117,7 +119,9 @@ Independent triplets execute as parallel subagents sharing the same workspace. T
 
 **Dependency graph:** Include a visual dependency graph at the end of the plan showing which triplets can run in parallel and which are sequential. The graph must reflect both logical dependencies AND file-scope overlap — two features are parallel only if they have zero file overlap.
 
-**Flow trace check (MANDATORY):** After writing ALL triplets (including integration), trace each user-facing flow from the design end-to-end through the plan. For each step in the flow (user sees X → clicks Y → gets Z), identify which task creates or modifies the code for that step. A step with no corresponding task is a plan gap — add the missing task before saving. Common gaps this catches:
+**Build wiring ledger (MANDATORY):** After writing ALL triplets, build the wiring ledger (see plan-format.md "Wiring Ledger"). For every DI registration, route, layout change, and pipeline hookup in the plan, add a ledger entry with the task that creates it. Cross-reference: every ledger entry should have a corresponding wiring test in a RED task. Save as `wiring-ledger.md` in the plan directory.
+
+**Flow trace check (MANDATORY):** After building the wiring ledger, trace each user-facing flow from the design end-to-end through the plan. For each step in the flow (user sees X → clicks Y → gets Z), identify which task creates or modifies the code for that step. A step with no corresponding task is a plan gap — add the missing task before saving. **Save the trace as `flow-trace.md`** in the plan directory (see plan-format.md "Flow Trace Artifact") — the executor reads this to verify wiring between layers. Common gaps this catches:
 - UI components created but never wired into a layout or page (no task adds the component to the app's navigation or main page)
 - Interfaces created in Task 0 but no task creates the real implementation class (DI can't resolve the service at runtime)
 - Backend services with no UI making them accessible to users
@@ -145,6 +149,9 @@ Independent triplets execute as parallel subagents sharing the same workspace. T
 | "This design is too large for one PR — I'll split into PR 01 and PR 02" | The plan covers the ENTIRE design. Scope decisions (what ships in which PR) happen AFTER the plan exists, not during planning. A plan that omits sections of the design is incomplete — even if you intend to "plan the rest later." Plan everything, then let the executor or user decide PR boundaries. |
 | "I'll defer the UI/auth/infrastructure to a separate plan" | Deferring = omitting. If the design describes it, the plan must include it. The plan is a decomposition of the design, not a subset. |
 | "The coverage check passed, so the plan is complete" | Coverage maps design sections to triplets. It doesn't verify that every step in a user flow has a task. A component can have a triplet but never be wired into the layout. An interface can exist in Task 0 but have no implementation class. The flow trace catches what the coverage check misses. |
+| "Wiring will be implemented because it's in the Files section" | GREEN subagents prioritize making tests pass. Without wiring tests in RED, there's no test-driven reason to implement wiring changes — they get skipped. Every "Modify" file needs a corresponding wiring test. |
+| "The flow trace is in my head, I verified it" | A mental trace is lost after planning. Save it as flow-trace.md — the executor needs it to verify wiring between layers. If it's not written down, it doesn't exist. |
+| "The wiring ledger is redundant with the DI registration table" | The DI table is per-task. The ledger is cross-task — it shows WHO registers WHAT across the entire plan. The executor uses it to verify wiring after each layer, not just within a single task. |
 | "Unit tests pass, so the DI wiring is correct" | Unit tests mock DI containers. A class can pass all unit tests while its real DI container can't resolve it — because a transitive dependency (like `TimeProvider`) was never registered. Every GREEN task must include a DI registration table. |
 | "The framework infers parameter binding correctly" | Minimal API, MVC, and other frameworks have inference rules that surprise. A GET endpoint with an unattributed complex parameter is inferred as `[FromBody]` and throws `InvalidOperationException`. GREEN tasks for web endpoints must specify binding sources explicitly. |
 | "The executor can figure out DI registrations" | The executor has only the task spec. If the plan says "create `TokenInjector(ITokenStore, TimeProvider)`" but doesn't say "register `TimeProvider.System` in DI", the executor creates the class, unit tests pass (mocked), and the app crashes at startup. DI registrations are design decisions — lock them down. |
@@ -170,6 +177,8 @@ Independent triplets execute as parallel subagents sharing the same workspace. T
 - Omit features from the plan because "they'll be in a separate PR" — the plan covers the ENTIRE design document. Every section, every component, every endpoint. PR scope decisions happen after planning, not during.
 - Add a "Scope" section to the README that excludes parts of the design — if you're tempted to write "deferred to PR 02," the plan is incomplete.
 - Save the plan without running the flow trace check — trace every user-facing flow through the plan's tasks before saving. A component with a triplet but no layout wiring, or an interface with no implementation task, is a plan gap.
+- Save the plan without flow-trace.md and wiring-ledger.md — these are mandatory artifacts, not optional. The executor reads them to verify wiring between layers.
+- Write RED tasks with "Modify" files in GREEN but no wiring tests — if GREEN must modify a file (DI registration, route, layout), RED must include a test that fails without that modification. Otherwise GREEN has no test-driven reason to implement it.
 - Specify a constructor dependency in a GREEN task without stating whether it's registered in DI — every constructor parameter must map to a DI registration. If the plan doesn't say who registers it, nobody will.
 - Create web endpoint handler signatures without specifying parameter binding attributes — ASP.NET Minimal API, Spring, Express parameter inference silently breaks when it guesses wrong. Always specify `[FromQuery]`, `[FromServices]`, `[FromBody]`, etc.
 - Let the GREEN executor introduce new interfaces or abstractions not in the plan — YAGNI means don't create `IFooHubService` when the plan says to inject `IChatConnectionService`. New abstractions = new DI registrations the plan didn't account for = runtime crashes.
