@@ -11,8 +11,7 @@
             "source": {
                 "source": "url",
                 "url": "https://github.com/Dethon/ai-dev-flow.git"
-            },
-            "version": "1.0.24"
+            }
         }
     ]
 }
